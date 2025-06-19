@@ -9,7 +9,9 @@
 #include <memory>
 #include <map>
 #include <string>
-#include "Process.h"
+
+// Forward declarations
+class Process;
 
 /**
  * @brief The Scheduler class manages a First-Come-First-Served (FCFS)
@@ -17,16 +19,16 @@
  */
 class Scheduler
 {
-private:
-    std::vector<std::thread> cpu_cores;                        // Worker threads simulating CPU cores
-    std::queue<std::shared_ptr<Process>> ready_queue;          // Shared ready queue
-    std::mutex queue_mutex;                                    // Mutex for queue access
-    std::condition_variable queue_condition;                   // Signal when new process arrives
-    std::vector<bool> core_available;                          // Track which cores are idle
-    std::vector<std::shared_ptr<Process>> all_processes;       // All processes created
+protected:
+    std::vector<std::thread> cpu_cores;                  // Worker threads simulating CPU cores
+    std::queue<std::shared_ptr<Process>> ready_queue;    // Shared ready queue
+    std::mutex queue_mutex;                              // Mutex for queue access
+    std::condition_variable queue_condition;             // Signal when new process arrives
+    std::vector<bool> core_available;                    // Track which cores are idle
+    std::vector<std::shared_ptr<Process>> all_processes; // All processes created
     std::map<int, std::shared_ptr<Process>> current_processes; // Currently running processes
     std::mutex running_mutex;
-    bool running = true; // Scheduler state
+    bool running = true;                                 // Scheduler state
 
     int total_cpu_time = 0;                // Total simulated CPU time
     std::map<int, int> core_process_count; // Number of processes handled per core
@@ -87,7 +89,7 @@ private:
      * @brief Worker function for CPU core threads
      * @param core_id Logical ID of the CPU core
      */
-    void run_core(int core_id);
+    virtual void run_core(int core_id);
 };
 
 #endif // SCHEDULER_H

@@ -3,7 +3,13 @@
 
 #include "AConsole.h"
 #include "Scheduler.h"
+#include <vector>
+#include <memory>
+#include <map>
 #include <string>
+
+class Process;
+class Scheduler;
 
 class SchedulingConsole : public AConsole
 {
@@ -13,6 +19,8 @@ public:
     void onEnabled() override;
     void display() override;
     void process() override;
+    // CRITICAL: Override pure virtual isRunning() from AConsole
+    bool isRunning() const override { return true; }
 
 private:
     Scheduler *scheduler;
@@ -22,8 +30,7 @@ private:
     void render_footer();
     void render_running_processes(const std::vector<std::shared_ptr<Process>> &processes);
     void render_finished_processes(const std::vector<std::shared_ptr<Process>> &processes);
-    void render_cpu_utilization(const std::map<int, std::map<std::string, float>> &stats);
-    bool isRunning() const override;
+    //void render_cpu_utilization(const std::map<int, std::map<std::string, float>> &stats);
 };
 
 #endif // SCHEDULING_CONSOLE_H

@@ -11,6 +11,7 @@ class Command; // Forward declaration
 
 class Process
 {
+
 public:
     std::string name;
     std::vector<std::shared_ptr<Command>> commands;
