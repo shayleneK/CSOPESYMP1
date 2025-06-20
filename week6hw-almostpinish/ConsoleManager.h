@@ -27,6 +27,7 @@ private:
 
     ConsoleManager(Scheduler *scheduler);
     void initializeConsoles();
+    std::map<std::string, std::shared_ptr<AConsole>> m_consoleTable;
 
 public:
     static ConsoleManager *getInstance(Scheduler *scheduler = nullptr);
@@ -41,6 +42,10 @@ public:
     void clearScreen();
 
     static void destroy();
+
+    void createScreen(const std::string &name);
+    void switchToScreen(const std::string &name);
+    void listScreens() const;
 };
 
 #endif // CONSOLEMANAGER_H

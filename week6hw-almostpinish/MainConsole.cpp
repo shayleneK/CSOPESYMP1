@@ -1,15 +1,11 @@
 #include "MainConsole.h"
-#include "SchedulingConsole.h"
-#include "Process.h"
-#include "Scheduler.h"
-#include "Command.h"
 #include "ConsoleManager.h"
+// #include "ScreenConsole.h" // Ensure this exists
 #include <iostream>
-#include <string>
 #include <algorithm>
 #include <cstdlib>
 
-void printHeader()
+void MainConsole::printHeader() const
 {
     std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
     std::cout << "~   ___     ___     ___      ___    ___     ___   __   __~\n";
@@ -21,149 +17,61 @@ void printHeader()
     std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
 }
 
-MainConsole::MainConsole(Scheduler *sched)
-    : AConsole("Main Console"), scheduler(sched) {}
+MainConsole::~MainConsole() {}
 
-void MainConsole::onEnabled()
+void MainConsole::display() const
 {
+    clearConsole();
     printHeader();
-    std::cout << "| Type 'initialize', 'cpu-util', or 'screen -ls'        |\n";
-    std::cout << "+--------------------------------------------------+\n\n";
 }
 
-void MainConsole::display()
-{
-    clear_screen();
-    onEnabled();
-}
-
-void MainConsole::process()
-{
-    std::string command;
-
-    while (running)
-    {
-        std::cout << "> ";
-        std::getline(std::cin, command);
-
-        std::transform(command.begin(), command.end(), command.begin(), ::tolower);
-
-        if (command == "exit")
-        {
-            std::cout << "[CMD] Exiting emulator...\n";
-            running = false;
-        }
-        else if (command == "clear")
-        {
-            clear_screen();
-            onEnabled();
-        }
-        else if (command == "screen -ls")
-        {
-            auto running_procs = scheduler->get_running_processes();
-            auto finished_procs = scheduler->get_finished_processes();
-
-            std::cout << "\nRunning Processes:\n";
-            if (running_procs.empty())
-            {
-                std::cout << "  (None)\n";
-            }
-            else
-            {
-                for (const auto &p : running_procs)
-                {
-                    std::cout << " - " << p->name << " (Started: "
-                              << std::chrono::duration_cast<std::chrono::seconds>(
-                                     p->start_time.time_since_epoch())
-                                     .count()
-                              << ")\n";
-                }
-            }
-
-            std::cout << "\nFinished Processes:\n";
-            if (finished_procs.empty())
-            {
-                std::cout << "  (None)\n";
-            }
-            else
-            {
-                for (const auto &p : finished_procs)
-                {
-                    std::cout << " - " << p->name << " (Finished: "
-                              << std::chrono::duration_cast<std::chrono::seconds>(
-                                     p->finish_time.time_since_epoch())
-                                     .count()
-                              << ")\n";
-                }
-            }
-
-            std::cout << std::endl;
-        }
-        else if (command == "cpu-util")
-        {
-            auto stats = scheduler->get_cpu_stats();
-            std::cout << "\nCPU Utilization:\n";
-
-            for (const auto &[core_id, data] : stats)
-            {
-                float util = data.at("util");
-                int queue_size = static_cast<int>(data.at("queue_size"));
-
-                std::cout << "  CPU " << core_id << ": | Util(%): " << util
-                          << " | Num Procs: " << queue_size << " |\n";
-            }
-
-            std::cout << std::endl;
-        }
-        else if (command == "initialize")
-        {
-            std::cout << "[CMD] Initializing test processes...\n";
-
-            for (int i = 0; i < 10; ++i)
-            {
-                auto p = std::make_shared<Process>("Process" + std::to_string(i));
-                for (int j = 0; j < 100; ++j)
-                {
-                    p->add_command(std::make_shared<PrintCommand>("Hello from " + p->name + "!"));
-                }
-                scheduler->add_process(p);
-            }
-        }
-        else if (command == "scheduler-test")
-        {
-            std::cout << "[CMD] Starting scheduler...\n";
-            scheduler->start();
-        }
-        else if (command == "scheduler-stop")
-        {
-            std::cout << "[CMD] Stopping scheduler...\n";
-            scheduler->shutdown();
-        }
-        else if (command == "report-util")
-        {
-            ConsoleManager::getInstance()->drawConsole(); // Refresh UI
-        }
-        else if (command.empty())
-        {
-            continue;
-        }
-        else
-        {
-            std::cout << "[ERROR] Unknown command: " << command << "\n";
-        }
-    }
-}
-
-bool MainConsole::isRunning() const
-{
-    return running;
-}
-
-void MainConsole::clear_screen()
+void MainConsole::clearConsole() const
 {
 #ifdef _WIN32
     system("cls");
 #else
     system("clear");
 #endif
+}
+
+bool MainConsole::process(std::string &command)
+{
+    ConsoleManager &manager = ConsoleManager::getInstance();
+
+    if (command.rfind("screen -s ", 0) == 0)
+    {
+        std::string name = command.substr(10);
+        if (!name.empty())
+            manager.createScreen(name);
+        return true;
+    }
+    else if (command.rfind("screen -r ", 0) == 0)
+    {
+        std::string name = command.substr(10);
+        manager.switchToScreen(name);
+        return true;
+    }
+    else if (command == "screen -l")
+    {
+        manager.listScreens();
+        return false;
+    }
+    else if (command == "clear")
+    {
+        draw();
+        return false;
+    }
+    else if (command == "exit")
+    {
+        std::cout << "Exiting CLI. Goodbye!\n";
+        manager.setRunning(false);
+        return false;
+    }
+    else
+    {
+        std::cout << "Unknown command: " << command << "\n";
+        return false;
+    }
+
+    return false;
 }

@@ -1,25 +1,21 @@
-#ifndef MAIN_CONSOLE_H
-#define MAIN_CONSOLE_H
+#ifndef MAINCONSOLE_H
+#define MAINCONSOLE_H
 
 #include "AConsole.h"
-#include "Scheduler.h"
+#include <string>
 
 class MainConsole : public AConsole
 {
-private:
-    Scheduler *scheduler;
-    bool running;
-
 public:
-    explicit MainConsole(Scheduler *sched);
+    MainConsole() = default;
+    ~MainConsole();
 
-    void onEnabled() override;
     void display() override;
-    void process() override;
+    void process(std::string &command) override;
 
-    // Implement pure virtual function from AConsole
-    bool isRunning() const override;
-    void clear_screen();
+private:
+    void printHeader() const;
+    void clearConsole() const;
 };
 
-#endif // MAIN_CONSOLE_H
+#endif // MAINCONSOLE_H

@@ -17,7 +17,7 @@ public:
     virtual String getName() const;
     virtual void onEnabled() = 0;
     virtual void display() = 0;
-    virtual void process() = 0;
+    virtual void process(std::string &command) = 0;
     virtual bool isRunning() const = 0;
 
     friend class ConsoleManager;

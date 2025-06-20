@@ -2,6 +2,7 @@
 #include "AConsole.h"
 #include "MainConsole.h"
 // #include "MarqueeConsole.h"
+#include "ScreenConsole.h"
 #include "SchedulingConsole.h"
 // #include "MemorySimulationConsole.h"
 
@@ -132,4 +133,45 @@ void ConsoleManager::destroy()
 {
     delete instance;
     instance = nullptr;
+}
+
+// screens
+void ConsoleManager::createScreen(const std::string &name)
+{
+    if (m_consoleTable.find(name) != m_consoleTable.end())
+    {
+        std::cout << "Screen \"" << name << "\" already exists.\n";
+        return;
+    }
+
+    auto newConsole = std::make_shared<ScreenConsole>(name); // make sure ScreenConsole exists
+    m_consoleTable[name] = newConsole;
+    // m_previousConsole = m_activeConsole;
+    // m_activeConsole = newConsole;
+
+    std::cout << "Created and switched to screen: " << name << "\n";
+}
+
+void ConsoleManager::switchToScreen(const std::string &name)
+{
+    auto it = m_consoleTable.find(name);
+    if (it != m_consoleTable.end())
+    {
+        // m_previousConsole = m_activeConsole;
+        // m_activeConsole = it->second;
+        std::cout << "Switched to screen: " << name << "\n";
+    }
+    else
+    {
+        std::cout << "Screen \"" << name << "\" not found.\n";
+    }
+}
+
+void ConsoleManager::listScreens() const
+{
+    std::cout << "Available screens:\n";
+    for (const auto &[name, _] : m_consoleTable)
+    {
+        std::cout << " - " << name << "\n";
+    }
 }
