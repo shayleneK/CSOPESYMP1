@@ -1,0 +1,7 @@
+num-cpu 4
+scheduler rr
+quantum-cycles 50
+batch-process-freq 2
+min-ins 5
+max-ins 15
+delays-per-exec 50
