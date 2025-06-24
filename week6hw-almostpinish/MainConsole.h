@@ -7,11 +7,12 @@
 class MainConsole : public AConsole
 {
 public:
-    MainConsole() = default;
-    ~MainConsole();
+    MainConsole();
 
     void display() override;
     void process(std::string &command) override;
+    void onEnabled() override;
+    bool isRunning() const override;
 
 private:
     void printHeader() const;

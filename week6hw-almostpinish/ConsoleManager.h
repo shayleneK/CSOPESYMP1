@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <memory>
 #include <string>
+#include <map>
 
 // Console types
 enum ConsoleType

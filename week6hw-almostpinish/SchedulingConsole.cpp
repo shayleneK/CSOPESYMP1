@@ -31,7 +31,7 @@ void SchedulingConsole::display()
     render_footer();
 }
 
-void SchedulingConsole::process() // handling non-drawing logic
+void SchedulingConsole::process(std::string &command) // handling non-drawing logic
 {
     // Optional background logic here
 }

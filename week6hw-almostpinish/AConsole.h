@@ -14,7 +14,6 @@ public:
     AConsole(String name);
     virtual ~AConsole() = default;
 
-    virtual String getName() const;
     virtual void onEnabled() = 0;
     virtual void display() = 0;
     virtual void process(std::string &command) = 0;

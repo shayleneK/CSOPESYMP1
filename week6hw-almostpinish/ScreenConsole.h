@@ -11,7 +11,11 @@ public:
 
     void clearConsole() const;
     void draw() const;
-    void process(std::string &command);
+    void onEnabled() override;
+    void display() override;
+    bool isRunning() const override;
+
+    void process(std::string &command) override;
 
 private:
     std::string m_name;

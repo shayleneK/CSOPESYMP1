@@ -12,7 +12,7 @@ public:
 
     void onEnabled() override;
     void display() override;
-    void process() override;
+    void process(std::string &command) override;
 
 private:
     Scheduler *scheduler;

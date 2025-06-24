@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <cstdlib>
 
+MainConsole::MainConsole()
+    : AConsole("Main Console") {} // just pass the name to AConsole
+
 void MainConsole::printHeader() const
 {
     std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
@@ -17,9 +20,7 @@ void MainConsole::printHeader() const
     std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
 }
 
-MainConsole::~MainConsole() {}
-
-void MainConsole::display() const
+void MainConsole::display()
 {
     clearConsole();
     printHeader();
@@ -34,44 +35,55 @@ void MainConsole::clearConsole() const
 #endif
 }
 
-bool MainConsole::process(std::string &command)
+void MainConsole::onEnabled()
 {
-    ConsoleManager &manager = ConsoleManager::getInstance();
+    // your logic here
+}
+
+bool MainConsole::isRunning() const
+{
+    // your logic here
+    return false;
+}
+
+void MainConsole::process(std::string &command)
+{
+    ConsoleManager &manager = *ConsoleManager::getInstance();
 
     if (command.rfind("screen -s ", 0) == 0)
     {
         std::string name = command.substr(10);
         if (!name.empty())
             manager.createScreen(name);
-        return true;
+        // return true;
     }
     else if (command.rfind("screen -r ", 0) == 0)
     {
         std::string name = command.substr(10);
         manager.switchToScreen(name);
-        return true;
+        // return true;
     }
     else if (command == "screen -l")
     {
         manager.listScreens();
-        return false;
+        // return false;
     }
     else if (command == "clear")
     {
-        draw();
-        return false;
+        clearConsole();
+        // return false;
     }
     else if (command == "exit")
     {
         std::cout << "Exiting CLI. Goodbye!\n";
         manager.setRunning(false);
-        return false;
+        // return false;
     }
     else
     {
         std::cout << "Unknown command: " << command << "\n";
-        return false;
+        // return false;
     }
 
-    return false;
+    // return false;
 }

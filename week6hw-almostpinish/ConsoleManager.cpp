@@ -5,7 +5,7 @@
 #include "ScreenConsole.h"
 #include "SchedulingConsole.h"
 // #include "MemorySimulationConsole.h"
-
+#include <map>
 #include <iostream>
 #include <algorithm>
 #include <cctype>
@@ -15,7 +15,7 @@ ConsoleManager *ConsoleManager::instance = nullptr;
 ConsoleManager::ConsoleManager(Scheduler *scheduler)
 {
     // Initialize consoles
-    consoleTable[MAIN_CONSOLE] = std::make_shared<MainConsole>(scheduler);
+    consoleTable[MAIN_CONSOLE] = std::make_shared<MainConsole>();
     // consoleTable[MARQUEE_CONSOLE] = std::make_shared<MarqueeConsole>(scheduler);
     consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler);
     // consoleTable[MEMORY_CONSOLE] = std::make_shared<MemorySimulationConsole>(scheduler);

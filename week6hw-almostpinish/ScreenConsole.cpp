@@ -36,6 +36,9 @@ void ScreenConsole::draw() const
     std::cout << "Type 'exit' to return to main menu.\n";
 }
 
+void ScreenConsole::display()
+{
+}
 void ScreenConsole::process(std::string &command)
 {
     if (command == "exit")
@@ -51,6 +54,14 @@ void ScreenConsole::process(std::string &command)
     // return false;
 }
 
-void ScreenConsole::draw() const
+void ScreenConsole::onEnabled()
 {
+    std::cout << "+--------------------------------------------------+\n";
+    std::cout << "| Screen Console is now active.                    |\n";
+    std::cout << "+--------------------------------------------------+\n";
+}
+
+bool ScreenConsole::isRunning() const
+{
+    return false;
 }
