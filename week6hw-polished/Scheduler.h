@@ -20,15 +20,15 @@ class Process;
 class Scheduler
 {
 protected:
-    std::vector<std::thread> cpu_cores;                  // Worker threads simulating CPU cores
-    std::queue<std::shared_ptr<Process>> ready_queue;    // Shared ready queue
-    std::mutex queue_mutex;                              // Mutex for queue access
-    std::condition_variable queue_condition;             // Signal when new process arrives
-    std::vector<bool> core_available;                    // Track which cores are idle
-    std::vector<std::shared_ptr<Process>> all_processes; // All processes created
+    std::vector<std::thread> cpu_cores;                        // Worker threads simulating CPU cores
+    std::queue<std::shared_ptr<Process>> ready_queue;          // Shared ready queue
+    std::mutex queue_mutex;                                    // Mutex for queue access
+    std::condition_variable queue_condition;                   // Signal when new process arrives
+    std::vector<bool> core_available;                          // Track which cores are idle
+    std::vector<std::shared_ptr<Process>> all_processes;       // All processes created
     std::map<int, std::shared_ptr<Process>> current_processes; // Currently running processes
     std::mutex running_mutex;
-    bool running = true;                                 // Scheduler state
+    bool running = true; // Scheduler state
 
     int total_cpu_time = 0;                // Total simulated CPU time
     std::map<int, int> core_process_count; // Number of processes handled per core
@@ -40,19 +40,19 @@ public:
 
     /**
      * @brief Adds a new process to the ready queue
-     * @param process Shared pointer to the process
+     *
      */
     void add_process(std::shared_ptr<Process> process);
 
     /**
-     * @brief Starts the scheduler and CPU worker threads
+     * @brief Starts the CPU worker threads
      */
-    void start();
+    void start_core_threads();
 
     /**
      * @brief Shuts down the scheduler and worker threads
      */
-    void shutdown();
+    void stop_scheduler();
 
     /**
      * @brief Gets list of currently running processes

@@ -1,38 +1,57 @@
 #ifndef CONSOLEMANAGER_H
 #define CONSOLEMANAGER_H
 
-#include <vector>
-#include <memory>
 #include "AConsole.h"
+#include <unordered_map>
+#include <memory>
+#include <string>
+#include <map>
+
+// Console types
+enum ConsoleType
+{
+    MAIN_CONSOLE,
+    MARQUEE_CONSOLE,
+    SCHEDULING_CONSOLE,
+    MEMORY_CONSOLE
+};
+
+class Scheduler; // Forward declaration
 
 class ConsoleManager
 {
 private:
-    static ConsoleManager *instance; // Singleton instance
-    std::vector<std::shared_ptr<AConsole>> consoles;
+    static ConsoleManager *instance;
+    std::unordered_map<ConsoleType, std::shared_ptr<AConsole>> consoleTable;
+    ConsoleType currentConsole;
+    bool running;
 
-    // Private constructor to enforce singleton
-    ConsoleManager();
-    void clearScreen();
+    ConsoleManager(Scheduler *scheduler);
+    void initializeConsoles();
+    std::map<std::string, std::shared_ptr<AConsole>> m_consoleTable;
+    std::unique_ptr<Scheduler> scheduler;
+    bool scheduler_initialized = false;
 
 public:
-    // Singleton access method
-    static ConsoleManager *getInstance();
+    static ConsoleManager *getInstance(Scheduler *scheduler = nullptr);
 
-    // Initialize the console manager
-    void initialize();
-
-    // Main loop methods
-    void process();
     void drawConsole();
-    bool isRunning();
+    void processInput();
 
-    // Console window management
-    void addConsole(std::shared_ptr<AConsole> console);
-    void removeConsole(const std::string &name);
+    void switchConsole(ConsoleType type);
+    void setRunning(bool running);
+    void initialize();                                  // <- Add this
+    void addConsole(std::shared_ptr<AConsole> console); // <- Add this
+    void process();
 
-    // Cleanup
+    bool isRunning() const;
+    void clearScreen();
+
     static void destroy();
+
+    void createScreen(const std::string &name);
+    void switchToScreen(const std::string &name);
+    void listScreens() const;
 };
 
 #endif // CONSOLEMANAGER_H

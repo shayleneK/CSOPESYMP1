@@ -17,7 +17,7 @@ Scheduler::Scheduler(int num_cores)
 
 Scheduler::~Scheduler()
 {
-    shutdown();
+    stop_scheduler();
 }
 
 void Scheduler::add_process(std::shared_ptr<Process> process)
@@ -29,7 +29,7 @@ void Scheduler::add_process(std::shared_ptr<Process> process)
     queue_condition.notify_one();
 }
 
-void Scheduler::start()
+void Scheduler::start_core_threads()
 {
     for (int i = 0; i < static_cast<int>(core_available.size()); ++i)
     {
@@ -37,7 +37,7 @@ void Scheduler::start()
     }
 }
 
-void Scheduler::shutdown()
+void Scheduler::stop_scheduler()
 {
     running = false;
     queue_condition.notify_all();
@@ -111,7 +111,7 @@ std::vector<std::shared_ptr<Process>> Scheduler::get_running_processes()
 {
     std::unique_lock<std::mutex> lock(running_mutex);
     std::vector<std::shared_ptr<Process>> running_procs;
-    for (const auto& pair : current_processes)
+    for (const auto &pair : current_processes)
     {
         running_procs.push_back(pair.second);
     }
@@ -139,7 +139,7 @@ bool Scheduler::is_done()
 {
     std::unique_lock<std::mutex> lock(queue_mutex);
     return ready_queue.empty() && std::all_of(core_available.begin(), core_available.end(), [](bool avail)
-                                               { return avail; });
+                                              { return avail; });
 }
 
 std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats()

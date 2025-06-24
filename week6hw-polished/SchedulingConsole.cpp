@@ -104,6 +104,12 @@ void SchedulingConsole::render_running_processes(const std::vector<std::shared_p
     std::cout << std::endl;
 }
 
+bool SchedulingConsole::isRunning() const
+{
+    // Dummy implementation, update if needed
+    return false;
+}
+
 void SchedulingConsole::render_finished_processes(const std::vector<std::shared_ptr<Process>> &processes)
 {
     std::cout << "Finished Processes:\n";
