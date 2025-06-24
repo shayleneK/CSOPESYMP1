@@ -117,15 +117,23 @@ void ConsoleManager::processInput()
         scheduler_initialized = true;
         std::cout << "System initialized successfully.\n";
     }
+    else if (command == "screen -ls")
+    {
+        consoleTable[SCHEDULING_CONSOLE]->display();
+    }
     else if (command == "marquee")
     {
         switchConsole(MARQUEE_CONSOLE);
     }
     else if (command == "scheduler-start")
     {
-        scheduler->start_core_threads();
         clearScreen();
         switchConsole(SCHEDULING_CONSOLE);
+        scheduler->start_core_threads();
+        if (auto *rrsched = dynamic_cast<RRScheduler *>(scheduler.get()))
+        {
+            rrsched->start_process_generator(); // starts add_dummy_process()
+        }
     }
     else if (command == "help")
     {

@@ -1,0 +1,11 @@
+[2025-06-25 02:13:50.735] CPU Core 1: "Hello world from p02!"
+[2025-06-25 02:13:50.796] CPU Core 1: "Hello world from p02!"
+[2025-06-25 02:13:50.858] CPU Core 1: "Hello world from p02!"
+[2025-06-25 02:13:50.919] CPU Core 1: "Hello world from p02!"
+[2025-06-25 02:13:50.982] CPU Core 1: "Hello world from p02!"
+[2025-06-25 02:13:51.045] CPU Core 1: "Hello world from p02!"
+[2025-06-25 02:13:51.107] CPU Core 1: "Hello world from p02!"
+[2025-06-25 02:13:51.171] CPU Core 1: "Hello world from p02!"
+[2025-06-25 02:13:51.234] CPU Core 1: "Hello world from p02!"
+[2025-06-25 02:13:51.295] CPU Core 1: "Hello world from p02!"
+[2025-06-25 02:13:51.356] CPU Core 1: Process p02 has completed all its commands.

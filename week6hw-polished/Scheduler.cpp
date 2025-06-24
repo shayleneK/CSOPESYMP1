@@ -34,6 +34,7 @@ void Scheduler::start_core_threads()
     for (int i = 0; i < static_cast<int>(core_available.size()); ++i)
     {
         cpu_cores.emplace_back(&Scheduler::run_core, this, i);
+        std::cout << "[DEBUG] Starting core thread for Core " << i << "\n";
     }
 }
 

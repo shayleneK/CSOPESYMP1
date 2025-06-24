@@ -1,0 +1,6 @@
+[2025-06-25 02:16:32.988] CPU Core 0: "Hello world from p01!"
+[2025-06-25 02:16:33.297] CPU Core 0: "Hello world from p01!"
+[2025-06-25 02:16:33.358] CPU Core 0: "Hello world from p01!"
+[2025-06-25 02:16:33.577] CPU Core 0: "Hello world from p01!"
+[2025-06-25 02:16:33.639] CPU Core 0: "Hello world from p01!"
+[2025-06-25 02:16:33.702] CPU Core 0: Process p01 has completed all its commands.

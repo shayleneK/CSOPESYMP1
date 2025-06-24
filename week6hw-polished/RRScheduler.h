@@ -19,6 +19,8 @@ public:
     void stop_scheduler();
     bool is_scheduler_running() const;
     void add_dummy_process();
+    void start_process_generator();
+
     virtual ~RRScheduler();
 };
 

@@ -161,6 +161,27 @@ void RRScheduler::add_dummy_process()
     add_process(process); // Defined in Scheduler base class
 }
 
+void RRScheduler::start_process_generator()
+{
+    // IMPORTANT : DUMMY VALS FOR NOW
+    if (generating_processes.load())
+        return;
+
+    generating_processes.store(true);
+    generator_thread = std::thread([this]()
+                                   {
+        int batch_process_freq = 100;
+        int cycle_counter = 0;
+        while (generating_processes.load() && running) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50)); // 1 tick = 50ms
+            cycle_counter++;
+
+            if (cycle_counter >= batch_process_freq) {
+                add_dummy_process();
+                cycle_counter = 0;
+            }
+        } });
+}
 void RRScheduler::stop_scheduler()
 {
     generating_processes = false;
