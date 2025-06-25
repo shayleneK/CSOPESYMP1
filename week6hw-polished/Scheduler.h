@@ -16,9 +16,9 @@ public:
     Scheduler(int num_cores);
     virtual ~Scheduler();
 
-    virtual void run_core(int core_id); // ✅ virtual
+    virtual void run_core(int core_id);
 
-    virtual void start_core_threads(); // ✅ optional virtual if subclass overrides
+    virtual void start_core_threads();
 
     void add_process(std::shared_ptr<Process> process);
     void shutdown();
@@ -36,6 +36,9 @@ protected:
     std::vector<bool> core_available;
     std::queue<std::shared_ptr<Process>> ready_queue;
     std::vector<std::shared_ptr<Process>> all_processes;
+    std::map<int, std::shared_ptr<Process>> current_processes; // core_id -> Process
+    std::mutex running_mutex;
+
     std::map<int, int> core_process_count;
     std::map<int, int> core_util_time;
     int total_cpu_time = 0;

@@ -76,10 +76,10 @@ void Scheduler::run_core(int core_id)
 
         if (process)
         {
-            // {
-            //     std::unique_lock<std::mutex> lock(running_mutex);
-            //     current_processes[core_id] = process;
-            // }
+            {
+                std::unique_lock<std::mutex> lock(running_mutex);
+                current_processes[core_id] = process;
+            }
             auto start_time = std::chrono::high_resolution_clock::now();
             process->execute(core_id);
             auto end_time = std::chrono::high_resolution_clock::now();
@@ -92,24 +92,24 @@ void Scheduler::run_core(int core_id)
             total_cpu_time = std::max(total_cpu_time, core_util_time[core_id]);
 
             core_available[core_id] = true;
+            if (process->is_finished)
+            {
+                current_processes.erase(core_id);
+            }
         }
-
-        // {
-        //     std::unique_lock<std::mutex> lock(running_mutex);
-        //     current_processes.erase(core_id);
-        // }
     }
 }
 
 std::vector<std::shared_ptr<Process>> Scheduler::get_running_processes()
 {
+    std::unique_lock<std::mutex> lock(running_mutex);
     std::vector<std::shared_ptr<Process>> running_procs;
-    std::unique_lock<std::mutex> lock(queue_mutex);
-    std::queue<std::shared_ptr<Process>> temp = ready_queue;
-    while (!temp.empty())
+    for (const auto &pair : current_processes)
     {
-        running_procs.push_back(temp.front());
-        temp.pop();
+        if (!pair.second->is_finished)
+        {
+            running_procs.push_back(pair.second);
+        }
     }
     return running_procs;
 }

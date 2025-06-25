@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cctype>
 #include "RRScheduler.h"
+#include "FCFSScheduler.h"
 
 ConsoleManager *ConsoleManager::instance = nullptr;
 
@@ -103,7 +104,8 @@ void ConsoleManager::processInput()
 
         if (true) // scheduler_type == "rr"
         {
-            scheduler = std::make_unique<RRScheduler>(4, 100);
+            // scheduler = std::make_unique<RRScheduler>(4, 100);
+            scheduler = std::make_unique<FCFSScheduler>(4);
             scheduler->start_core_threads();
             consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler.get());
         }
