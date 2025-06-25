@@ -55,3 +55,15 @@ void Process::execute(int core_id)
     is_finished = true;
     finish_time = std::chrono::system_clock::now();
 }
+
+uint16_t Process::get_var(const std::string& var_name) {
+    return variables[var_name];  // defaults to 0 if not found
+}
+
+void Process::set_var(const std::string& var_name, uint16_t value) {
+    if (value > std::numeric_limits<uint16_t>::max()) {
+        value = std::numeric_limits<uint16_t>::max();
+    }
+    // No need to check for < 0 since uint16_t can't be negative
+    variables[var_name] = value;
+}
