@@ -1,5 +1,6 @@
 #include "ScreenConsole.h"
 #include "ConsoleManager.h"
+#include "Process.h"
 #include <iostream>
 #include <fstream>
 #include <vector>
