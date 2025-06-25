@@ -38,18 +38,19 @@ void ScreenConsole::draw() const
 
 void ScreenConsole::display()
 {
+    draw();
 }
 void ScreenConsole::process(std::string &command)
 {
-    if (command == "exit")
-    {
-        ConsoleManager::getInstance()->switchConsole(MAIN_CONSOLE);
-        // return true;
-    }
-    else
-    {
-        std::cout << "Unknown command: " << command << "\n";
-    }
+    // if (command == "exit")
+    // {
+    //     ConsoleManager::getInstance()->switchConsole(MAIN_CONSOLE);
+    //     // return true;
+    // }
+    // else
+    // {
+    //     std::cout << "Unknown command: " << command << "\n";
+    // }
 
     // return false;
 }

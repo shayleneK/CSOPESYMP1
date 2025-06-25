@@ -20,10 +20,14 @@ ConsoleManager::ConsoleManager(Scheduler *scheduler)
     consoleTable[MAIN_CONSOLE] = std::make_shared<MainConsole>();
     // consoleTable[MARQUEE_CONSOLE] = std::make_shared<MarqueeConsole>(scheduler);
     // consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler);
-    // consoleTable[MEMORY_CONSOLE] = std::make_shared<MemorySimulationConsole>(scheduler);
 
     this->currentConsole = MAIN_CONSOLE;
     this->running = true;
+}
+
+std::shared_ptr<AConsole> ConsoleManager::getActiveConsole() const
+{
+    return m_activeConsole;
 }
 
 void ConsoleManager::initializeConsoles()
@@ -85,45 +89,77 @@ void ConsoleManager::processInput()
 
     if (command == "exit")
     {
-        setRunning(false);
+        if (getActiveConsole() == consoleTable.at(MAIN_CONSOLE))
+        {
+            std::cout << "Exiting emulator.\n";
+            setRunning(false);
+        }
+        else
+        {
+            std::shared_ptr<AConsole> target = consoleTable.at(MAIN_CONSOLE);
+            m_activeConsole = target;
+            m_previousConsole = nullptr;
+            drawConsole();
+            std::cout << "Switched to Main Console\n";
+        }
     }
+
     else if (command == "clear")
     {
-        // clear_screen();
+        clearScreen();
         drawConsole();
     }
     else if (command == "initialize")
     {
-        // IMPORTANT DUMMY VALUES
-
-        /*  if (!read_config())
-         {
-             std::cout << "Error: Failed to read config.txt\n";
-             continue;
-         } */
-
-        if (true) // scheduler_type == "rr"
-        {
-            // scheduler = std::make_unique<RRScheduler>(4, 100);
-            scheduler = std::make_unique<FCFSScheduler>(4);
-            scheduler->start_core_threads();
-            consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler.get());
-        }
-        /* else if (scheduler_type == "fcfs")
-        {
-            scheduler = std::make_unique<FcfsScheduler>(num_cores);
-        } */
-        else
-        {
-            std::cout << "Error: Unknown scheduler type in config.txt\n";
-        }
+        // Simulate config-based initialization
+        scheduler = std::make_unique<FCFSScheduler>(4);
+        scheduler->start_core_threads();
+        consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler.get());
 
         scheduler_initialized = true;
         std::cout << "System initialized successfully.\n";
     }
+    else if (command.rfind("screen -s ", 0) == 0)
+    {
+        std::string name = command.substr(10); // extracts name after "screen -s "
+        if (!name.empty())
+        {
+            createConsole("screen", name);
+        }
+        else
+        {
+            std::cout << "[ERROR] Screen name cannot be empty.\n";
+        }
+    }
+    else if (command.rfind("screen -r ", 0) == 0)
+    {
+        std::string name = command.substr(10); // after "screen -r "
+        if (!name.empty())
+        {
+            auto it = m_consoleTable.find(name);
+            if (it != m_consoleTable.end())
+            {
+                if (m_activeConsole && m_activeConsole != consoleTable.at(MAIN_CONSOLE))
+                {
+                    m_previousConsole = m_activeConsole;
+                }
+
+                m_activeConsole = it->second;
+                switchConsole(name);
+            }
+            else
+            {
+                std::cout << "Console \"" << name << "\" not found.\n";
+            }
+        }
+        else
+        {
+            std::cout << "[ERROR] Console name required.\n";
+        }
+    }
     else if (command == "screen -ls")
     {
-        consoleTable[SCHEDULING_CONSOLE]->display();
+        listScreens();
     }
     else if (command == "marquee")
     {
@@ -142,16 +178,26 @@ void ConsoleManager::processInput()
     else if (command == "help")
     {
         std::cout << "\nAvailable Commands:\n";
-        std::cout << " - initialize      : Switch to Main Console\n";
-        std::cout << " - screen -s       : Switch to Main Console\n";
-        std::cout << " - initialize      : Switch to Main Console\n";
-        std::cout << " - scheduler-start : Start Scheduler\n";
-        std::cout << " - marquee          : Switch to Marquee Console\n";
-        std::cout << " - exit             : Quit the emulator\n\n";
+        std::cout << " - initialize        : Initialize the scheduler\n";
+        std::cout << " - screen -s <name>  : Create and switch to a new screen\n";
+        std::cout << " - screen -r <name>  : Resume a named screen\n";
+        std::cout << " - screen -ls        : List all created screens\n";
+        std::cout << " - scheduler-start   : Start the scheduler process loop\n";
+        std::cout << " - marquee           : Switch to Marquee Console\n";
+        std::cout << " - exit              : Return to previous screen or quit\n";
+        std::cout << " - clear             : Clear screen\n";
     }
     else
     {
-        std::cout << "[ERROR] Unknown command: " << command << "\n";
+        // Fallback: pass command to active console
+        if (m_activeConsole)
+        {
+            m_activeConsole->process(command);
+        }
+        else
+        {
+            std::cout << "[ERROR] No active console to handle command.\n";
+        }
     }
 }
 
@@ -171,34 +217,47 @@ void ConsoleManager::destroy()
 }
 
 // screens
-void ConsoleManager::createScreen(const std::string &name)
+void ConsoleManager::createConsole(const std::string &type, const std::string &name)
 {
     if (m_consoleTable.find(name) != m_consoleTable.end())
     {
-        std::cout << "Screen \"" << name << "\" already exists.\n";
+        std::cout << "Console \"" << name << "\" already exists.\n";
         return;
     }
 
-    auto newConsole = std::make_shared<ScreenConsole>(name); // make sure ScreenConsole exists
-    m_consoleTable[name] = newConsole;
-    // m_previousConsole = m_activeConsole;
-    // m_activeConsole = newConsole;
+    std::shared_ptr<AConsole> newConsole;
 
-    std::cout << "Created and switched to screen: " << name << "\n";
+    if (type == "screen")
+    {
+        newConsole = std::make_shared<ScreenConsole>(name);
+    }
+    else
+    {
+        std::cout << "Unknown console type: " << type << "\n";
+        return;
+    }
+
+    m_previousConsole = m_activeConsole;
+    m_activeConsole = newConsole;
+    m_consoleTable[name] = newConsole;
+
+    std::cout << "Created and switched to console: " << name << "\n";
+    m_activeConsole->display(); // Add this
 }
 
-void ConsoleManager::switchToScreen(const std::string &name)
+void ConsoleManager::switchConsole(const std::string &name)
 {
     auto it = m_consoleTable.find(name);
     if (it != m_consoleTable.end())
     {
-        // m_previousConsole = m_activeConsole;
-        // m_activeConsole = it->second;
-        std::cout << "Switched to screen: " << name << "\n";
+        m_previousConsole = m_activeConsole;
+        m_activeConsole = it->second;
+        std::cout << "Switched to console: " << name << "\n";
+        m_activeConsole->display(); // Add this
     }
     else
     {
-        std::cout << "Screen \"" << name << "\" not found.\n";
+        std::cout << "Console \"" << name << "\" not found.\n";
     }
 }
 

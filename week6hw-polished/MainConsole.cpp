@@ -53,14 +53,13 @@ void MainConsole::process(std::string &command)
     if (command.rfind("screen -s ", 0) == 0)
     {
         std::string name = command.substr(10);
-        if (!name.empty())
-            manager.createScreen(name);
-        // return true;
+        manager.createConsole("screen", name);
     }
+
     else if (command.rfind("screen -r ", 0) == 0)
     {
         std::string name = command.substr(10);
-        manager.switchToScreen(name);
+        manager.switchConsole(name);
         // return true;
     }
     else if (command == "screen -l")

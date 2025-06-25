@@ -25,12 +25,15 @@ private:
     std::unordered_map<ConsoleType, std::shared_ptr<AConsole>> consoleTable;
     ConsoleType currentConsole;
     bool running;
+    std::shared_ptr<AConsole> m_activeConsole;
+    std::shared_ptr<AConsole> m_previousConsole;
 
     ConsoleManager(Scheduler *scheduler);
     void initializeConsoles();
     std::map<std::string, std::shared_ptr<AConsole>> m_consoleTable;
     std::unique_ptr<Scheduler> scheduler;
     bool scheduler_initialized = false;
+    std::shared_ptr<AConsole> getActiveConsole() const;
 
 public:
     static ConsoleManager *getInstance(Scheduler *scheduler = nullptr);
@@ -49,8 +52,8 @@ public:
 
     static void destroy();
 
-    void createScreen(const std::string &name);
-    void switchToScreen(const std::string &name);
+    void createConsole(const std::string &type, const std::string &name);
+    void switchConsole(const std::string &name);
     void listScreens() const;
 };
 
