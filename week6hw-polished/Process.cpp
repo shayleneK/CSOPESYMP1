@@ -36,6 +36,8 @@ void Process::execute(int core_id)
     if (current_command_index < commands.size())
     {
         commands[current_command_index]->execute(core_id, output_file, name);
+        std::this_thread::sleep_for(std::chrono::milliseconds(50)); // Simulated command duration
+
         current_command_index++;
     }
 
