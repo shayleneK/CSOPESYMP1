@@ -1,8 +1,6 @@
+// Scheduler.cpp
 #include "Scheduler.h"
-#include "Process.h"
-#include <iostream>
 #include <chrono>
-#include <iomanip>
 #include <algorithm>
 
 Scheduler::Scheduler(int num_cores)
@@ -17,7 +15,7 @@ Scheduler::Scheduler(int num_cores)
 
 Scheduler::~Scheduler()
 {
-    stop_scheduler();
+    shutdown();
 }
 
 void Scheduler::add_process(std::shared_ptr<Process> process)
@@ -25,7 +23,6 @@ void Scheduler::add_process(std::shared_ptr<Process> process)
     std::unique_lock<std::mutex> lock(queue_mutex);
     ready_queue.push(process);
     all_processes.push_back(process);
-    lock.unlock();
     queue_condition.notify_one();
 }
 
@@ -34,11 +31,10 @@ void Scheduler::start_core_threads()
     for (int i = 0; i < static_cast<int>(core_available.size()); ++i)
     {
         cpu_cores.emplace_back(&Scheduler::run_core, this, i);
-        std::cout << "[DEBUG] Starting core thread for Core " << i << "\n";
     }
 }
 
-void Scheduler::stop_scheduler()
+void Scheduler::shutdown()
 {
     running = false;
     queue_condition.notify_all();
@@ -79,45 +75,35 @@ void Scheduler::run_core(int core_id)
 
         if (process)
         {
-            // Add to currently running processes
-            {
-                std::unique_lock<std::mutex> lock(running_mutex);
-                current_processes[core_id] = process;
-            }
-
-            // Execute the process
-            auto start_exec_time = std::chrono::high_resolution_clock::now();
+            auto start_time = std::chrono::high_resolution_clock::now();
             process->execute(core_id);
-            auto end_exec_time = std::chrono::high_resolution_clock::now();
+            auto end_time = std::chrono::high_resolution_clock::now();
 
-            std::chrono::duration<double, std::milli> elapsed_ms = end_exec_time - start_exec_time;
-            int duration_ms = static_cast<int>(elapsed_ms.count());
+            int duration_ms = static_cast<int>(
+                std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
 
             core_util_time[core_id] += duration_ms;
             core_process_count[core_id]++;
             total_cpu_time = std::max(total_cpu_time, core_util_time[core_id]);
 
             core_available[core_id] = true;
-
-            // Remove from running processes
-            {
-                std::unique_lock<std::mutex> lock(running_mutex);
-                current_processes.erase(core_id);
-            }
         }
     }
 }
 
 std::vector<std::shared_ptr<Process>> Scheduler::get_running_processes()
 {
-    std::unique_lock<std::mutex> lock(running_mutex);
     std::vector<std::shared_ptr<Process>> running_procs;
-    for (const auto &pair : current_processes)
+    std::unique_lock<std::mutex> lock(queue_mutex);
+    std::queue<std::shared_ptr<Process>> temp = ready_queue;
+    while (!temp.empty())
     {
-        running_procs.push_back(pair.second);
+        running_procs.push_back(temp.front());
+        temp.pop();
     }
     return running_procs;
 }
+
 std::vector<std::shared_ptr<Process>> Scheduler::get_finished_processes()
 {
     std::vector<std::shared_ptr<Process>> finished_procs;
@@ -146,21 +132,11 @@ bool Scheduler::is_done()
 std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats()
 {
     std::map<int, std::map<std::string, float>> stats;
-    std::unique_lock<std::mutex> lock(queue_mutex);
-
     for (size_t core_id = 0; core_id < core_available.size(); ++core_id)
     {
-        float util = 0.0f;
-        if (total_cpu_time > 0)
-        {
-            util = (static_cast<float>(core_util_time[core_id]) / total_cpu_time) * 100.0f;
-        }
-
-        int queue_size = ready_queue.size();
-
+        float util = total_cpu_time > 0 ? (float)core_util_time[core_id] / total_cpu_time * 100.0f : 0.0f;
         stats[core_id]["util"] = util;
-        stats[core_id]["queue_size"] = static_cast<float>(queue_size);
+        stats[core_id]["queue_size"] = (float)ready_queue.size();
     }
-
     return stats;
 }

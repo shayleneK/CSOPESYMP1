@@ -1,27 +1,33 @@
-#ifndef RR_SCHEDULER_H
-#define RR_SCHEDULER_H
-#include <atomic>
+// RRScheduler.h
+#pragma once
 
 #include "Scheduler.h"
+#include <atomic>
+#include <thread>
 
 class RRScheduler : public Scheduler
 {
-private:
-    int time_quantum; // Time slice in milliseconds (must be a multiple of 50ms)
-    std::atomic<bool> generating_processes;
-    std::thread generator_thread;
-    int next_pid = 1;
-
 public:
     RRScheduler(int num_cores, int quantum_ms);
-    void run_core(int core_id) override;
+    ~RRScheduler();
+
+    void run_core(int core_id) override; // ✅ override clearly
+    void start_core_threads() override;
+
     void start();
     void stop_scheduler();
     bool is_scheduler_running() const;
     void add_dummy_process();
     void start_process_generator();
+    std::vector<std::shared_ptr<Process>> get_running_processes() override;
+    // std::vector<std::shared_ptr<Process>> get_finished_processes() override;
 
-    virtual ~RRScheduler();
+protected:
+    int time_quantum;
+    std::atomic<bool> generating_processes{false};
+    std::thread generator_thread;
+
+    std::mutex running_mutex;
+    std::map<int, std::shared_ptr<Process>> current_processes;
+    std::atomic<int> next_pid{1};
 };
-
-#endif // RR_SCHEDULER_H

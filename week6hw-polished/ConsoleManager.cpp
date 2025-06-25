@@ -18,7 +18,7 @@ ConsoleManager::ConsoleManager(Scheduler *scheduler)
     // Initialize consoles
     consoleTable[MAIN_CONSOLE] = std::make_shared<MainConsole>();
     // consoleTable[MARQUEE_CONSOLE] = std::make_shared<MarqueeConsole>(scheduler);
-    consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler);
+    // consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler);
     // consoleTable[MEMORY_CONSOLE] = std::make_shared<MemorySimulationConsole>(scheduler);
 
     this->currentConsole = MAIN_CONSOLE;
@@ -104,6 +104,7 @@ void ConsoleManager::processInput()
         if (true) // scheduler_type == "rr"
         {
             scheduler = std::make_unique<RRScheduler>(4, 100);
+            consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler.get());
         }
         /* else if (scheduler_type == "fcfs")
         {
@@ -132,7 +133,7 @@ void ConsoleManager::processInput()
         scheduler->start_core_threads();
         if (auto *rrsched = dynamic_cast<RRScheduler *>(scheduler.get()))
         {
-            rrsched->start_process_generator(); // starts add_dummy_process()
+            rrsched->start();
         }
     }
     else if (command == "help")
