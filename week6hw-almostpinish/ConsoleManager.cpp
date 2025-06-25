@@ -1,11 +1,15 @@
 #include "ConsoleManager.h"
 #include "AConsole.h"
 #include "MainConsole.h"
-// #include "MarqueeConsole.h"
+#include "ScreenConsole.h"
 #include "SchedulingConsole.h"
-// #include "MemorySimulationConsole.h"
+#include "ConfigManager.h"
+#include "RRScheduler.h"
+// #include "MarqueeConsole.h"
+// #include "MemorySimulationConsole.h" 
 
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <cctype>
 
@@ -13,12 +17,10 @@ ConsoleManager *ConsoleManager::instance = nullptr;
 
 ConsoleManager::ConsoleManager(Scheduler *scheduler)
 {
-    // Initialize consoles
     consoleTable[MAIN_CONSOLE] = std::make_shared<MainConsole>(scheduler);
-    // consoleTable[MARQUEE_CONSOLE] = std::make_shared<MarqueeConsole>(scheduler);
     consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler);
-    // consoleTable[MEMORY_CONSOLE] = std::make_shared<MemorySimulationConsole>(scheduler);
-
+    // consoleTable[MARQUEE_CONSOLE] = std::make_shared<MarqueeConsole>(scheduler); 
+    // consoleTable[MEMORY_CONSOLE] = std::make_shared<MemorySimulationConsole>(scheduler); 
     this->currentConsole = MAIN_CONSOLE;
     this->running = true;
 }
@@ -86,32 +88,70 @@ void ConsoleManager::processInput()
     }
     else if (command == "clear")
     {
-        // clear_screen();
         drawConsole();
     }
     else if (command == "initialize")
     {
-        // switchConsole(MAIN_CONSOLE);
-        // TO DO: FIX LOGIC
+        // Load from config.txt
+        ConfigManager cfg;
+        if (!cfg.load("config.txt")) {
+            std::cout << "[ERROR] config.txt missing or invalid.\n";
+            return;
+        }
+
+        std::string scheduler_type = cfg.getString("scheduler_type", "rr");
+        int cores = cfg.getInt("num_cores", 4);
+        int processes = cfg.getInt("num_processes", 10);
+        int commands = cfg.getInt("num_commands", 100);
+        int quantum = cfg.getInt("quantum", 100);
+
+        if (scheduler_type == "rr") {
+            scheduler = std::make_unique<RRScheduler>(cores, quantum);
+        } else {
+            scheduler = std::make_unique<Scheduler>(cores); // FCFS fallback
+        }
+
+        consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler.get());
+
+        for (int i = 0; i < processes; ++i) {
+            auto p = std::make_shared<Process>("Process" + std::to_string(i));
+            for (int j = 0; j < commands; ++j) {
+                p->add_command(std::make_shared<PrintCommand>("Hello from " + p->name));
+            }
+            scheduler->add_process(p);
+        }
+
+        std::cout << "[INFO] System initialized with " << processes << " processes.\n";
     }
-    else if (command == "marquee")
+    else if (command == "report-util")
     {
-        switchConsole(MARQUEE_CONSOLE);
+        if (!scheduler) {
+            std::cout << "[ERROR] Scheduler not initialized.\n";
+            return;
+        }
+        std::ofstream report("csopesy-log.txt");
+        auto stats = scheduler->get_cpu_stats();
+
+        report << "[CPU UTILIZATION REPORT]\n";
+        for (const auto& [core_id, data] : stats) {
+            report << "CPU " << core_id << ": Util(%) = " << data.at("util")
+                   << ", Queue Size = " << static_cast<int>(data.at("queue_size")) << "\n";
+        }
+        std::cout << "[INFO] CPU report saved to csopesy-log.txt\n";
     }
     else if (command == "scheduler-start")
     {
         clearScreen();
         switchConsole(SCHEDULING_CONSOLE);
+        scheduler->start_core_threads();
+        if (auto *rrsched = dynamic_cast<RRScheduler *>(scheduler.get()))
+        {
+            rrsched->start();
+        }
     }
-    else if (command == "help")
+    else if (command == "marquee")
     {
-        std::cout << "\nAvailable Commands:\n";
-        std::cout << " - initialize      : Switch to Main Console\n";
-        std::cout << " - screen -s       : Switch to Main Console\n";
-        std::cout << " - initialize      : Switch to Main Console\n";
-        std::cout << " - scheduler-start : Start Scheduler\n";
-        std::cout << " - marquee          : Switch to Marquee Console\n";
-        std::cout << " - exit             : Quit the emulator\n\n";
+        // switchConsole(MARQUEE_CONSOLE); // Uncomment if MarqueeConsole is implemented
     }
     else
     {

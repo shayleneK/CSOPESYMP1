@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 
 bool ConfigManager::load(const std::string& filename) {
     std::ifstream file(filename);
@@ -12,7 +13,13 @@ bool ConfigManager::load(const std::string& filename) {
 
     std::string key, value;
     while (file >> key >> value) {
-        config_map[key] = value;
+        // Strip whitespace
+        key.erase(std::remove_if(key.begin(), key.end(), ::isspace), key.end());
+        value.erase(std::remove_if(value.begin(), value.end(), ::isspace), value.end());
+
+        if (!key.empty()) {
+            config_map[key] = value;
+        }
     }
 
     file.close();
@@ -22,7 +29,11 @@ bool ConfigManager::load(const std::string& filename) {
 int ConfigManager::getInt(const std::string& key, int default_val) const {
     auto it = config_map.find(key);
     if (it != config_map.end()) {
-        return std::stoi(it->second);
+        try {
+            return std::stoi(it->second);
+        } catch (...) {
+            return default_val;
+        }
     }
     return default_val;
 }
