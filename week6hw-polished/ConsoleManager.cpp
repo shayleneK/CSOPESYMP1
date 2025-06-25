@@ -104,6 +104,7 @@ void ConsoleManager::processInput()
         if (true) // scheduler_type == "rr"
         {
             scheduler = std::make_unique<RRScheduler>(4, 100);
+            scheduler->start_core_threads();
             consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler.get());
         }
         /* else if (scheduler_type == "fcfs")
@@ -129,8 +130,8 @@ void ConsoleManager::processInput()
     else if (command == "scheduler-start")
     {
         clearScreen();
+        scheduler->start_process_generator();
         switchConsole(SCHEDULING_CONSOLE);
-        scheduler->start_core_threads();
         if (auto *rrsched = dynamic_cast<RRScheduler *>(scheduler.get()))
         {
             rrsched->start();

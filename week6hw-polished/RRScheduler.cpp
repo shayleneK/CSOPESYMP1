@@ -58,6 +58,9 @@ void RRScheduler::start_process_generator()
             cycle_counter++;
             if (cycle_counter >= batch_process_freq) {
                 add_dummy_process();
+                add_dummy_process();
+                add_dummy_process();
+                add_dummy_process();
                 cycle_counter = 0;
             }
         } });

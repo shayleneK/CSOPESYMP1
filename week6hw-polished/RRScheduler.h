@@ -18,7 +18,7 @@ public:
     void stop_scheduler();
     bool is_scheduler_running() const;
     void add_dummy_process();
-    void start_process_generator();
+    void start_process_generator() override;
     std::vector<std::shared_ptr<Process>> get_running_processes() override;
     // std::vector<std::shared_ptr<Process>> get_finished_processes() override;
 

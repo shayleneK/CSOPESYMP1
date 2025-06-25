@@ -27,6 +27,7 @@ public:
     std::vector<std::shared_ptr<Process>> get_finished_processes();
     std::vector<std::shared_ptr<Process>> get_all_processes();
     std::map<int, std::map<std::string, float>> get_cpu_stats();
+    virtual void start_process_generator();
 
     bool is_done();
 
