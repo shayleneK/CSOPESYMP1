@@ -1,0 +1,12 @@
+[2025-06-26 16:55:19.439] CPU Core 2: "Dummy command from p311"
+[2025-06-26 16:55:19.469] CPU Core 2: "Dummy command from p311"
+[2025-06-26 16:55:19.499] CPU Core 2: "Dummy command from p311"
+[2025-06-26 16:55:19.530] CPU Core 2: "Dummy command from p311"
+[2025-06-26 16:55:19.561] CPU Core 2: "Dummy command from p311"
+[2025-06-26 16:55:19.592] CPU Core 2: "Dummy command from p311"
+[2025-06-26 16:55:19.623] CPU Core 2: "Dummy command from p311"
+[2025-06-26 16:55:19.654] CPU Core 2: "Dummy command from p311"
+[2025-06-26 16:55:19.685] CPU Core 2: "Dummy command from p311"
+[2025-06-26 16:55:19.715] CPU Core 2: "Dummy command from p311"
+[2025-06-26 16:55:19.746] CPU Core 2: "Dummy command from p311"
+[2025-06-26 16:55:19.777] CPU Core 2: Process p311 has completed all its commands.

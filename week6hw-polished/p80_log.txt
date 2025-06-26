@@ -1,0 +1,8 @@
+[2025-06-26 16:49:15.946] CPU Core 3: "Hello world from p80!"
+[2025-06-26 16:49:15.975] CPU Core 3: "Dummy command from p80"
+[2025-06-26 16:49:16.006] CPU Core 3: "Dummy command from p80"
+[2025-06-26 16:49:16.036] CPU Core 3: "Dummy command from p80"
+[2025-06-26 16:49:16.114] CPU Core 3: "Dummy command from p80"
+[2025-06-26 16:49:16.238] CPU Core 3: "Dummy command from p80"
+[2025-06-26 16:49:16.269] CPU Core 3: "Dummy command from p80"
+[2025-06-26 16:49:16.300] CPU Core 3: Process p80 has completed all its commands.

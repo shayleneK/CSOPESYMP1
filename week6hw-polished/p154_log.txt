@@ -1,0 +1,8 @@
+[2025-06-26 16:51:15.024] CPU Core 3: "Dummy command from p154"
+[2025-06-26 16:51:15.099] CPU Core 3: "Dummy command from p154"
+[2025-06-26 16:51:15.130] CPU Core 3: "Dummy command from p154"
+[2025-06-26 16:51:15.161] CPU Core 3: "Dummy command from p154"
+[2025-06-26 16:51:15.240] CPU Core 3: "Dummy command from p154"
+[2025-06-26 16:51:15.271] CPU Core 3: "Dummy command from p154"
+[2025-06-26 16:51:15.302] CPU Core 3: "Dummy command from p154"
+[2025-06-26 16:51:15.518] CPU Core 3: Process p154 has completed all its commands.

@@ -1,0 +1,13 @@
+[2025-06-26 16:48:00.819] CPU Core 0: "Hello world from p30!"
+[2025-06-26 16:48:00.848] CPU Core 0: "Dummy command from p30"
+[2025-06-26 16:48:00.879] CPU Core 0: "Dummy command from p30"
+[2025-06-26 16:48:00.956] CPU Core 0: "Hello world from p30!"
+[2025-06-26 16:48:00.987] CPU Core 0: "Dummy command from p30"
+[2025-06-26 16:48:01.063] CPU Core 0: "Dummy command from p30"
+[2025-06-26 16:48:01.095] CPU Core 0: "Hello world from p30!"
+[2025-06-26 16:48:01.126] CPU Core 0: "Dummy command from p30"
+[2025-06-26 16:48:01.157] CPU Core 0: "Dummy command from p30"
+[2025-06-26 16:48:01.234] CPU Core 0: "Dummy command from p30"
+[2025-06-26 16:48:01.265] CPU Core 0: "Dummy command from p30"
+[2025-06-26 16:48:01.296] CPU Core 0: "Dummy command from p30"
+[2025-06-26 16:48:01.374] CPU Core 0: Process p30 has completed all its commands.

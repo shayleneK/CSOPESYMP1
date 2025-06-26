@@ -1,0 +1,9 @@
+[2025-06-26 16:51:27.574] CPU Core 0: "Dummy command from p164"
+[2025-06-26 16:51:27.603] CPU Core 0: "Dummy command from p164"
+[2025-06-26 16:51:27.650] CPU Core 0: "Hello world from p164!"
+[2025-06-26 16:51:27.696] CPU Core 0: "Dummy command from p164"
+[2025-06-26 16:51:27.727] CPU Core 0: "Hello world from p164!"
+[2025-06-26 16:51:27.758] CPU Core 0: "Dummy command from p164"
+[2025-06-26 16:51:27.882] CPU Core 0: "Dummy command from p164"
+[2025-06-26 16:51:27.913] CPU Core 0: "Dummy command from p164"
+[2025-06-26 16:51:27.943] CPU Core 0: Process p164 has completed all its commands.

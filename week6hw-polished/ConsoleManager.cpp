@@ -115,7 +115,7 @@ void ConsoleManager::processInput()
     else if (command == "initialize")
     {
         // Simulate config-based initialization
-        scheduler = std::make_unique<RRScheduler>(4, 100);
+        scheduler = std::make_unique<FCFSScheduler>(4);
         scheduler->start_core_threads();
         // consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler.get());
 
@@ -189,7 +189,7 @@ void ConsoleManager::processInput()
     else if (command == "scheduler-start")
     {
         scheduler->start_process_generator();
-        if (auto *rrsched = dynamic_cast<RRScheduler *>(scheduler.get()))
+        if (auto *rrsched = dynamic_cast<FCFSScheduler *>(scheduler.get()))
         {
             rrsched->start();
         }

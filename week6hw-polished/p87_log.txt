@@ -1,0 +1,8 @@
+[2025-06-26 16:49:28.504] CPU Core 0: "Dummy command from p87"
+[2025-06-26 16:49:28.535] CPU Core 0: "Dummy command from p87"
+[2025-06-26 16:49:28.613] CPU Core 0: "Dummy command from p87"
+[2025-06-26 16:49:28.644] CPU Core 0: "Dummy command from p87"
+[2025-06-26 16:49:28.721] CPU Core 0: "Dummy command from p87"
+[2025-06-26 16:49:28.752] CPU Core 0: "Dummy command from p87"
+[2025-06-26 16:49:28.783] CPU Core 0: "Dummy command from p87"
+[2025-06-26 16:49:28.952] CPU Core 0: Process p87 has completed all its commands.

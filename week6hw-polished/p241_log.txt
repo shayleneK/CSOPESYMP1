@@ -1,0 +1,11 @@
+[2025-06-26 16:53:32.879] CPU Core 0: "Dummy command from p241"
+[2025-06-26 16:53:32.908] CPU Core 0: "Hello world from p241!"
+[2025-06-26 16:53:32.939] CPU Core 0: "Dummy command from p241"
+[2025-06-26 16:53:32.970] CPU Core 0: "Dummy command from p241"
+[2025-06-26 16:53:33.000] CPU Core 0: "Dummy command from p241"
+[2025-06-26 16:53:33.032] CPU Core 0: "Dummy command from p241"
+[2025-06-26 16:53:33.109] CPU Core 0: "Dummy command from p241"
+[2025-06-26 16:53:33.141] CPU Core 0: "Dummy command from p241"
+[2025-06-26 16:53:33.172] CPU Core 0: "Hello world from p241!"
+[2025-06-26 16:53:33.202] CPU Core 0: "Dummy command from p241"
+[2025-06-26 16:53:33.233] CPU Core 0: Process p241 has completed all its commands.

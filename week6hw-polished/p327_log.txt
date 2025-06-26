@@ -1,0 +1,13 @@
+[2025-06-26 16:55:44.595] CPU Core 0: "Dummy command from p327"
+[2025-06-26 16:55:44.622] CPU Core 0: "Dummy command from p327"
+[2025-06-26 16:55:44.655] CPU Core 0: "Hello world from p327!"
+[2025-06-26 16:55:44.686] CPU Core 0: "Dummy command from p327"
+[2025-06-26 16:55:44.717] CPU Core 0: "Dummy command from p327"
+[2025-06-26 16:55:44.748] CPU Core 0: "Hello world from p327!"
+[2025-06-26 16:55:44.871] CPU Core 0: "Dummy command from p327"
+[2025-06-26 16:55:44.903] CPU Core 0: "Dummy command from p327"
+[2025-06-26 16:55:44.934] CPU Core 0: "Dummy command from p327"
+[2025-06-26 16:55:44.964] CPU Core 0: "Dummy command from p327"
+[2025-06-26 16:55:44.996] CPU Core 0: "Dummy command from p327"
+[2025-06-26 16:55:45.073] CPU Core 0: "Dummy command from p327"
+[2025-06-26 16:55:45.104] CPU Core 0: Process p327 has completed all its commands.

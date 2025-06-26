@@ -1,0 +1,12 @@
+[2025-06-26 16:48:19.559] CPU Core 0: "Dummy command from p44"
+[2025-06-26 16:48:19.587] CPU Core 0: "Dummy command from p44"
+[2025-06-26 16:48:19.634] CPU Core 0: "Dummy command from p44"
+[2025-06-26 16:48:19.665] CPU Core 0: "Dummy command from p44"
+[2025-06-26 16:48:19.743] CPU Core 0: "Hello world from p44!"
+[2025-06-26 16:48:19.774] CPU Core 0: "Dummy command from p44"
+[2025-06-26 16:48:19.806] CPU Core 0: "Hello world from p44!"
+[2025-06-26 16:48:19.838] CPU Core 0: "Hello world from p44!"
+[2025-06-26 16:48:19.869] CPU Core 0: "Hello world from p44!"
+[2025-06-26 16:48:19.900] CPU Core 0: "Dummy command from p44"
+[2025-06-26 16:48:19.946] CPU Core 0: "Dummy command from p44"
+[2025-06-26 16:48:19.977] CPU Core 0: Process p44 has completed all its commands.

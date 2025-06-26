@@ -1,0 +1,12 @@
+[2025-06-26 16:49:53.540] CPU Core 0: "Dummy command from p102"
+[2025-06-26 16:49:53.585] CPU Core 0: "Dummy command from p102"
+[2025-06-26 16:49:53.616] CPU Core 0: "Dummy command from p102"
+[2025-06-26 16:49:53.648] CPU Core 0: "Dummy command from p102"
+[2025-06-26 16:49:53.678] CPU Core 0: "Dummy command from p102"
+[2025-06-26 16:49:53.710] CPU Core 0: "Dummy command from p102"
+[2025-06-26 16:49:53.741] CPU Core 0: "Dummy command from p102"
+[2025-06-26 16:49:53.771] CPU Core 0: "Hello world from p102!"
+[2025-06-26 16:49:53.802] CPU Core 0: "Dummy command from p102"
+[2025-06-26 16:49:53.833] CPU Core 0: "Dummy command from p102"
+[2025-06-26 16:49:53.911] CPU Core 0: "Dummy command from p102"
+[2025-06-26 16:49:53.988] CPU Core 0: Process p102 has completed all its commands.

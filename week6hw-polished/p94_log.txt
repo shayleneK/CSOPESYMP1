@@ -1,0 +1,12 @@
+[2025-06-26 16:49:41.003] CPU Core 2: "Dummy command from p94"
+[2025-06-26 16:49:41.079] CPU Core 2: "Dummy command from p94"
+[2025-06-26 16:49:41.110] CPU Core 2: "Dummy command from p94"
+[2025-06-26 16:49:41.142] CPU Core 2: "Dummy command from p94"
+[2025-06-26 16:49:41.172] CPU Core 2: "Hello world from p94!"
+[2025-06-26 16:49:41.202] CPU Core 2: "Dummy command from p94"
+[2025-06-26 16:49:41.233] CPU Core 2: "Hello world from p94!"
+[2025-06-26 16:49:41.268] CPU Core 2: "Dummy command from p94"
+[2025-06-26 16:49:41.296] CPU Core 2: "Dummy command from p94"
+[2025-06-26 16:49:41.327] CPU Core 2: "Hello world from p94!"
+[2025-06-26 16:49:41.404] CPU Core 2: "Dummy command from p94"
+[2025-06-26 16:49:41.574] CPU Core 2: Process p94 has completed all its commands.

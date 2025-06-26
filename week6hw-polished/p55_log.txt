@@ -1,0 +1,5 @@
+[2025-06-26 16:48:38.389] CPU Core 0: "Dummy command from p55"
+[2025-06-26 16:48:38.466] CPU Core 0: "Dummy command from p55"
+[2025-06-26 16:48:38.497] CPU Core 0: "Dummy command from p55"
+[2025-06-26 16:48:38.528] CPU Core 0: "Dummy command from p55"
+[2025-06-26 16:48:38.746] CPU Core 0: Process p55 has completed all its commands.

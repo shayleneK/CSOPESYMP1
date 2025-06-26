@@ -1,0 +1,9 @@
+[2025-06-26 16:55:32.026] CPU Core 3: "Dummy command from p320"
+[2025-06-26 16:55:32.115] CPU Core 3: "Dummy command from p320"
+[2025-06-26 16:55:32.146] CPU Core 3: "Dummy command from p320"
+[2025-06-26 16:55:32.269] CPU Core 3: "Dummy command from p320"
+[2025-06-26 16:55:32.301] CPU Core 3: "Dummy command from p320"
+[2025-06-26 16:55:32.331] CPU Core 3: "Dummy command from p320"
+[2025-06-26 16:55:32.362] CPU Core 3: "Dummy command from p320"
+[2025-06-26 16:55:32.393] CPU Core 3: "Dummy command from p320"
+[2025-06-26 16:55:32.424] CPU Core 3: Process p320 has completed all its commands.

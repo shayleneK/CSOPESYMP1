@@ -1,0 +1,10 @@
+[2025-06-26 16:53:39.168] CPU Core 0: "Dummy command from p245"
+[2025-06-26 16:53:39.198] CPU Core 0: "Dummy command from p245"
+[2025-06-26 16:53:39.229] CPU Core 0: "Dummy command from p245"
+[2025-06-26 16:53:39.261] CPU Core 0: "Dummy command from p245"
+[2025-06-26 16:53:39.292] CPU Core 0: "Hello world from p245!"
+[2025-06-26 16:53:39.323] CPU Core 0: "Dummy command from p245"
+[2025-06-26 16:53:39.353] CPU Core 0: "Dummy command from p245"
+[2025-06-26 16:53:39.384] CPU Core 0: "Dummy command from p245"
+[2025-06-26 16:53:39.477] CPU Core 0: "Hello world from p245!"
+[2025-06-26 16:53:39.507] CPU Core 0: Process p245 has completed all its commands.

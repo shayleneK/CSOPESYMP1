@@ -1,0 +1,12 @@
+[2025-06-26 16:50:31.223] CPU Core 3: "Hello world from p128!"
+[2025-06-26 16:50:31.253] CPU Core 3: "Dummy command from p128"
+[2025-06-26 16:50:31.285] CPU Core 3: "Dummy command from p128"
+[2025-06-26 16:50:31.362] CPU Core 3: "Hello world from p128!"
+[2025-06-26 16:50:31.393] CPU Core 3: "Hello world from p128!"
+[2025-06-26 16:50:31.423] CPU Core 3: "Dummy command from p128"
+[2025-06-26 16:50:31.454] CPU Core 3: "Dummy command from p128"
+[2025-06-26 16:50:31.485] CPU Core 3: "Dummy command from p128"
+[2025-06-26 16:50:31.516] CPU Core 3: "Dummy command from p128"
+[2025-06-26 16:50:31.548] CPU Core 3: "Dummy command from p128"
+[2025-06-26 16:50:31.626] CPU Core 3: "Hello world from p128!"
+[2025-06-26 16:50:31.656] CPU Core 3: Process p128 has completed all its commands.

@@ -1,0 +1,11 @@
+[2025-06-26 16:56:47.295] CPU Core 3: "Hello world from p367!"
+[2025-06-26 16:56:47.370] CPU Core 3: "Hello world from p367!"
+[2025-06-26 16:56:47.494] CPU Core 3: "Dummy command from p367"
+[2025-06-26 16:56:47.526] CPU Core 3: "Hello world from p367!"
+[2025-06-26 16:56:47.557] CPU Core 3: "Hello world from p367!"
+[2025-06-26 16:56:47.588] CPU Core 3: "Hello world from p367!"
+[2025-06-26 16:56:47.634] CPU Core 3: "Dummy command from p367"
+[2025-06-26 16:56:47.665] CPU Core 3: "Dummy command from p367"
+[2025-06-26 16:56:47.792] CPU Core 3: "Dummy command from p367"
+[2025-06-26 16:56:47.870] CPU Core 3: "Dummy command from p367"
+[2025-06-26 16:56:47.901] CPU Core 3: Process p367 has completed all its commands.

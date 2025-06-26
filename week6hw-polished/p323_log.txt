@@ -1,0 +1,11 @@
+[2025-06-26 16:55:38.291] CPU Core 2: "Dummy command from p323"
+[2025-06-26 16:55:38.336] CPU Core 2: "Dummy command from p323"
+[2025-06-26 16:55:38.366] CPU Core 2: "Dummy command from p323"
+[2025-06-26 16:55:38.397] CPU Core 2: "Dummy command from p323"
+[2025-06-26 16:55:38.428] CPU Core 2: "Dummy command from p323"
+[2025-06-26 16:55:38.458] CPU Core 2: "Dummy command from p323"
+[2025-06-26 16:55:38.489] CPU Core 2: "Dummy command from p323"
+[2025-06-26 16:55:38.519] CPU Core 2: "Dummy command from p323"
+[2025-06-26 16:55:38.551] CPU Core 2: "Dummy command from p323"
+[2025-06-26 16:55:38.581] CPU Core 2: "Dummy command from p323"
+[2025-06-26 16:55:38.612] CPU Core 2: Process p323 has completed all its commands.

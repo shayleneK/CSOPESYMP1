@@ -1,0 +1,13 @@
+[2025-06-26 16:53:20.335] CPU Core 0: "Dummy command from p236"
+[2025-06-26 16:53:20.408] CPU Core 0: "Dummy command from p236"
+[2025-06-26 16:53:20.438] CPU Core 0: "Hello world from p236!"
+[2025-06-26 16:53:20.470] CPU Core 0: "Dummy command from p236"
+[2025-06-26 16:53:20.501] CPU Core 0: "Dummy command from p236"
+[2025-06-26 16:53:20.580] CPU Core 0: "Dummy command from p236"
+[2025-06-26 16:53:20.612] CPU Core 0: "Hello world from p236!"
+[2025-06-26 16:53:20.642] CPU Core 0: "Hello world from p236!"
+[2025-06-26 16:53:20.768] CPU Core 0: "Hello world from p236!"
+[2025-06-26 16:53:20.799] CPU Core 0: "Dummy command from p236"
+[2025-06-26 16:53:20.830] CPU Core 0: "Hello world from p236!"
+[2025-06-26 16:53:20.907] CPU Core 0: "Dummy command from p236"
+[2025-06-26 16:53:20.938] CPU Core 0: Process p236 has completed all its commands.

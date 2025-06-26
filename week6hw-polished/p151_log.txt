@@ -1,0 +1,12 @@
+[2025-06-26 16:51:08.762] CPU Core 0: "Dummy command from p151"
+[2025-06-26 16:51:08.791] CPU Core 0: "Hello world from p151!"
+[2025-06-26 16:51:08.822] CPU Core 0: "Hello world from p151!"
+[2025-06-26 16:51:08.868] CPU Core 0: "Dummy command from p151"
+[2025-06-26 16:51:08.915] CPU Core 0: "Dummy command from p151"
+[2025-06-26 16:51:08.946] CPU Core 0: "Hello world from p151!"
+[2025-06-26 16:51:08.977] CPU Core 0: "Dummy command from p151"
+[2025-06-26 16:51:09.008] CPU Core 0: "Dummy command from p151"
+[2025-06-26 16:51:09.039] CPU Core 0: "Dummy command from p151"
+[2025-06-26 16:51:09.070] CPU Core 0: "Dummy command from p151"
+[2025-06-26 16:51:09.101] CPU Core 0: "Dummy command from p151"
+[2025-06-26 16:51:09.132] CPU Core 0: Process p151 has completed all its commands.

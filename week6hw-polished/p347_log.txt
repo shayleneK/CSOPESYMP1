@@ -1,0 +1,11 @@
+[2025-06-26 16:56:15.965] CPU Core 0: "Dummy command from p347"
+[2025-06-26 16:56:16.041] CPU Core 0: "Dummy command from p347"
+[2025-06-26 16:56:16.072] CPU Core 0: "Dummy command from p347"
+[2025-06-26 16:56:16.165] CPU Core 0: "Hello world from p347!"
+[2025-06-26 16:56:16.196] CPU Core 0: "Hello world from p347!"
+[2025-06-26 16:56:16.227] CPU Core 0: "Hello world from p347!"
+[2025-06-26 16:56:16.257] CPU Core 0: "Hello world from p347!"
+[2025-06-26 16:56:16.288] CPU Core 0: "Hello world from p347!"
+[2025-06-26 16:56:16.366] CPU Core 0: "Dummy command from p347"
+[2025-06-26 16:56:16.397] CPU Core 0: "Dummy command from p347"
+[2025-06-26 16:56:16.428] CPU Core 0: Process p347 has completed all its commands.

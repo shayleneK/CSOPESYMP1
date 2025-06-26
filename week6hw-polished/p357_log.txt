@@ -1,0 +1,11 @@
+[2025-06-26 16:56:34.795] CPU Core 0: "Dummy command from p357"
+[2025-06-26 16:56:34.873] CPU Core 0: "Dummy command from p357"
+[2025-06-26 16:56:34.904] CPU Core 0: "Dummy command from p357"
+[2025-06-26 16:56:34.935] CPU Core 0: "Dummy command from p357"
+[2025-06-26 16:56:34.965] CPU Core 0: "Dummy command from p357"
+[2025-06-26 16:56:34.997] CPU Core 0: "Hello world from p357!"
+[2025-06-26 16:56:35.028] CPU Core 0: "Dummy command from p357"
+[2025-06-26 16:56:35.105] CPU Core 0: "Dummy command from p357"
+[2025-06-26 16:56:35.135] CPU Core 0: "Dummy command from p357"
+[2025-06-26 16:56:35.165] CPU Core 0: "Dummy command from p357"
+[2025-06-26 16:56:35.212] CPU Core 0: Process p357 has completed all its commands.

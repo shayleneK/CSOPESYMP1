@@ -1,0 +1,12 @@
+[2025-06-26 16:47:48.291] CPU Core 0: "Dummy command from p21"
+[2025-06-26 16:47:48.321] CPU Core 0: "Dummy command from p21"
+[2025-06-26 16:47:48.367] CPU Core 0: "Dummy command from p21"
+[2025-06-26 16:47:48.491] CPU Core 0: "Dummy command from p21"
+[2025-06-26 16:47:48.521] CPU Core 0: "Dummy command from p21"
+[2025-06-26 16:47:48.553] CPU Core 0: "Dummy command from p21"
+[2025-06-26 16:47:48.631] CPU Core 0: "Dummy command from p21"
+[2025-06-26 16:47:48.661] CPU Core 0: "Dummy command from p21"
+[2025-06-26 16:47:48.691] CPU Core 0: "Dummy command from p21"
+[2025-06-26 16:47:48.721] CPU Core 0: "Dummy command from p21"
+[2025-06-26 16:47:48.752] CPU Core 0: "Dummy command from p21"
+[2025-06-26 16:47:48.783] CPU Core 0: Process p21 has completed all its commands.

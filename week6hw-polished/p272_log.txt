@@ -1,0 +1,7 @@
+[2025-06-26 16:54:16.802] CPU Core 3: "Dummy command from p272"
+[2025-06-26 16:54:16.833] CPU Core 3: "Dummy command from p272"
+[2025-06-26 16:54:16.864] CPU Core 3: "Dummy command from p272"
+[2025-06-26 16:54:16.988] CPU Core 3: "Dummy command from p272"
+[2025-06-26 16:54:17.112] CPU Core 3: "Dummy command from p272"
+[2025-06-26 16:54:17.144] CPU Core 3: "Dummy command from p272"
+[2025-06-26 16:54:17.176] CPU Core 3: Process p272 has completed all its commands.

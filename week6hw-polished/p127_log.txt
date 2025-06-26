@@ -1,0 +1,9 @@
+[2025-06-26 16:50:31.133] CPU Core 1: "Dummy command from p127"
+[2025-06-26 16:50:31.161] CPU Core 1: "Dummy command from p127"
+[2025-06-26 16:50:31.238] CPU Core 1: "Dummy command from p127"
+[2025-06-26 16:50:31.269] CPU Core 1: "Dummy command from p127"
+[2025-06-26 16:50:31.346] CPU Core 1: "Dummy command from p127"
+[2025-06-26 16:50:31.378] CPU Core 1: "Dummy command from p127"
+[2025-06-26 16:50:31.454] CPU Core 1: "Dummy command from p127"
+[2025-06-26 16:50:31.485] CPU Core 1: "Dummy command from p127"
+[2025-06-26 16:50:31.516] CPU Core 1: Process p127 has completed all its commands.

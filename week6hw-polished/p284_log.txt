@@ -1,0 +1,10 @@
+[2025-06-26 16:54:35.535] CPU Core 3: "Hello world from p284!"
+[2025-06-26 16:54:35.562] CPU Core 3: "Dummy command from p284"
+[2025-06-26 16:54:35.593] CPU Core 3: "Dummy command from p284"
+[2025-06-26 16:54:35.623] CPU Core 3: "Dummy command from p284"
+[2025-06-26 16:54:35.654] CPU Core 3: "Dummy command from p284"
+[2025-06-26 16:54:35.685] CPU Core 3: "Dummy command from p284"
+[2025-06-26 16:54:35.762] CPU Core 3: "Dummy command from p284"
+[2025-06-26 16:54:35.793] CPU Core 3: "Dummy command from p284"
+[2025-06-26 16:54:35.825] CPU Core 3: "Dummy command from p284"
+[2025-06-26 16:54:35.856] CPU Core 3: Process p284 has completed all its commands.

@@ -1,0 +1,12 @@
+[2025-06-26 16:55:32.024] CPU Core 0: "Dummy command from p318"
+[2025-06-26 16:55:32.053] CPU Core 0: "Dummy command from p318"
+[2025-06-26 16:55:32.084] CPU Core 0: "Dummy command from p318"
+[2025-06-26 16:55:32.115] CPU Core 0: "Dummy command from p318"
+[2025-06-26 16:55:32.146] CPU Core 0: "Dummy command from p318"
+[2025-06-26 16:55:32.177] CPU Core 0: "Dummy command from p318"
+[2025-06-26 16:55:32.208] CPU Core 0: "Dummy command from p318"
+[2025-06-26 16:55:32.239] CPU Core 0: "Dummy command from p318"
+[2025-06-26 16:55:32.269] CPU Core 0: "Dummy command from p318"
+[2025-06-26 16:55:32.301] CPU Core 0: "Dummy command from p318"
+[2025-06-26 16:55:32.331] CPU Core 0: "Dummy command from p318"
+[2025-06-26 16:55:32.409] CPU Core 0: Process p318 has completed all its commands.

@@ -6,6 +6,13 @@
 
 Process::Process(const std::string &name) : name(name)
 {
+    output_filename = name + "_log.txt";
+    output_file.open(output_filename, std::ios::out | std::ios::trunc);
+    if (!output_file.is_open())
+    {
+        std::cerr << "[ERROR] Could not open log file for process: " << name
+                  << " at " << output_filename << std::endl;
+    }
 }
 
 Process::~Process()
@@ -23,28 +30,43 @@ void Process::add_command(std::shared_ptr<Command> cmd)
 
 void Process::execute(int core_id)
 {
-    // Set start time on first execution
-    if (!has_started)
-    {
-        has_started = true;
-        start_time = std::chrono::system_clock::now();
-    }
-
+    has_started = true;
+    start_time = std::chrono::system_clock::now();
     current_core = core_id;
 
-    // Execute only one command per call
-    if (current_command_index < commands.size())
+    // Log error and finish if output file isn't open
+    if (!output_file.is_open())
     {
-        commands[current_command_index]->execute(core_id, output_file, name);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50)); // Simulated command duration
-
-        current_command_index++;
-    }
-
-    // Check if all commands are done
-    if (current_command_index >= commands.size())
-    {
+        std::cerr << "[ERROR] Process " << name << ": Log file not open during execution. "
+                  << "Commands skipped. Marking as finished." << std::endl;
         is_finished = true;
         finish_time = std::chrono::system_clock::now();
+        return;
     }
+
+    // Execute all commands, passing core ID and output file stream
+    for (size_t i = 0; i < commands.size(); ++i)
+    {
+        current_command_index = i;
+        commands[i]->execute(core_id, output_file, name);
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+
+    is_finished = true;
+    finish_time = std::chrono::system_clock::now();
+}
+
+uint16_t Process::get_var(const std::string &var_name)
+{
+    return variables[var_name]; // defaults to 0 if not found
+}
+
+void Process::set_var(const std::string &var_name, uint16_t value)
+{
+    if (value > std::numeric_limits<uint16_t>::max())
+    {
+        value = std::numeric_limits<uint16_t>::max();
+    }
+    // No need to check for < 0 since uint16_t can't be negative
+    variables[var_name] = value;
 }

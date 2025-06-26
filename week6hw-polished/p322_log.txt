@@ -1,0 +1,13 @@
+[2025-06-26 16:55:38.289] CPU Core 3: "Hello world from p322!"
+[2025-06-26 16:55:38.320] CPU Core 3: "Dummy command from p322"
+[2025-06-26 16:55:38.351] CPU Core 3: "Hello world from p322!"
+[2025-06-26 16:55:38.381] CPU Core 3: "Dummy command from p322"
+[2025-06-26 16:55:38.412] CPU Core 3: "Dummy command from p322"
+[2025-06-26 16:55:38.443] CPU Core 3: "Dummy command from p322"
+[2025-06-26 16:55:38.473] CPU Core 3: "Dummy command from p322"
+[2025-06-26 16:55:38.504] CPU Core 3: "Dummy command from p322"
+[2025-06-26 16:55:38.535] CPU Core 3: "Dummy command from p322"
+[2025-06-26 16:55:38.566] CPU Core 3: "Dummy command from p322"
+[2025-06-26 16:55:38.597] CPU Core 3: "Hello world from p322!"
+[2025-06-26 16:55:38.627] CPU Core 3: "Dummy command from p322"
+[2025-06-26 16:55:38.659] CPU Core 3: Process p322 has completed all its commands.
