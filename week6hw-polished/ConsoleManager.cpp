@@ -1,4 +1,6 @@
 #include "ConsoleManager.h"
+#include "ConfigManager.h"
+#include "Command.h"
 #include "AConsole.h"
 #include "MainConsole.h"
 #include "Process.h"
@@ -113,15 +115,41 @@ void ConsoleManager::processInput()
         drawConsole();
     }
     else if (command == "initialize")
-    {
-        // Simulate config-based initialization
-        scheduler = std::make_unique<RRScheduler>(4, 100);
-        scheduler->start_core_threads();
-        // consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler.get());
-
-        scheduler_initialized = true;
-        std::cout << "System initialized successfully.\n";
+{
+    ConfigManager cfg;
+    if (!cfg.load("config.txt")) {
+        std::cout << "[ERROR] config.txt missing or invalid.\n";
+        return;
     }
+
+    int num_cpu = cfg.getInt("num-cpu", 2);
+    std::string scheduler_type = cfg.getString("scheduler", "rr");  // holds "rr" or "fcfs"
+    int quantum_cycles = cfg.getInt("quantum-cycles", 5);
+    int batch_process_freq = cfg.getInt("batch-process-freq", 1);
+    int min_ins = cfg.getInt("min-ins", 1000);
+    int max_ins = cfg.getInt("max-ins", 2000);
+    int delay_per_exec = cfg.getInt("delay-per-exec", 0);
+
+    std::cout << "[DEBUG] Loaded Configurations:\n";
+    std::cout << "  scheduler: " << scheduler_type << "\n";
+    std::cout << "  num_cpu: " << num_cpu << "\n";
+    std::cout << "  quantum_cycles: " << quantum_cycles << "\n";
+    std::cout << "  batch_process_freq: " << batch_process_freq << "\n";
+    std::cout << "  min_ins: " << min_ins << "\n";
+    std::cout << "  max_ins: " << max_ins << "\n";
+    std::cout << "  delay_per_exec: " << delay_per_exec << "\n";
+
+    if (scheduler_type == "rr") {
+        scheduler = std::make_unique<RRScheduler>(num_cpu, quantum_cycles);
+    } else {
+        scheduler = std::make_unique<FCFSScheduler>(num_cpu); // FCFS fallback
+    }
+
+    scheduler->start_core_threads();
+    scheduler_initialized = true;
+}
+
+    
     else if (command.rfind("screen -s ", 0) == 0)
     {
         std::string name = command.substr(10); // extracts name after "screen -s "
@@ -187,13 +215,42 @@ void ConsoleManager::processInput()
         switchConsole(MARQUEE_CONSOLE);
     }
     else if (command == "scheduler-start")
-    {
-        scheduler->start_process_generator();
-        if (auto *rrsched = dynamic_cast<RRScheduler *>(scheduler.get()))
-        {
-            rrsched->start();
-        }
+{
+    if (!scheduler) {
+        std::cout << "[ERROR] Scheduler not initialized.\n";
+        return;
     }
+
+    // Common to both FCFS and RR
+    scheduler->start_process_generator();
+
+    // Specific to Round Robin
+    if (auto* rrsched = dynamic_cast<RRScheduler*>(scheduler.get())) {
+        rrsched->start(); // Only RR needs this
+    }
+    // Optional: FCFS-specific behavior
+    else {
+        std::cout << "[INFO] FCFS Scheduler started.\n";
+        // You could add more FCFS-specific logic here if needed.
+    }
+}
+
+else if (command == "report-util")
+{
+    if (!scheduler) {
+        std::cout << "[ERROR] Scheduler not initialized.\n";
+        return;
+    }
+    std::ofstream report("csopesy-log.txt");
+    auto stats = scheduler->get_cpu_stats();
+
+    report << "[CPU UTILIZATION REPORT]\n";
+    for (const auto& [core_id, data] : stats) {
+        report << "CPU " << core_id << ": Util(%) = " << data.at("util")
+               << ", Queue Size = " << static_cast<int>(data.at("queue_size")) << "\n";
+    }
+    std::cout << "[INFO] CPU report saved to csopesy-log.txt\n";
+}
 
     else if (command == "help")
     {
