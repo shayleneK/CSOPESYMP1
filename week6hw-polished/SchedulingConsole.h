@@ -3,6 +3,8 @@
 
 #include "AConsole.h"
 #include "Scheduler.h"
+#include "FCFSScheduler.h"
+#include "RRScheduler.h"
 #include <vector>
 #include <memory>
 #include <map>

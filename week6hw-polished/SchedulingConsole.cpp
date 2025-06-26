@@ -16,29 +16,27 @@ void SchedulingConsole::onEnabled()
     std::cout << "+--------------------------------------------------+\n";
 }
 
-void SchedulingConsole::display()
-{
-    // Clear screen
-    clear_screen();
+// void SchedulingConsole::display()
+// {
+//     // Clear screen
+//     // Render header
+//     render_header();
 
-    // Render header
-    render_header();
+//     // Display running processes
+//     render_running_processes(scheduler->get_running_processes());
 
-    // Display running processes
-    render_running_processes(scheduler->get_running_processes());
+//     // Display finished processes
+//     render_finished_processes(scheduler->get_finished_processes());
 
-    // Display finished processes
-    render_finished_processes(scheduler->get_finished_processes());
+//     // Display CPU Utilization (if applicable)
+//     /* if (!scheduler->get_cpu_stats().empty())
+//     {
+//         render_cpu_utilization(scheduler->get_cpu_stats());
+//     } */
 
-    // Display CPU Utilization (if applicable)
-    /* if (!scheduler->get_cpu_stats().empty())
-    {
-        render_cpu_utilization(scheduler->get_cpu_stats());
-    } */
-
-    // Footer
-    render_footer();
-}
+//     // Footer
+//     render_footer();
+// }
 
 void SchedulingConsole::process(std::string &command) // handling non-drawing logic
 {
@@ -58,7 +56,18 @@ void SchedulingConsole::clear_screen()
 void SchedulingConsole::render_header()
 {
     const int width = 80;
-    std::string title = "CSOPESY Operating System Emulator - FCFS Scheduler";
+
+    std::string schedulerType = "";
+    if (dynamic_cast<FCFSScheduler *>(scheduler))
+    {
+        schedulerType = "FCFS Scheduler";
+    }
+    else if (dynamic_cast<RRScheduler *>(scheduler))
+    {
+        schedulerType = "RR Scheduler";
+    }
+
+    std::string title = "CSOPESY Operating System Emulator - " + schedulerType;
     std::string padding((width - static_cast<int>(title.length())) / 2, ' ');
 
     std::cout << std::string(width, '-') << "\n";

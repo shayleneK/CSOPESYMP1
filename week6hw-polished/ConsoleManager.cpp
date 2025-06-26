@@ -1,6 +1,7 @@
 #include "ConsoleManager.h"
 #include "AConsole.h"
 #include "MainConsole.h"
+#include "Process.h"
 // #include "MarqueeConsole.h"
 #include "ScreenConsole.h"
 #include "SchedulingConsole.h"
@@ -12,8 +13,9 @@
 #include "RRScheduler.h"
 #include "FCFSScheduler.h"
 
-ConsoleManager *ConsoleManager::instance = nullptr;
+#include <iomanip>
 
+ConsoleManager *ConsoleManager::instance = nullptr;
 ConsoleManager::ConsoleManager(Scheduler *scheduler)
 {
     // Initialize consoles
@@ -22,6 +24,7 @@ ConsoleManager::ConsoleManager(Scheduler *scheduler)
     // consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler);
 
     this->currentConsole = MAIN_CONSOLE;
+    this->m_activeConsole = consoleTable[MAIN_CONSOLE]; // ✅ Fix: Set active console
     this->running = true;
 }
 
@@ -112,9 +115,9 @@ void ConsoleManager::processInput()
     else if (command == "initialize")
     {
         // Simulate config-based initialization
-        scheduler = std::make_unique<FCFSScheduler>(4);
+        scheduler = std::make_unique<RRScheduler>(4, 100);
         scheduler->start_core_threads();
-        consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler.get());
+        // consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler.get());
 
         scheduler_initialized = true;
         std::cout << "System initialized successfully.\n";
@@ -159,7 +162,25 @@ void ConsoleManager::processInput()
     }
     else if (command == "screen -ls")
     {
-        listScreens();
+
+        render_header();
+
+        // Display running processes
+        render_running_processes(scheduler->get_running_processes());
+
+        // Display finished processes
+        render_finished_processes(scheduler->get_finished_processes());
+
+        // Display CPU Utilization (if applicable)
+        /* if (!scheduler->get_cpu_stats().empty())
+        {
+            render_cpu_utilization(scheduler->get_cpu_stats());
+        } */
+
+        // Footer
+        render_footer();
+        // listScreens();
+        // consoleTable[SCHEDULING_CONSOLE]->display();
     }
     else if (command == "marquee")
     {
@@ -167,14 +188,13 @@ void ConsoleManager::processInput()
     }
     else if (command == "scheduler-start")
     {
-        clearScreen();
         scheduler->start_process_generator();
-        switchConsole(SCHEDULING_CONSOLE);
         if (auto *rrsched = dynamic_cast<RRScheduler *>(scheduler.get()))
         {
             rrsched->start();
         }
     }
+
     else if (command == "help")
     {
         std::cout << "\nAvailable Commands:\n";
@@ -268,4 +288,97 @@ void ConsoleManager::listScreens() const
     {
         std::cout << " - " << name << "\n";
     }
+}
+
+void ConsoleManager::render_header()
+{
+    const int width = 80;
+
+    std::string schedulerType = "";
+    if (dynamic_cast<FCFSScheduler *>(scheduler.get()))
+    {
+        schedulerType = "FCFS Scheduler";
+    }
+    else if (dynamic_cast<RRScheduler *>(scheduler.get()))
+    {
+        schedulerType = "RR Scheduler";
+    }
+    else
+    {
+        schedulerType = "Unknown Scheduler";
+    }
+
+    std::string title = "CSOPESY Operating System Emulator - " + schedulerType;
+    std::string padding((width - static_cast<int>(title.length())) / 2, ' ');
+
+    std::cout << std::string(width, '-') << "\n";
+    std::cout << padding << title << "\n";
+    std::cout << std::string(width, '-') << "\n\n";
+}
+
+void ConsoleManager::render_footer()
+{
+    std::cout << std::endl;
+    std::cout << "Type \"screen -ls\" to view processes or \"cpu-util\" for CPU stats." << std::endl;
+    std::cout << "Type \"exit\" to quit the emulator." << std::endl;
+}
+
+void ConsoleManager::render_running_processes(const std::vector<std::shared_ptr<Process>> &processes)
+{
+    std::cout << "[DEBUG] Rendering Running Processes " << "\n";
+
+    std::cout << "Running Processes:\n";
+    if (processes.empty())
+    {
+        std::cout << "  (None)\n";
+        return;
+    }
+
+    for (const auto &p : processes)
+    {
+        if (!p->has_started)
+        {
+            std::cout << " - " << p->name << " (Scheduled, not started)\n";
+            continue;
+        }
+
+        std::time_t start_time_t = std::chrono::system_clock::to_time_t(p->start_time);
+        std::tm *start_tm = std::localtime(&start_time_t);
+
+        std::ostringstream oss;
+        oss << " - " << p->name
+            << "   (" << std::put_time(start_tm, "%Y-%m-%d %H:%M:%S") << ")"
+            << "  Core: " << p->current_core
+            << ", " << p->current_command_index << " / 100";
+
+        std::cout << oss.str() << "\n";
+    }
+    std::cout << std::endl;
+}
+
+void ConsoleManager::render_finished_processes(const std::vector<std::shared_ptr<Process>> &processes)
+{
+    std::cout << "Finished Processes:\n";
+    if (processes.empty())
+    {
+        std::cout << "  (None)\n";
+        return;
+    }
+
+    for (const auto &p : processes)
+    {
+        if (p->is_finished)
+        {
+            std::time_t finish_time_t = std::chrono::system_clock::to_time_t(p->finish_time);
+            std::tm *finish_tm = std::localtime(&finish_time_t);
+
+            std::ostringstream oss;
+            oss << " - " << p->name
+                << "   (" << std::put_time(finish_tm, "%Y-%m-%d %H:%M:%S") << ")"
+                << " Finished "
+                << " 100 / 100";
+            std::cout << oss.str() << "\n";
+        }
+    }
+    std::cout << std::endl;
 }

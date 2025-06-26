@@ -49,9 +49,6 @@ void FCFSScheduler::start_process_generator()
             if (cycle_counter >= batch_process_freq)
             {
                 add_dummy_process();
-                add_dummy_process();
-                add_dummy_process();
-                add_dummy_process();
                 cycle_counter = 0;
             }
         } });

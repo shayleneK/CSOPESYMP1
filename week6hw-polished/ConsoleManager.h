@@ -6,6 +6,11 @@
 #include <memory>
 #include <string>
 #include <map>
+#include <vector>
+
+#include "Scheduler.h"
+#include "FCFSScheduler.h"
+#include "RRScheduler.h"
 
 // Console types
 enum ConsoleType
@@ -55,6 +60,11 @@ public:
     void createConsole(const std::string &type, const std::string &name);
     void switchConsole(const std::string &name);
     void listScreens() const;
+
+    void render_header();
+    void render_footer();
+    void render_running_processes(const std::vector<std::shared_ptr<Process>> &processes);
+    void render_finished_processes(const std::vector<std::shared_ptr<Process>> &processes);
 };
 
 #endif // CONSOLEMANAGER_H
