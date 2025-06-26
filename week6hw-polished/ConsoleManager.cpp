@@ -235,21 +235,99 @@ void ConsoleManager::processInput()
     }
 }
 
-else if (command == "report-util")
+/* else if (command == "report-util")
 {
     if (!scheduler) {
         std::cout << "[ERROR] Scheduler not initialized.\n";
         return;
     }
     std::ofstream report("csopesy-log.txt");
-    auto stats = scheduler->get_cpu_stats();
 
     report << "[CPU UTILIZATION REPORT]\n";
+    auto stats = scheduler->get_cpu_stats();
     for (const auto& [core_id, data] : stats) {
         report << "CPU " << core_id << ": Util(%) = " << data.at("util")
                << ", Queue Size = " << static_cast<int>(data.at("queue_size")) << "\n";
     }
     std::cout << "[INFO] CPU report saved to csopesy-log.txt\n";
+} */
+
+else if (command == "report-util")
+{
+    if (!scheduler) {
+        std::cout << "[ERROR] Scheduler not initialized.\n";
+        return;
+    }
+
+    std::ofstream report("csopesy-log.txt");
+    if (!report.is_open()) {
+        std::cout << "[ERROR] Failed to open csopesy-log.txt for writing.\n";
+        return;
+    }
+
+    // Render header
+    const int width = 80;
+    std::string schedulerType;
+    if (dynamic_cast<FCFSScheduler *>(scheduler.get())) {
+        schedulerType = "FCFS Scheduler";
+    } else if (dynamic_cast<RRScheduler *>(scheduler.get())) {
+        schedulerType = "RR Scheduler";
+    } else {
+        schedulerType = "Unknown Scheduler";
+    }
+    std::string title = "CSOPESY Operating System Emulator - " + schedulerType;
+    std::string padding((width - static_cast<int>(title.length())) / 2, ' ');
+    report << std::string(width, '-') << "\n";
+    report << padding << title << "\n";
+    report << std::string(width, '-') << "\n\n";
+
+    // Running Processes
+    auto running = scheduler->get_running_processes();
+    report << "Running Processes:\n";
+    if (running.empty()) {
+        report << "  (None)\n";
+    } else {
+        for (const auto &p : running) {
+            if (!p->has_started) {
+                report << " - " << p->name << " (Scheduled, not started)\n";
+            } else {
+                std::time_t start_time_t = std::chrono::system_clock::to_time_t(p->start_time);
+                std::tm *start_tm = std::localtime(&start_time_t);
+                report << " - " << p->name << "   ("
+                       << std::put_time(start_tm, "%Y-%m-%d %H:%M:%S") << ")"
+                       << "  Core: " << p->current_core
+                       << ", " << p->current_command_index << " / 100\n";
+            }
+        }
+    }
+
+    report << "\n";
+
+    // Finished Processes
+    auto finished = scheduler->get_finished_processes();
+    report << "Finished Processes:\n";
+    if (finished.empty()) {
+        report << "  (None)\n";
+    } else {
+        for (const auto &p : finished) {
+            if (p->is_finished) {
+                std::time_t finish_time_t = std::chrono::system_clock::to_time_t(p->finish_time);
+                std::tm *finish_tm = std::localtime(&finish_time_t);
+                report << " - " << p->name << "   ("
+                       << std::put_time(finish_tm, "%Y-%m-%d %H:%M:%S") << ")"
+                       << " Finished  100 / 100\n";
+            }
+        }
+    }
+
+    report << "\n";
+
+    // Footer
+    report << "Type \"screen -ls\" to view processes or \"cpu-util\" for CPU stats.\n";
+    report << "Type \"exit\" to quit the emulator.\n";
+
+    report.close();
+    std::cout << "[INFO] screen -ls output saved to csopesy-log.txt\n";
 }
 
     else if (command == "help")
