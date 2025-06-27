@@ -18,8 +18,11 @@ public:
     void stop_scheduler();
     bool is_scheduler_running() const;
     void start_process_generator() override;
+    void set_batch_frequency(int freq) { batch_process_freq = freq; }
+    void on_cpu_cycle(uint64_t cycle_number) override;
+    void generate_new_process();
+
     std::vector<std::shared_ptr<Process>> get_running_processes() override;
-    // std::vector<std::shared_ptr<Process>> get_finished_processes() override;
 
 protected:
     int time_quantum;

@@ -30,11 +30,17 @@ public:
     std::vector<std::shared_ptr<Process>> get_all_processes();
     virtual void start_process_generator();
     std::map<int, std::map<std::string, float>> get_cpu_stats();
+
     int get_min_instructions() const { return min_instructions; }
     int get_max_instructions() const { return max_instructions; }
 
     bool is_done();
     std::shared_ptr<Process> find_process_by_name(const std::string &name);
+
+    virtual void on_cpu_cycle(uint64_t cycle_number) = 0;
+    virtual void set_batch_frequency(int freq) { batch_process_freq = freq; }
+
+    virtual bool is_scheduler_running() const = 0;
 
 protected:
     std::vector<bool> core_available;
@@ -59,4 +65,7 @@ protected:
     std::vector<std::thread> cpu_cores;
     int min_instructions;
     int max_instructions;
+
+    std::atomic<uint64_t> cpu_cycles; // Shared CPU cycle counter
+    int batch_process_freq;
 };

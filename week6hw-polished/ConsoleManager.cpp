@@ -25,7 +25,6 @@ ConsoleManager::ConsoleManager()
     consoleTable[MAIN_CONSOLE] = std::make_shared<MainConsole>();
     consoleTable[MARQUEE_CONSOLE] = std::make_shared<MarqueeConsole>();
     // consoleTable[MARQUEE_CONSOLE] = std::make_shared<MarqueeConsole>(scheduler);
-    // consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler);
 
     this->currentConsole = MAIN_CONSOLE;
     this->m_activeConsole = consoleTable[MAIN_CONSOLE];
@@ -142,12 +141,11 @@ void ConsoleManager::processInput()
         }
 
         int num_cpu = cfg.getInt("num-cpu", 2);
-        std::string scheduler_type = cfg.getString("scheduler", "rr"); // holds "rr" or "fcfs"
+        std::string scheduler_type = cfg.getString("scheduler", "rr");
         int quantum_cycles = cfg.getInt("quantum-cycles", 5);
         int batch_process_freq = cfg.getInt("batch-process-freq", 1);
         int min_ins = cfg.getInt("min-ins", 1000);
         int max_ins = cfg.getInt("max-ins", 2000);
-        int delay_per_exec = cfg.getInt("delay-per-exec", 0);
 
         if (scheduler_type == "rr")
         {
@@ -158,7 +156,12 @@ void ConsoleManager::processInput()
             scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins);
         }
 
+        scheduler->set_batch_frequency(batch_process_freq);
         scheduler->start_core_threads();
+
+        // Start the CPU cycle loop
+        ConsoleManager::getInstance()->startCpuLoop();
+
         scheduler_initialized = true;
     }
 
@@ -179,6 +182,7 @@ void ConsoleManager::processInput()
                 "Process " + name + " has completed all its commands."));
 
             scheduler->add_process(proc);
+            switchConsole(name);
 
             // Attach the process to the created ScreenConsole
             auto screenConsole = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);
@@ -233,23 +237,9 @@ void ConsoleManager::processInput()
     {
 
         render_header();
-
-        // Display running processes
         render_running_processes(scheduler->get_running_processes());
-
-        // Display finished processes
         render_finished_processes(scheduler->get_finished_processes());
-
-        // Display CPU Utilization (if applicable)
-        /* if (!scheduler->get_cpu_stats().empty())
-        {
-            render_cpu_utilization(scheduler->get_cpu_stats());
-        } */
-
-        // Footer
         render_footer();
-        // listScreens();
-        // consoleTable[SCHEDULING_CONSOLE]->display();
     }
     else if (command == "marquee")
     {
@@ -266,24 +256,6 @@ void ConsoleManager::processInput()
         scheduler->start();
         std::cout << "[INFO] Scheduler started.\n";
     }
-
-    /* else if (command == "report-util")
-    {
-        if (!scheduler) {
-            std::cout << "[ERROR] Scheduler not initialized.\n";
-            return;
-        }
-        std::ofstream report("csopesy-log.txt");
-
-        report << "[CPU UTILIZATION REPORT]\n";
-        auto stats = scheduler->get_cpu_stats();
-        for (const auto& [core_id, data] : stats) {
-            report << "CPU " << core_id << ": Util(%) = " << data.at("util")
-                   << ", Queue Size = " << static_cast<int>(data.at("queue_size")) << "\n";
-        }
-        std::cout << "[INFO] CPU report saved to csopesy-log.txt\n";
-    } */
-
     else if (command == "report-util")
     {
         if (!scheduler)
@@ -538,12 +510,8 @@ void ConsoleManager::createConsole(const std::string &type, const std::string &n
         return;
     }
 
-    // m_previousConsole = m_activeConsole;
-    // m_activeConsole = newConsole;
     m_consoleTable[name] = newConsole;
-
-    // std::cout << "Created and switched to console: " << name << "\n";
-    // m_activeConsole->display(); // Add this
+    std::cout << "Created screen: " << name << "\n";
 }
 
 void ConsoleManager::switchConsole(const std::string &name)
@@ -630,10 +598,9 @@ void ConsoleManager::render_running_processes(const std::vector<std::shared_ptr<
         oss << " - " << p->name
             << "   (" << std::put_time(start_tm, "%Y-%m-%d %H:%M:%S") << ")"
             << "  Core: " << p->current_core
-            << ", " << p->current_command_index << " / " << p->get_instruction_count();
+            << ", " << p->current_command_index << " / " << p->get_instruction_count()
+            << " (CPU Cycles: " << ConsoleManager::getCpuCycles() << ")";
         ;
-
-        std::cout << oss.str() << "\n";
     }
     std::cout << std::endl;
 }
@@ -672,4 +639,40 @@ std::shared_ptr<AConsole> ConsoleManager::getConsoleByName(const std::string &na
     if (it != m_consoleTable.end())
         return it->second;
     return nullptr;
+}
+std::atomic<uint64_t> ConsoleManager::cpu_cycles(0);
+
+uint64_t ConsoleManager::getCpuCycles()
+{
+    return cpu_cycles.load();
+}
+
+void ConsoleManager::startCpuLoop()
+{
+    if (runningCpuLoop)
+        return;
+
+    runningCpuLoop = true;
+    cpuThread = std::thread(&ConsoleManager::cpuCycleLoop, this);
+}
+
+void ConsoleManager::cpuCycleLoop()
+{
+    while (runningCpuLoop && isRunning())
+    {
+        cpu_cycles.fetch_add(1);
+
+        // Notify scheduler of new CPU cycle
+        if (scheduler && scheduler->is_scheduler_running())
+        {
+            scheduler->on_cpu_cycle(cpu_cycles.load());
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    }
+}
+
+bool ConsoleManager::hasConsole(const std::string &name) const
+{
+    return m_consoleTable.find(name) != m_consoleTable.end();
 }
