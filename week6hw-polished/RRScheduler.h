@@ -25,8 +25,6 @@ protected:
     int time_quantum;
     int min_ins;
     int max_ins;
-    std::atomic<bool> generating_processes{false};
-    std::thread generator_thread;
 
     std::mutex running_mutex;
     std::map<int, std::shared_ptr<Process>> current_processes;

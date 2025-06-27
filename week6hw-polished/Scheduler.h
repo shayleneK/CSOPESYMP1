@@ -9,6 +9,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <thread>
+#include <atomic>
 
 class Scheduler
 {
@@ -49,6 +50,10 @@ protected:
 
     std::mutex queue_mutex;
     std::condition_variable queue_condition;
+
+    std::thread generator_thread;
+    std::atomic<bool> generating_processes{false};
+    std::vector<std::thread> core_threads;
 
     // config
     std::vector<std::thread> cpu_cores;

@@ -7,6 +7,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <atomic>
 
 #include "Scheduler.h"
 #include "FCFSScheduler.h"
@@ -57,6 +58,8 @@ public:
     void clearScreen();
 
     static void destroy();
+
+    std::shared_ptr<AConsole> getConsoleByName(const std::string &name) const;
 
     void createConsole(const std::string &type, const std::string &name);
     void switchConsole(const std::string &name);

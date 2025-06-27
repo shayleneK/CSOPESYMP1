@@ -5,10 +5,8 @@
 #include "MainConsole.h"
 #include "Process.h"
 #include "ProcessFactory.h"
-// #include "MarqueeConsole.h"
 #include "ScreenConsole.h"
 #include "SchedulingConsole.h"
-// #include "MemorySimulationConsole.h"
 #include <map>
 #include <iostream>
 #include <algorithm>
@@ -18,6 +16,7 @@
 
 #include <iomanip>
 #include <sstream>
+#include <atomic>
 
 ConsoleManager *ConsoleManager::instance = nullptr;
 ConsoleManager::ConsoleManager()
@@ -98,6 +97,8 @@ void ConsoleManager::processInput()
         if (getActiveConsole() == consoleTable.at(MAIN_CONSOLE))
         {
             std::cout << "Exiting emulator.\n";
+            if (scheduler)
+                scheduler->shutdown();
             setRunning(false);
         }
         else
@@ -537,12 +538,12 @@ void ConsoleManager::createConsole(const std::string &type, const std::string &n
         return;
     }
 
-    m_previousConsole = m_activeConsole;
-    m_activeConsole = newConsole;
+    // m_previousConsole = m_activeConsole;
+    // m_activeConsole = newConsole;
     m_consoleTable[name] = newConsole;
 
-    std::cout << "Created and switched to console: " << name << "\n";
-    m_activeConsole->display(); // Add this
+    // std::cout << "Created and switched to console: " << name << "\n";
+    // m_activeConsole->display(); // Add this
 }
 
 void ConsoleManager::switchConsole(const std::string &name)
@@ -663,4 +664,12 @@ void ConsoleManager::render_finished_processes(const std::vector<std::shared_ptr
         }
     }
     std::cout << std::endl;
+}
+
+std::shared_ptr<AConsole> ConsoleManager::getConsoleByName(const std::string &name) const
+{
+    auto it = m_consoleTable.find(name);
+    if (it != m_consoleTable.end())
+        return it->second;
+    return nullptr;
 }

@@ -38,14 +38,19 @@ void Scheduler::start_core_threads() // IMPORTANT: check where should u run
 
 void Scheduler::shutdown()
 {
+
+    generating_processes.store(false);
     running = false;
-    queue_condition.notify_all();
-    for (auto &core : cpu_cores)
+
+    // join generator thread
+    if (generator_thread.joinable())
+        generator_thread.join();
+
+    // stop and join core threads
+    for (auto &t : core_threads)
     {
-        if (core.joinable())
-        {
-            core.join();
-        }
+        if (t.joinable())
+            t.join();
     }
 }
 

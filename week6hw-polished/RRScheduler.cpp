@@ -1,7 +1,10 @@
 #include "RRScheduler.h"
 #include "Process.h"
 #include "ProcessFactory.h"
+#include "ConsoleManager.h"
+#include "ScreenConsole.h"
 #include "Command.h"
+
 #include <random>
 #include <chrono>
 #include <iostream>
@@ -24,34 +27,44 @@ RRScheduler::~RRScheduler()
 
 void RRScheduler::start()
 {
-    if (generating_processes)
+    if (generating_processes.load())
         return;
 
+    generating_processes.store(true);
     running = true;
-    generating_processes = true;
-
-    start_core_threads();
 
     generator_thread = std::thread([this]()
                                    {
         int cycle_counter = 0;
         const int batch_process_frequency = 100;
 
-        while (generating_processes && running)
+        while (generating_processes.load() && running)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
             if (++cycle_counter >= batch_process_frequency)
             {
-                for (int i = 0; i < 4; ++i)
-                {
-                    std::ostringstream oss;
-                    oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
-                    std::string name = oss.str();
+                std::ostringstream oss;
+                oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
+                std::string name = oss.str();
 
-                    auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions);
-                    process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
-                    add_process(process);
+                auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions);
+                process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
+                add_process(process);
+
+                ConsoleManager::getInstance()->createConsole("screen", name);
+
+                auto screen = std::dynamic_pointer_cast<ScreenConsole>(
+                    ConsoleManager::getInstance()->getConsoleByName(name));
+                if (screen)
+                {
+                    screen->attachProcess(process);
                 }
+                else
+                {
+                    std::cout << "[ERROR] Could not create screen for: " << name << "\n";
+                }
+
                 cycle_counter = 0;
             }
         } });

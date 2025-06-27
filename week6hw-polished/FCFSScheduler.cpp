@@ -1,6 +1,8 @@
 #include "FCFSScheduler.h"
 #include "Process.h"
 #include "ProcessFactory.h"
+#include "ConsoleManager.h"
+#include "ScreenConsole.h"
 #include "Command.h"
 #include <chrono>
 #include <iostream>
@@ -41,6 +43,18 @@ void FCFSScheduler::start()
                 auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions);
                 process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
                 add_process(process);
+
+                ConsoleManager::getInstance()->createConsole("screen", name);
+
+                auto screen = std::dynamic_pointer_cast<ScreenConsole>(ConsoleManager::getInstance()->getConsoleByName(name));
+                if (screen)
+                {
+                    screen->attachProcess(process);
+                }
+                else
+                {
+                    std::cout << "[ERROR] Could not create screen for: " << name << "\n";
+                }
 
                 cycle_counter = 0;
             }

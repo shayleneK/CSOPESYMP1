@@ -38,9 +38,6 @@ void PrintCommand::execute(Process *proc, int core_id, std::ofstream &output_fil
             output = message;
     }
 
-    // Final terminal output
-    std::cout << "[Core " << core_id << "] " << process_name << ": " << output << std::endl;
-
     // Add Log Entry
     auto now = std::chrono::system_clock::now();
     std::time_t time_now = std::chrono::system_clock::to_time_t(now);
