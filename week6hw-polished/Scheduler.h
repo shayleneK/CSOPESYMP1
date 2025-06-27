@@ -29,6 +29,8 @@ public:
     std::vector<std::shared_ptr<Process>> get_all_processes();
     virtual void start_process_generator();
     std::map<int, std::map<std::string, float>> get_cpu_stats();
+    int get_min_instructions() const { return min_instructions; }
+    int get_max_instructions() const { return max_instructions; }
 
     bool is_done();
 

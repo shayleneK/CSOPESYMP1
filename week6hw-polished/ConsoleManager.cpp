@@ -4,6 +4,7 @@
 #include "AConsole.h"
 #include "MainConsole.h"
 #include "Process.h"
+#include "ProcessFactory.h"
 // #include "MarqueeConsole.h"
 #include "ScreenConsole.h"
 #include "SchedulingConsole.h"
@@ -161,10 +162,16 @@ void ConsoleManager::processInput()
 
     else if (command.rfind("screen -s ", 0) == 0)
     {
-        std::string name = command.substr(10); // extracts name after "screen -s "
+        std::string name = command.substr(10); // Extract name
+
         if (!name.empty())
         {
             createConsole("screen", name);
+            auto proc = ProcessFactory::generate_dummy_process(name, scheduler->get_min_instructions(), scheduler->get_max_instructions());
+            proc->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
+            scheduler->add_process(proc);
+
+            std::cout << "[screen] Process \"" << name << "\" created and added to the ready queue.\n";
         }
         else
         {
