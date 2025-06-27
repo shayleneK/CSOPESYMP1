@@ -6,13 +6,6 @@
 
 Process::Process(const std::string &name) : name(name)
 {
-    // output_filename = name + "_log.txt";
-    // output_file.open(output_filename, std::ios::out | std::ios::trunc);
-    // if (!output_file.is_open())
-    // {
-    //     std::cerr << "[ERROR] Could not open log file for process: " << name
-    //               << " at " << output_filename << std::endl;
-    // }
 }
 
 Process::~Process()
@@ -59,4 +52,9 @@ void Process::set_var(const std::string &var_name, uint16_t value)
     }
     // No need to check for < 0 since uint16_t can't be negative
     variables[var_name] = value;
+}
+
+size_t Process::get_instruction_count() const
+{
+    return commands.size();
 }

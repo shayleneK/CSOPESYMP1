@@ -487,7 +487,8 @@ void ConsoleManager::render_running_processes(const std::vector<std::shared_ptr<
         oss << " - " << p->name
             << "   (" << std::put_time(start_tm, "%Y-%m-%d %H:%M:%S") << ")"
             << "  Core: " << p->current_core
-            << ", " << p->current_command_index << " / 100";
+            << ", " << p->current_command_index << " / " << p->get_instruction_count();
+        ;
 
         std::cout << oss.str() << "\n";
     }
@@ -514,7 +515,8 @@ void ConsoleManager::render_finished_processes(const std::vector<std::shared_ptr
             oss << " - " << p->name
                 << "   (" << std::put_time(finish_tm, "%Y-%m-%d %H:%M:%S") << ")"
                 << " Finished "
-                << " 100 / 100";
+                << p->get_instruction_count() << " / " << p->get_instruction_count();
+
             std::cout << oss.str() << "\n";
         }
     }

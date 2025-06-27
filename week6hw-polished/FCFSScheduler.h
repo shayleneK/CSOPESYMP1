@@ -22,6 +22,4 @@ private:
     std::thread generator_thread;
     void add_dummy_process();
     int next_pid = 1;
-    int min_ins;
-    int max_ins;
 };

@@ -37,6 +37,8 @@ public:
 
     uint16_t get_var(const std::string &var_name);
     void set_var(const std::string &var_name, uint16_t value);
+
+    size_t get_instruction_count() const;
 };
 
 #endif // PROCESS_H

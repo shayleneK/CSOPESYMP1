@@ -8,7 +8,11 @@
 #include <sstream>
 
 FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins)
-    : Scheduler(num_cores, min_ins, max_ins) {}
+    : Scheduler(num_cores, min_ins, max_ins)
+{
+    std::cout << "[FCFS DEBUG] Constructor received min_ins=" << min_ins
+              << ", max_ins=" << max_ins << std::endl;
+}
 
 FCFSScheduler::~FCFSScheduler() { stop_scheduler(); }
 
@@ -60,6 +64,8 @@ void FCFSScheduler::start_process_generator()
 
 void FCFSScheduler::add_dummy_process()
 {
+    std::cout << "[DEBUG] min_ins: " << min_instructions << ", max_ins: " << max_instructions << std::endl;
+
     std::ostringstream oss;
     oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
     std::string name = oss.str();
@@ -67,10 +73,12 @@ void FCFSScheduler::add_dummy_process()
     auto process = std::make_shared<Process>(name);
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> ins_dist(min_ins, max_ins); // setting
+    std::uniform_int_distribution<> ins_dist(min_instructions, max_instructions); // setting
     std::uniform_int_distribution<> op_dist(0, 5);
 
     int instruction_count = ins_dist(gen);
+    std::cout << "[DEBUG] Chosen instruction count: " << instruction_count << std::endl;
+
     for (int i = 0; i < instruction_count; ++i)
     {
         int op = op_dist(gen);
