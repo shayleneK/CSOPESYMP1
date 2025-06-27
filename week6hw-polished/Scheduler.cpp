@@ -139,19 +139,29 @@ bool Scheduler::is_done()
                                               { return avail; });
 }
 
-std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats()
-{
-    std::map<int, std::map<std::string, float>> stats;
-    for (size_t core_id = 0; core_id < core_available.size(); ++core_id)
-    {
-        float util = total_cpu_time > 0 ? (float)core_util_time[core_id] / total_cpu_time * 100.0f : 0.0f;
-        stats[core_id]["util"] = util;
-        stats[core_id]["queue_size"] = (float)ready_queue.size();
-    }
-    return stats;
-}
-
 void Scheduler::start_process_generator()
 {
     std::cout << "[Scheduler] process gen()." << std::endl;
+}
+
+std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats() 
+{
+    std::map<int, std::map<std::string, float>> stats;
+    std::unique_lock<std::mutex> lock(queue_mutex);
+
+    for (size_t core_id = 0; core_id < core_available.size(); ++core_id)
+    {
+        float util = 0.0f;
+        if (total_cpu_time > 0)
+        {
+            util = (static_cast<float>(core_util_time[core_id]) / total_cpu_time) * 100.0f;
+        }
+
+        int queue_size = ready_queue.size();
+
+        stats[core_id]["util"] = util;
+        stats[core_id]["queue_size"] = static_cast<float>(queue_size);
+    }
+
+    return stats;
 }

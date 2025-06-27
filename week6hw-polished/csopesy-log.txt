@@ -1,0 +1,3 @@
+[CPU UTILIZATION REPORT]
+CPU 0: Util(%) = 100, Queue Size = 0
+CPU 1: Util(%) = 68.2192, Queue Size = 0
