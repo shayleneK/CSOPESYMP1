@@ -71,11 +71,6 @@ void RRScheduler::generate_new_process()
     {
         std::cout << "[ERROR] Could not create screen for: " << name << "\n";
     }
-
-    cycle_counter = 0;
-}
-}
-});
 }
 
 void RRScheduler::start_process_generator()
@@ -200,4 +195,15 @@ std::vector<std::shared_ptr<Process>> RRScheduler::get_running_processes()
     }
 
     return result;
+}
+
+void RRScheduler::on_cpu_cycle(uint64_t cycle_number)
+{
+    if (!generating_processes.load())
+        return;
+
+    if (cycle_number % batch_process_freq == 0)
+    {
+        generate_new_process();
+    }
 }
