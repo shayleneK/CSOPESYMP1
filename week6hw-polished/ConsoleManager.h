@@ -11,6 +11,7 @@
 #include "Scheduler.h"
 #include "FCFSScheduler.h"
 #include "RRScheduler.h"
+#include "MarqueeConsole.h"
 
 // Console types
 enum ConsoleType
