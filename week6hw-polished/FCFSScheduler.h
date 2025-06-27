@@ -20,6 +20,5 @@ public:
 private:
     std::atomic<bool> generating_processes{false};
     std::thread generator_thread;
-    void add_dummy_process();
     int next_pid = 1;
 };

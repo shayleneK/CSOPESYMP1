@@ -1,6 +1,6 @@
-// RRScheduler.cpp
 #include "RRScheduler.h"
 #include "Process.h"
+#include "ProcessFactory.h"
 #include "Command.h"
 #include <random>
 #include <chrono>
@@ -30,48 +30,36 @@ void RRScheduler::start()
     running = true;
     generating_processes = true;
 
-    // Start the CPU core threads
     start_core_threads();
 
-    // Start the generator thread
     generator_thread = std::thread([this]()
                                    {
         int cycle_counter = 0;
-        int batch_process_frequency = 100;
+        const int batch_process_frequency = 100;
+
         while (generating_processes && running)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
             if (++cycle_counter >= batch_process_frequency)
             {
-                add_dummy_process();
+                for (int i = 0; i < 4; ++i)
+                {
+                    std::ostringstream oss;
+                    oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
+                    std::string name = oss.str();
+
+                    auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions);
+                    process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
+                    add_process(process);
+                }
                 cycle_counter = 0;
             }
         } });
 }
 
-// RRScheduler.cpp
 void RRScheduler::start_process_generator()
 {
-    if (generating_processes.load())
-        return;
-
-    generating_processes.store(true);
-    generator_thread = std::thread([this]()
-                                   {
-        int batch_process_freq = 100;
-        int cycle_counter = 0;
-
-        while (generating_processes.load() && running) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            cycle_counter++;
-            if (cycle_counter >= batch_process_freq) {
-                add_dummy_process();
-                add_dummy_process();
-                add_dummy_process();
-                add_dummy_process();
-                cycle_counter = 0;
-            }
-        } });
+    start(); // Unified with start()
 }
 
 void RRScheduler::start_core_threads()
@@ -80,40 +68,6 @@ void RRScheduler::start_core_threads()
     {
         cpu_cores.emplace_back(&RRScheduler::run_core, this, i);
     }
-}
-
-void RRScheduler::add_dummy_process()
-{
-    std::ostringstream oss;
-    oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
-    std::string name = oss.str();
-
-    auto process = std::make_shared<Process>(name);
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> ins_dist(min_ins, max_ins); // setting
-    std::uniform_int_distribution<> op_dist(0, 5);
-
-    int instruction_count = ins_dist(gen);
-    for (int i = 0; i < instruction_count; ++i)
-    {
-        int op = op_dist(gen);
-        switch (op)
-        {
-        case 0:
-            process->add_command(std::make_shared<PrintCommand>("\"Hello world from " + name + "!\""));
-            break;
-        case 4:
-            process->add_command(std::make_shared<SleepCommand>(1));
-            break;
-        default:
-            process->add_command(std::make_shared<PrintCommand>("\"Dummy command from " + name + "\""));
-            break;
-        }
-    }
-
-    process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
-    add_process(process);
 }
 
 void RRScheduler::stop_scheduler()
@@ -170,7 +124,8 @@ void RRScheduler::run_core(int core_id)
                 process->execute(core_id);
                 auto end = std::chrono::high_resolution_clock::now();
 
-                int duration = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+                int duration = static_cast<int>(
+                    std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
 
                 {
                     std::unique_lock<std::mutex> lock(queue_mutex);
@@ -194,19 +149,17 @@ void RRScheduler::run_core(int core_id)
                 if (process->is_finished)
                 {
                     current_processes.erase(core_id);
-                    std::cout << "Process " << process->name << " finished on core " << core_id << std::endl;
+                    std::cout << "[RR] Process " << process->name << " finished on core " << core_id << std::endl;
                 }
             }
         }
     }
 }
 
-// RRScheduler.cpp
 std::vector<std::shared_ptr<Process>> RRScheduler::get_running_processes()
 {
     std::vector<std::shared_ptr<Process>> result;
 
-    // 1. Add ready queue processes
     {
         std::unique_lock<std::mutex> lock(queue_mutex);
         std::queue<std::shared_ptr<Process>> temp = ready_queue;
@@ -217,7 +170,6 @@ std::vector<std::shared_ptr<Process>> RRScheduler::get_running_processes()
         }
     }
 
-    // 2. Add currently running processes on cores
     {
         std::unique_lock<std::mutex> lock(running_mutex);
         for (const auto &entry : current_processes)

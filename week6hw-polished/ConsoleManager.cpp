@@ -113,6 +113,22 @@ void ConsoleManager::processInput()
         clearScreen();
         drawConsole();
     }
+    // else if (command == "process-smi")
+    // {
+    //     if (!process)
+    //     {
+    //         std::cout << "[ERROR] No process attached to this screen.\n";
+    //         return;
+    //     }
+
+    //     std::cout << "\n[Process Info]\n";
+    //     std::cout << "Name: " << process->name << "\n";
+    //     std::cout << "Finished: " << (process->is_finished ? "Yes" : "No") << "\n";
+    //     std::cout << "Progress: " << process->current_command_index << " / "
+    //               << process->get_instruction_count() << "\n";
+    //     std::cout << "Running on Core: " << process->current_core << "\n";
+
+    // }
     else if (command == "initialize")
     {
         ConfigManager cfg;
