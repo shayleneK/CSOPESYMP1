@@ -13,12 +13,13 @@
 class Scheduler
 {
 public:
-    Scheduler(int num_cores);
+    Scheduler(int num_cores, int min_instructions, int max_instructions);
     virtual ~Scheduler();
 
     virtual void run_core(int core_id);
 
     virtual void start_core_threads();
+    virtual void start();
 
     void add_process(std::shared_ptr<Process> process);
     void shutdown();
@@ -32,7 +33,6 @@ public:
     bool is_done();
 
 protected:
-    std::vector<std::thread> cpu_cores;
     std::vector<bool> core_available;
     std::queue<std::shared_ptr<Process>> ready_queue;
     std::vector<std::shared_ptr<Process>> all_processes;
@@ -46,4 +46,9 @@ protected:
 
     std::mutex queue_mutex;
     std::condition_variable queue_condition;
+
+    // config
+    std::vector<std::thread> cpu_cores;
+    int min_instructions;
+    int max_instructions;
 };

@@ -8,13 +8,13 @@
 class RRScheduler : public Scheduler
 {
 public:
-    RRScheduler(int num_cores, int quantum_ms);
+    RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins);
     ~RRScheduler();
 
-    void run_core(int core_id) override; // ✅ override clearly
+    void run_core(int core_id) override;
     void start_core_threads() override;
 
-    void start();
+    void start() override;
     void stop_scheduler();
     bool is_scheduler_running() const;
     void add_dummy_process();
@@ -24,6 +24,8 @@ public:
 
 protected:
     int time_quantum;
+    int min_ins;
+    int max_ins;
     std::atomic<bool> generating_processes{false};
     std::thread generator_thread;
 

@@ -33,7 +33,7 @@ private:
     std::shared_ptr<AConsole> m_activeConsole;
     std::shared_ptr<AConsole> m_previousConsole;
 
-    ConsoleManager(Scheduler *scheduler);
+    ConsoleManager();
     void initializeConsoles();
     std::map<std::string, std::shared_ptr<AConsole>> m_consoleTable;
     std::unique_ptr<Scheduler> scheduler;
@@ -41,7 +41,7 @@ private:
     std::shared_ptr<AConsole> getActiveConsole() const;
 
 public:
-    static ConsoleManager *getInstance(Scheduler *scheduler = nullptr);
+    static ConsoleManager *getInstance();
 
     void drawConsole();
     void processInput();

@@ -8,8 +8,8 @@
 #include <iomanip>
 #include <sstream>
 
-RRScheduler::RRScheduler(int num_cores, int quantum_ms)
-    : Scheduler(num_cores), time_quantum(quantum_ms)
+RRScheduler::RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins)
+    : Scheduler(num_cores, min_ins, max_ins), time_quantum(quantum_ms)
 {
     if (quantum_ms % 50 != 0)
     {
@@ -26,15 +26,23 @@ void RRScheduler::start()
 {
     if (generating_processes)
         return;
+
+    running = true;
     generating_processes = true;
 
+    // Start the CPU core threads
+    start_core_threads();
+
+    // Start the generator thread
     generator_thread = std::thread([this]()
                                    {
         int cycle_counter = 0;
         int batch_process_frequency = 100;
-        while (generating_processes && running) {
+        while (generating_processes && running)
+        {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            if (++cycle_counter >= batch_process_frequency) {
+            if (++cycle_counter >= batch_process_frequency)
+            {
                 add_dummy_process();
                 cycle_counter = 0;
             }
@@ -83,7 +91,7 @@ void RRScheduler::add_dummy_process()
     auto process = std::make_shared<Process>(name);
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> ins_dist(10, 20);
+    std::uniform_int_distribution<> ins_dist(min_ins, max_ins); // setting
     std::uniform_int_distribution<> op_dist(0, 5);
 
     int instruction_count = ins_dist(gen);

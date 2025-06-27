@@ -19,7 +19,7 @@
 #include <sstream>
 
 ConsoleManager *ConsoleManager::instance = nullptr;
-ConsoleManager::ConsoleManager(Scheduler *scheduler)
+ConsoleManager::ConsoleManager()
 {
     // Initialize consoles
     consoleTable[MAIN_CONSOLE] = std::make_shared<MainConsole>();
@@ -27,7 +27,7 @@ ConsoleManager::ConsoleManager(Scheduler *scheduler)
     // consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler);
 
     this->currentConsole = MAIN_CONSOLE;
-    this->m_activeConsole = consoleTable[MAIN_CONSOLE]; // ✅ Fix: Set active console
+    this->m_activeConsole = consoleTable[MAIN_CONSOLE];
     this->running = true;
 }
 
@@ -44,12 +44,10 @@ void ConsoleManager::initializeConsoles()
     }
 }
 
-ConsoleManager *ConsoleManager::getInstance(Scheduler *scheduler)
+ConsoleManager *ConsoleManager::getInstance()
 {
-    if (!instance && scheduler != nullptr)
-    {
-        instance = new ConsoleManager(scheduler);
-    }
+    if (!instance)
+        instance = new ConsoleManager();
     return instance;
 }
 
@@ -132,22 +130,13 @@ void ConsoleManager::processInput()
         int max_ins = cfg.getInt("max-ins", 2000);
         int delay_per_exec = cfg.getInt("delay-per-exec", 0);
 
-        std::cout << "[DEBUG] Loaded Configurations:\n";
-        std::cout << "  scheduler: " << scheduler_type << "\n";
-        std::cout << "  num_cpu: " << num_cpu << "\n";
-        std::cout << "  quantum_cycles: " << quantum_cycles << "\n";
-        std::cout << "  batch_process_freq: " << batch_process_freq << "\n";
-        std::cout << "  min_ins: " << min_ins << "\n";
-        std::cout << "  max_ins: " << max_ins << "\n";
-        std::cout << "  delay_per_exec: " << delay_per_exec << "\n";
-
         if (scheduler_type == "rr")
         {
-            scheduler = std::make_unique<RRScheduler>(num_cpu, quantum_cycles);
+            scheduler = std::make_unique<RRScheduler>(num_cpu, quantum_cycles, min_ins, max_ins);
         }
         else
         {
-            scheduler = std::make_unique<FCFSScheduler>(num_cpu); // FCFS fallback
+            scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins);
         }
 
         scheduler->start_core_threads();
@@ -226,20 +215,8 @@ void ConsoleManager::processInput()
             return;
         }
 
-        // Common to both FCFS and RR
-        scheduler->start_process_generator();
-
-        // Specific to Round Robin
-        if (auto *rrsched = dynamic_cast<RRScheduler *>(scheduler.get()))
-        {
-            rrsched->start(); // Only RR needs this
-        }
-        // Optional: FCFS-specific behavior
-        else
-        {
-            std::cout << "[INFO] FCFS Scheduler started.\n";
-            // You could add more FCFS-specific logic here if needed.
-        }
+        scheduler->start();
+        std::cout << "[INFO] Scheduler started.\n";
     }
 
     /* else if (command == "report-util")

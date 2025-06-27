@@ -3,8 +3,7 @@
 
 int main()
 {
-    Scheduler scheduler(4); // 4 CPU cores
-    ConsoleManager *consoleManager = ConsoleManager::getInstance(&scheduler);
+    ConsoleManager *consoleManager = ConsoleManager::getInstance();
     consoleManager->drawConsole();
 
     while (consoleManager->isRunning())

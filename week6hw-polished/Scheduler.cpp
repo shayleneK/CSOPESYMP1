@@ -4,7 +4,8 @@
 #include <algorithm>
 #include <iostream>
 
-Scheduler::Scheduler(int num_cores)
+Scheduler::Scheduler(int num_cores, int min_ins, int max_ins)
+    : min_instructions(min_ins), max_instructions(max_ins)
 {
     for (int i = 0; i < num_cores; ++i)
     {
@@ -99,6 +100,11 @@ void Scheduler::run_core(int core_id)
         }
     }
 }
+void Scheduler::start()
+{
+    start_core_threads();
+    start_process_generator();
+}
 
 std::vector<std::shared_ptr<Process>> Scheduler::get_running_processes()
 {
@@ -144,7 +150,7 @@ void Scheduler::start_process_generator()
     std::cout << "[Scheduler] process gen()." << std::endl;
 }
 
-std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats() 
+std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats()
 {
     std::map<int, std::map<std::string, float>> stats;
     std::unique_lock<std::mutex> lock(queue_mutex);

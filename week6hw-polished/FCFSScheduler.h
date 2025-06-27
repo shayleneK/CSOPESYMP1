@@ -8,10 +8,10 @@
 class FCFSScheduler : public Scheduler
 {
 public:
-    FCFSScheduler(int num_cores);
+    FCFSScheduler(int num_cores, int min_ins, int max_ins);
     ~FCFSScheduler();
 
-    void start();
+    void start() override;
     void start_process_generator();
     void stop_scheduler();
     bool is_scheduler_running() const;
@@ -22,4 +22,6 @@ private:
     std::thread generator_thread;
     void add_dummy_process();
     int next_pid = 1;
+    int min_ins;
+    int max_ins;
 };

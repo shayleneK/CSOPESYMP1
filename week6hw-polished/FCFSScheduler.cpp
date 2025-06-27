@@ -7,21 +7,25 @@
 #include <iomanip>
 #include <sstream>
 
-FCFSScheduler::FCFSScheduler(int num_cores) : Scheduler(num_cores) {}
+FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins)
+    : Scheduler(num_cores, min_ins, max_ins) {}
 
 FCFSScheduler::~FCFSScheduler() { stop_scheduler(); }
 
 void FCFSScheduler::start()
 {
-    if (generating_processes)
+    if (generating_processes.load())
         return;
-    generating_processes = true;
+
+    generating_processes.store(true);
+    running = true;
 
     generator_thread = std::thread([this]()
                                    {
         int cycle_counter = 0;
-        int batch_process_frequency = 100;
-        while (generating_processes && running)
+        const int batch_process_frequency = 100;
+
+        while (generating_processes.load() && running)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
             if (++cycle_counter >= batch_process_frequency)
@@ -63,7 +67,7 @@ void FCFSScheduler::add_dummy_process()
     auto process = std::make_shared<Process>(name);
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> ins_dist(10, 20);
+    std::uniform_int_distribution<> ins_dist(min_ins, max_ins); // setting
     std::uniform_int_distribution<> op_dist(0, 5);
 
     int instruction_count = ins_dist(gen);
