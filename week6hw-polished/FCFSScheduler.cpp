@@ -4,11 +4,12 @@
 #include "ConsoleManager.h"
 #include "ScreenConsole.h"
 #include "Command.h"
+
 #include <chrono>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-#include "ConsoleManager.h"
+
 FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins)
     : Scheduler(num_cores, min_ins, max_ins)
 {
@@ -16,105 +17,38 @@ FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins)
               << ", max_ins=" << max_ins << std::endl;
 }
 
-FCFSScheduler::~FCFSScheduler() { stop_scheduler(); }
-
-// void FCFSScheduler::start()
-// {
-//     if (generating_processes.load())
-//         return;
-
-//     generating_processes.store(true);
-//     running = true;
-
-//     generator_thread = std::thread([this]()
-//                                    {
-//         int cycle_counter = 0;
-//         const int batch_process_frequency = 100;
-
-//         while (generating_processes.load() && running)
-//         {
-//             std::this_thread::sleep_for(std::chrono::milliseconds(50));
-//             if (++cycle_counter >= batch_process_frequency)
-//             {
-//                 std::ostringstream oss;
-//                 oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
-//                 std::string name = oss.str();
-
-//                 auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions);
-//                 process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
-//                 add_process(process);
-
-//                 ConsoleManager::getInstance()->createConsole("screen", name);
-
-//                 cycle_counter = 0;
-//             }
-//         } });
-// }
+FCFSScheduler::~FCFSScheduler()
+{
+    stop_scheduler();
+}
 
 void FCFSScheduler::start()
 {
-    if (generating_processes.load())
-        return;
-
     generating_processes.store(true);
     running = true;
-
-    generator_thread = std::thread([this]()
-                                   {
-        int cycle_counter = 0;
-        const int batch_process_frequency = 100;
-
-        while (generating_processes.load() && running)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            if (++cycle_counter >= batch_process_frequency)
-            {
-                std::ostringstream oss;
-                oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
-                std::string name = oss.str();
-
-                auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions);
-                process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
-                add_process(process);
-
-                ConsoleManager::getInstance()->createConsole("screen", name);
-
-                auto screen = std::dynamic_pointer_cast<ScreenConsole>(ConsoleManager::getInstance()->getConsoleByName(name));
-                if (screen)
-                {
-                    screen->attachProcess(process);
-                }
-                else
-                {
-                    std::cout << "[ERROR] Could not create screen for: " << name << "\n";
-                }
-
-                cycle_counter = 0;
-            }
-        } });
+    std::cout << "[FCFS DEBUG] Scheduler started (CPU ticks will drive generation)\n";
 }
 
 void FCFSScheduler::start_process_generator()
 {
-    start(); // Same behavior now
+    start();
 }
 
 void FCFSScheduler::stop_scheduler()
 {
-    generating_processes = false;
-    if (generator_thread.joinable())
-    {
-        generator_thread.join();
-    }
+    generating_processes.store(false);
+    std::cout << "[FCFS DEBUG] Scheduler stopped\n";
 }
 
 bool FCFSScheduler::is_scheduler_running() const
 {
-    return generating_processes;
+    return generating_processes.load();
 }
 
 void FCFSScheduler::run_core(int core_id)
 {
+    std::cout << "[FCFS][Core " << core_id << "] Core thread started.\n";
+
     while (running)
     {
         std::shared_ptr<Process> process;
@@ -132,6 +66,9 @@ void FCFSScheduler::run_core(int core_id)
                 process = ready_queue.front();
                 ready_queue.pop();
                 core_available[core_id] = false;
+
+                std::cout << "[FCFS][Core " << core_id << "] Picked process "
+                          << process->getName() << " from ready queue.\n";
             }
             else
             {
@@ -146,20 +83,15 @@ void FCFSScheduler::run_core(int core_id)
                 current_processes[core_id] = process;
             }
 
-            while (!process->is_finished)
+            while (!process->isFinished())
             {
-                auto start = std::chrono::high_resolution_clock::now();
-                process->execute(core_id);
-                auto end = std::chrono::high_resolution_clock::now();
-
-                int duration = static_cast<int>(
-                    std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
-
+                if (process->can_execute())
                 {
-                    std::unique_lock<std::mutex> lock(queue_mutex);
-                    core_util_time[core_id] += duration;
-                    core_process_count[core_id]++;
-                    total_cpu_time = std::max(total_cpu_time, core_util_time[core_id]);
+                    process->execute(core_id);
+                }
+                else
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
             }
 
@@ -171,11 +103,15 @@ void FCFSScheduler::run_core(int core_id)
             {
                 std::unique_lock<std::mutex> lock(running_mutex);
                 current_processes.erase(core_id);
-                std::cout << "[FCFS] Process " << process->name << " finished on core " << core_id << std::endl;
+                std::cout << "[FCFS][Core " << core_id << "] Process " << process->getName()
+                          << " finished and removed from running list.\n";
             }
         }
     }
+
+    std::cout << "[FCFS][Core " << core_id << "] Core thread exiting.\n";
 }
+
 void FCFSScheduler::on_cpu_cycle(uint64_t cycle_number)
 {
     if (!generating_processes.load())
@@ -183,34 +119,46 @@ void FCFSScheduler::on_cpu_cycle(uint64_t cycle_number)
 
     if (cycle_number % batch_process_freq == 0)
     {
+        std::cout << "[FCFS DEBUG] on_cpu_cycle(" << cycle_number << ") -> generating process\n";
         generate_new_process();
+    }
+}
+
+void FCFSScheduler::start_core_threads()
+{
+    for (int i = 0; i < static_cast<int>(core_available.size()); ++i)
+    {
+        cpu_cores.emplace_back(&FCFSScheduler::run_core, this, i);
     }
 }
 
 void FCFSScheduler::generate_new_process()
 {
-    // Generate unique name
     std::ostringstream oss;
     oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
     std::string name = oss.str();
 
-    // Create the process
     auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions);
+    process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
 
-    // Optional: only add final print if not already present
-    auto finalPrint = std::make_shared<PrintCommand>("Process " + name + " has completed all its commands.");
-    process->add_command(finalPrint);
-
-    // Add to scheduler queue
     add_process(process);
 
-    // Create screen only if not already present
     ConsoleManager *cm = ConsoleManager::getInstance();
     if (!cm->hasConsole(name))
     {
         cm->createConsole("screen", name);
     }
 
-    std::cout << "[FCFS] Generated new process " << name
-              << " at CPU cycle " << ConsoleManager::getCpuCycles() << std::endl;
+    auto screen = std::dynamic_pointer_cast<ScreenConsole>(cm->getConsoleByName(name));
+    if (screen)
+    {
+        screen->attachProcess(process);
+    }
+    else
+    {
+        std::cout << "[FCFS DEBUG] Failed to attach process to screen console: " << name << "\n";
+    }
+
+    std::cout << "[FCFS DEBUG] New process " << name << " created at tick "
+              << ConsoleManager::getCpuCycles() << "\n";
 }

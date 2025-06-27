@@ -183,9 +183,21 @@ void ConsoleManager::processInput()
         if (getActiveConsole() == consoleTable.at(MAIN_CONSOLE))
         {
             std::cout << "Exiting emulator.\n";
-            if (scheduler)
-                scheduler->shutdown();
-            setRunning(false);
+            try
+            {
+                if (scheduler)
+                    scheduler->shutdown(); // Might be triggering termination
+            }
+            catch (const std::exception &e)
+            {
+                std::cerr << "[ERROR] Exception during scheduler shutdown: " << e.what() << "\n";
+            }
+            catch (...)
+            {
+                std::cerr << "[ERROR] Unknown exception during scheduler shutdown.\n";
+            }
+
+            setRunning(false); // Tells main loop to break
         }
         else
         {

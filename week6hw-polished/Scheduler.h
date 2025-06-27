@@ -42,12 +42,15 @@ public:
 
     virtual bool is_scheduler_running() const = 0;
 
+    virtual void stop_scheduler() {}
+
 protected:
     std::vector<bool> core_available;
     std::queue<std::shared_ptr<Process>> ready_queue;
     std::vector<std::shared_ptr<Process>> all_processes;
     std::map<int, std::shared_ptr<Process>> current_processes; // core_id -> Process
     std::mutex running_mutex;
+    int next_pid = 0;
 
     std::map<int, int> core_process_count;
     std::map<int, int> core_util_time;
