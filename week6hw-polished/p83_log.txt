@@ -1,9 +1,0 @@
-[2025-06-26 16:49:22.236] CPU Core 1: "Dummy command from p83"
-[2025-06-26 16:49:22.267] CPU Core 1: "Hello world from p83!"
-[2025-06-26 16:49:22.297] CPU Core 1: "Dummy command from p83"
-[2025-06-26 16:49:22.328] CPU Core 1: "Dummy command from p83"
-[2025-06-26 16:49:22.359] CPU Core 1: "Dummy command from p83"
-[2025-06-26 16:49:22.436] CPU Core 1: "Dummy command from p83"
-[2025-06-26 16:49:22.467] CPU Core 1: "Dummy command from p83"
-[2025-06-26 16:49:22.498] CPU Core 1: "Dummy command from p83"
-[2025-06-26 16:49:22.529] CPU Core 1: Process p83 has completed all its commands.

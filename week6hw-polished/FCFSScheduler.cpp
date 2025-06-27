@@ -80,7 +80,7 @@ void FCFSScheduler::add_dummy_process()
             std::string message;
             if (msg_type(gen) == 0)
             {
-                message = "\"Hello world from " + name + "!\"";
+                message = "Hello world from " + name + "!";
             }
             else
             {

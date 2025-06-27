@@ -1,9 +1,0 @@
-[2025-06-26 16:49:41.003] CPU Core 3: "Hello world from p95!"
-[2025-06-26 16:49:41.033] CPU Core 3: "Hello world from p95!"
-[2025-06-26 16:49:41.064] CPU Core 3: "Dummy command from p95"
-[2025-06-26 16:49:41.095] CPU Core 3: "Dummy command from p95"
-[2025-06-26 16:49:41.172] CPU Core 3: "Dummy command from p95"
-[2025-06-26 16:49:41.202] CPU Core 3: "Dummy command from p95"
-[2025-06-26 16:49:41.233] CPU Core 3: "Hello world from p95!"
-[2025-06-26 16:49:41.312] CPU Core 3: "Dummy command from p95"
-[2025-06-26 16:49:41.346] CPU Core 3: Process p95 has completed all its commands.

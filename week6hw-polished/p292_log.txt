@@ -1,8 +1,0 @@
-[2025-06-26 16:54:48.074] CPU Core 3: "Hello world from p292!"
-[2025-06-26 16:54:48.165] CPU Core 3: "Dummy command from p292"
-[2025-06-26 16:54:48.259] CPU Core 3: "Dummy command from p292"
-[2025-06-26 16:54:48.290] CPU Core 3: "Dummy command from p292"
-[2025-06-26 16:54:48.322] CPU Core 3: "Dummy command from p292"
-[2025-06-26 16:54:48.413] CPU Core 3: "Dummy command from p292"
-[2025-06-26 16:54:48.444] CPU Core 3: "Hello world from p292!"
-[2025-06-26 16:54:48.475] CPU Core 3: Process p292 has completed all its commands.

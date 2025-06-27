@@ -1,9 +1,0 @@
-[2025-06-26 16:54:29.324] CPU Core 2: "Dummy command from p278"
-[2025-06-26 16:54:29.355] CPU Core 2: "Dummy command from p278"
-[2025-06-26 16:54:29.386] CPU Core 2: "Dummy command from p278"
-[2025-06-26 16:54:29.418] CPU Core 2: "Dummy command from p278"
-[2025-06-26 16:54:29.494] CPU Core 2: "Dummy command from p278"
-[2025-06-26 16:54:29.525] CPU Core 2: "Hello world from p278!"
-[2025-06-26 16:54:29.570] CPU Core 2: "Dummy command from p278"
-[2025-06-26 16:54:29.601] CPU Core 2: "Dummy command from p278"
-[2025-06-26 16:54:29.633] CPU Core 2: Process p278 has completed all its commands.

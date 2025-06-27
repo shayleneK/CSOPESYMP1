@@ -1,8 +1,0 @@
-[2025-06-26 16:55:19.439] CPU Core 0: "Dummy command from p312"
-[2025-06-26 16:55:19.468] CPU Core 0: "Hello world from p312!"
-[2025-06-26 16:55:19.545] CPU Core 0: "Dummy command from p312"
-[2025-06-26 16:55:19.576] CPU Core 0: "Hello world from p312!"
-[2025-06-26 16:55:19.654] CPU Core 0: "Dummy command from p312"
-[2025-06-26 16:55:19.731] CPU Core 0: "Dummy command from p312"
-[2025-06-26 16:55:19.761] CPU Core 0: "Hello world from p312!"
-[2025-06-26 16:55:19.838] CPU Core 0: Process p312 has completed all its commands.

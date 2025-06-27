@@ -1,9 +1,0 @@
-[2025-06-26 16:55:13.189] CPU Core 1: "Dummy command from p305"
-[2025-06-26 16:55:13.265] CPU Core 1: "Dummy command from p305"
-[2025-06-26 16:55:13.296] CPU Core 1: "Hello world from p305!"
-[2025-06-26 16:55:13.420] CPU Core 1: "Dummy command from p305"
-[2025-06-26 16:55:13.451] CPU Core 1: "Hello world from p305!"
-[2025-06-26 16:55:13.482] CPU Core 1: "Dummy command from p305"
-[2025-06-26 16:55:13.513] CPU Core 1: "Dummy command from p305"
-[2025-06-26 16:55:13.543] CPU Core 1: "Dummy command from p305"
-[2025-06-26 16:55:13.574] CPU Core 1: Process p305 has completed all its commands.

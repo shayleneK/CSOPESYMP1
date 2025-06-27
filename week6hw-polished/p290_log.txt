@@ -1,9 +1,0 @@
-[2025-06-26 16:54:48.072] CPU Core 0: "Hello world from p290!"
-[2025-06-26 16:54:48.118] CPU Core 0: "Dummy command from p290"
-[2025-06-26 16:54:48.212] CPU Core 0: "Dummy command from p290"
-[2025-06-26 16:54:48.290] CPU Core 0: "Dummy command from p290"
-[2025-06-26 16:54:48.322] CPU Core 0: "Dummy command from p290"
-[2025-06-26 16:54:48.353] CPU Core 0: "Dummy command from p290"
-[2025-06-26 16:54:48.398] CPU Core 0: "Dummy command from p290"
-[2025-06-26 16:54:48.522] CPU Core 0: "Hello world from p290!"
-[2025-06-26 16:54:48.554] CPU Core 0: Process p290 has completed all its commands.

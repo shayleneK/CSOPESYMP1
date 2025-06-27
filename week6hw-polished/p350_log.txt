@@ -1,9 +1,0 @@
-[2025-06-26 16:56:22.180] CPU Core 3: "Dummy command from p350"
-[2025-06-26 16:56:22.256] CPU Core 3: "Dummy command from p350"
-[2025-06-26 16:56:22.288] CPU Core 3: "Dummy command from p350"
-[2025-06-26 16:56:22.319] CPU Core 3: "Hello world from p350!"
-[2025-06-26 16:56:22.395] CPU Core 3: "Dummy command from p350"
-[2025-06-26 16:56:22.428] CPU Core 3: "Dummy command from p350"
-[2025-06-26 16:56:22.459] CPU Core 3: "Dummy command from p350"
-[2025-06-26 16:56:22.581] CPU Core 3: "Dummy command from p350"
-[2025-06-26 16:56:22.612] CPU Core 3: Process p350 has completed all its commands.

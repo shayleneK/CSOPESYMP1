@@ -1,8 +1,0 @@
-[2025-06-26 16:48:38.343] CPU Core 1: "Dummy command from p54"
-[2025-06-26 16:48:38.373] CPU Core 1: "Dummy command from p54"
-[2025-06-26 16:48:38.405] CPU Core 1: "Dummy command from p54"
-[2025-06-26 16:48:38.528] CPU Core 1: "Dummy command from p54"
-[2025-06-26 16:48:38.559] CPU Core 1: "Dummy command from p54"
-[2025-06-26 16:48:38.590] CPU Core 1: "Dummy command from p54"
-[2025-06-26 16:48:38.622] CPU Core 1: "Dummy command from p54"
-[2025-06-26 16:48:38.699] CPU Core 1: Process p54 has completed all its commands.

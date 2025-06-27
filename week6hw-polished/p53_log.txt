@@ -1,9 +1,0 @@
-[2025-06-26 16:48:38.389] CPU Core 2: "Dummy command from p53"
-[2025-06-26 16:48:38.420] CPU Core 2: "Dummy command from p53"
-[2025-06-26 16:48:38.450] CPU Core 2: "Dummy command from p53"
-[2025-06-26 16:48:38.528] CPU Core 2: "Dummy command from p53"
-[2025-06-26 16:48:38.559] CPU Core 2: "Hello world from p53!"
-[2025-06-26 16:48:38.590] CPU Core 2: "Hello world from p53!"
-[2025-06-26 16:48:38.622] CPU Core 2: "Dummy command from p53"
-[2025-06-26 16:48:38.653] CPU Core 2: "Dummy command from p53"
-[2025-06-26 16:48:38.684] CPU Core 2: Process p53 has completed all its commands.

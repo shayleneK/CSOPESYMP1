@@ -1,8 +1,0 @@
-[2025-06-26 16:48:57.298] CPU Core 2: "Dummy command from p66"
-[2025-06-26 16:48:57.329] CPU Core 2: "Dummy command from p66"
-[2025-06-26 16:48:57.360] CPU Core 2: "Hello world from p66!"
-[2025-06-26 16:48:57.390] CPU Core 2: "Dummy command from p66"
-[2025-06-26 16:48:57.468] CPU Core 2: "Dummy command from p66"
-[2025-06-26 16:48:57.499] CPU Core 2: "Dummy command from p66"
-[2025-06-26 16:48:57.529] CPU Core 2: "Hello world from p66!"
-[2025-06-26 16:48:57.560] CPU Core 2: Process p66 has completed all its commands.

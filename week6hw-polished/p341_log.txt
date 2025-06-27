@@ -1,9 +1,0 @@
-[2025-06-26 16:56:09.654] CPU Core 2: "Dummy command from p341"
-[2025-06-26 16:56:09.730] CPU Core 2: "Dummy command from p341"
-[2025-06-26 16:56:09.761] CPU Core 2: "Dummy command from p341"
-[2025-06-26 16:56:09.792] CPU Core 2: "Hello world from p341!"
-[2025-06-26 16:56:09.823] CPU Core 2: "Dummy command from p341"
-[2025-06-26 16:56:09.900] CPU Core 2: "Hello world from p341!"
-[2025-06-26 16:56:09.932] CPU Core 2: "Hello world from p341!"
-[2025-06-26 16:56:09.962] CPU Core 2: "Dummy command from p341"
-[2025-06-26 16:56:10.008] CPU Core 2: Process p341 has completed all its commands.

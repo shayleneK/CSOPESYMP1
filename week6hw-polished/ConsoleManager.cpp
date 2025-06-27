@@ -16,6 +16,7 @@
 #include "FCFSScheduler.h"
 
 #include <iomanip>
+#include <sstream>
 
 ConsoleManager *ConsoleManager::instance = nullptr;
 ConsoleManager::ConsoleManager(Scheduler *scheduler)
