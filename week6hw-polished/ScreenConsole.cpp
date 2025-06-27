@@ -1,9 +1,12 @@
 #include "ScreenConsole.h"
 #include "ConsoleManager.h"
+#include "Process.h"
+
 #include <iostream>
 #include <chrono>
 #include <ctime>
 #include <iomanip>
+#include <memory>
 
 ScreenConsole::ScreenConsole(const std::string &name)
     : AConsole("screen"),
@@ -54,4 +57,14 @@ void ScreenConsole::onEnabled()
 bool ScreenConsole::isRunning() const
 {
     return false;
+}
+
+void ScreenConsole::attachProcess(std::shared_ptr<Process> process)
+{
+    this->attachedProcess = process;
+}
+
+std::shared_ptr<Process> ScreenConsole::getAttachedProcess() const
+{
+    return attachedProcess;
 }

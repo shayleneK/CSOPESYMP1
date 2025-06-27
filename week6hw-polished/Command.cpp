@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iostream>
 #include <thread>
+#include <sstream>
 
 Process *current_process = nullptr;
 
@@ -39,6 +40,16 @@ void PrintCommand::execute(Process *proc, int core_id, std::ofstream &output_fil
 
     // Final terminal output
     std::cout << "[Core " << core_id << "] " << process_name << ": " << output << std::endl;
+
+    // Add Log Entry
+    auto now = std::chrono::system_clock::now();
+    std::time_t time_now = std::chrono::system_clock::to_time_t(now);
+
+    std::ostringstream log_entry;
+    log_entry << "(" << std::put_time(std::localtime(&time_now), "%Y-%m-%d %H:%M:%S") << ") "
+              << "Core:" << core_id << " - PRINT(\"" << output << "\")";
+
+    proc->logs.push_back(log_entry.str());
 }
 
 SleepCommand::SleepCommand(int duration) : duration_ms(duration) {}

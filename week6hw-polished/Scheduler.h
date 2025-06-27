@@ -33,6 +33,7 @@ public:
     int get_max_instructions() const { return max_instructions; }
 
     bool is_done();
+    std::shared_ptr<Process> find_process_by_name(const std::string &name);
 
 protected:
     std::vector<bool> core_available;

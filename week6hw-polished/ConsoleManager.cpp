@@ -168,9 +168,31 @@ void ConsoleManager::processInput()
         if (!name.empty())
         {
             createConsole("screen", name);
-            auto proc = ProcessFactory::generate_dummy_process(name, scheduler->get_min_instructions(), scheduler->get_max_instructions());
-            proc->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
+
+            auto proc = ProcessFactory::generate_dummy_process(
+                name,
+                scheduler->get_min_instructions(),
+                scheduler->get_max_instructions());
+
+            proc->add_command(std::make_shared<PrintCommand>(
+                "Process " + name + " has completed all its commands."));
+
             scheduler->add_process(proc);
+
+            // Attach the process to the created ScreenConsole
+            auto screenConsole = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);
+            if (screenConsole)
+            {
+                screenConsole->attachProcess(proc);
+            }
+            else
+            {
+                std::cout << "[ERROR] Failed to attach process to screen: not a valid ScreenConsole.\n";
+                return;
+            }
+
+            // Switch to the new screen
+            switchConsole(name);
 
             std::cout << "[screen] Process \"" << name << "\" created and added to the ready queue.\n";
         }
@@ -179,6 +201,7 @@ void ConsoleManager::processInput()
             std::cout << "[ERROR] Screen name cannot be empty.\n";
         }
     }
+
     else if (command.rfind("screen -r ", 0) == 0)
     {
         std::string name = command.substr(10); // after "screen -r "
@@ -318,7 +341,7 @@ void ConsoleManager::processInput()
                     report << " - " << p->name << "   ("
                            << std::put_time(start_tm, "%Y-%m-%d %H:%M:%S") << ")"
                            << "  Core: " << p->current_core
-                           << ", " << p->current_command_index << " / 100\n";
+                           << ", " << p->current_command_index << " / " << p->commands.size() << "\n";
                 }
             }
         }
@@ -342,7 +365,7 @@ void ConsoleManager::processInput()
                     std::tm *finish_tm = std::localtime(&finish_time_t);
                     report << " - " << p->name << "   ("
                            << std::put_time(finish_tm, "%Y-%m-%d %H:%M:%S") << ")"
-                           << " Finished  100 / 100\n";
+                           << " Finished" << p->current_command_index << " / " << p->current_command_index << "\n";
                 }
             }
         }
@@ -355,6 +378,101 @@ void ConsoleManager::processInput()
 
         report.close();
         std::cout << "[INFO] screen -ls output saved to csopesy-log.txt\n";
+    }
+    else if (command == "process-smi")
+    {
+        if (!std::dynamic_pointer_cast<ScreenConsole>(getActiveConsole()))
+        {
+            std::cout << "[ERROR] 'process-smi' can only be used inside a screen console.\n";
+            return;
+        }
+
+        auto screen = std::dynamic_pointer_cast<ScreenConsole>(getActiveConsole());
+        auto proc = screen->getAttachedProcess(); // Assuming you have this method
+
+        if (!proc)
+        {
+            std::cout << "[ERROR] No process attached to this screen.\n";
+            return;
+        }
+
+        std::cout << "\n[Process Info]\n";
+        std::cout << "Name: " << proc->name << "\n";
+        std::cout << "Status: " << (proc->is_finished ? "Finished" : "Running") << "\n";
+
+        if (proc->has_started)
+        {
+            std::time_t start = std::chrono::system_clock::to_time_t(proc->start_time);
+            std::cout << "Start Time: " << std::put_time(std::localtime(&start), "%Y-%m-%d %H:%M:%S") << "\n";
+        }
+
+        if (proc->is_finished)
+        {
+            std::time_t end = std::chrono::system_clock::to_time_t(proc->finish_time);
+            std::cout << "Finish Time: " << std::put_time(std::localtime(&end), "%Y-%m-%d %H:%M:%S") << "\n";
+        }
+
+        std::cout << "Instructions Executed: " << proc->current_command_index << " / "
+                  << proc->get_instruction_count() << "\n";
+
+        std::cout << "Logs:\n";
+        for (const auto &log : proc->logs)
+        {
+            std::cout << log << "\n";
+        }
+
+        if (proc->is_finished)
+        {
+            std::cout << "Finished!\n";
+        }
+    }
+
+    else if (command == "process -smi")
+    {
+        if (!std::dynamic_pointer_cast<ScreenConsole>(getActiveConsole()))
+        {
+            std::cout << "[ERROR] 'process-smi' can only be used inside a screen console.\n";
+            return;
+        }
+
+        auto screen = std::dynamic_pointer_cast<ScreenConsole>(getActiveConsole());
+        auto proc = screen->getAttachedProcess(); // Assuming you have this method
+
+        if (!proc)
+        {
+            std::cout << "[ERROR] No process attached to this screen.\n";
+            return;
+        }
+
+        std::cout << "\n[Process Info]\n";
+        std::cout << "Name: " << proc->name << "\n";
+        std::cout << "Status: " << (proc->is_finished ? "Finished" : "Running") << "\n";
+
+        if (proc->has_started)
+        {
+            std::time_t start = std::chrono::system_clock::to_time_t(proc->start_time);
+            std::cout << "Start Time: " << std::put_time(std::localtime(&start), "%Y-%m-%d %H:%M:%S") << "\n";
+        }
+
+        if (proc->is_finished)
+        {
+            std::time_t end = std::chrono::system_clock::to_time_t(proc->finish_time);
+            std::cout << "Finish Time: " << std::put_time(std::localtime(&end), "%Y-%m-%d %H:%M:%S") << "\n";
+        }
+
+        std::cout << "Instructions Executed: " << proc->current_command_index << " / "
+                  << proc->get_instruction_count() << "\n";
+
+        std::cout << "Logs:\n";
+        for (const auto &log : proc->logs)
+        {
+            std::cout << log << "\n";
+        }
+
+        if (proc->is_finished)
+        {
+            std::cout << "Finished!\n";
+        }
     }
 
     else if (command == "help")

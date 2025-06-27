@@ -1,3 +1,13 @@
-[CPU UTILIZATION REPORT]
-CPU 0: Util(%) = 100, Queue Size = 0
-CPU 1: Util(%) = 68.2192, Queue Size = 0
+--------------------------------------------------------------------------------
+               CSOPESY Operating System Emulator - FCFS Scheduler
+--------------------------------------------------------------------------------
+
+Running Processes:
+  (None)
+
+Finished Processes:
+ - p01   (2025-06-28 00:44:44) Finished  100 / 100
+ - p02   (2025-06-28 00:44:51) Finished  100 / 100
+
+Type "screen -ls" to view processes or "cpu-util" for CPU stats.
+Type "exit" to quit the emulator.

@@ -17,6 +17,7 @@ public:
     std::vector<std::shared_ptr<Command>> commands;
     bool has_started = false;
     bool is_finished = false;
+    std::vector<std::string> logs;
 
     std::chrono::system_clock::time_point start_time;
     std::chrono::system_clock::time_point finish_time;
