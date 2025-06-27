@@ -2,6 +2,8 @@
 #include "Process.h"
 #include "ProcessFactory.h"
 #include "Command.h"
+#include "ConsoleManager.h"
+
 #include <random>
 #include <chrono>
 #include <iostream>
@@ -35,31 +37,47 @@ void RRScheduler::start()
     generator_thread = std::thread([this]()
                                    {
         int cycle_counter = 0;
-        const int batch_process_frequency = 100;
 
         while (generating_processes && running)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            if (++cycle_counter >= batch_process_frequency)
+            if (++cycle_counter >= batch_process_freq)
             {
-                for (int i = 0; i < 4; ++i)
-                {
-                    std::ostringstream oss;
-                    oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
-                    std::string name = oss.str();
-
-                    auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions);
-                    process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
-                    add_process(process);
-                }
+                generate_new_process();
                 cycle_counter = 0;
             }
         } });
 }
 
+void RRScheduler::generate_new_process()
+{
+    std::ostringstream oss;
+    oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
+    std::string name = oss.str();
+
+    auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions);
+    process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
+    add_process(process);
+
+    ConsoleManager::getInstance()->createConsole("screen", name);
+    std::cout << "[RR] Generated new process " << name
+              << " at CPU cycle " << ConsoleManager::getCpuCycles() << std::endl;
+}
+
+void RRScheduler::on_cpu_cycle(uint64_t cycle_number)
+{
+    if (!generating_processes || batch_process_freq <= 0)
+        return;
+
+    if (cycle_number % batch_process_freq == 0)
+    {
+        generate_new_process();
+    }
+}
+
 void RRScheduler::start_process_generator()
 {
-    start(); // Unified with start()
+    start(); // Same behavior now
 }
 
 void RRScheduler::start_core_threads()

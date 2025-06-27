@@ -4,6 +4,7 @@
 #include <chrono>
 #include <ctime>
 #include <iomanip>
+#include <memory>
 
 ScreenConsole::ScreenConsole(const std::string &name)
     : AConsole("screen"),

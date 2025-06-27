@@ -16,6 +16,8 @@ public:
     void stop_scheduler();
     bool is_scheduler_running() const;
     void run_core(int core_id);
+    void on_cpu_cycle(uint64_t cycle_number) override;
+    void generate_new_process();
 
 private:
     std::atomic<bool> generating_processes{false};

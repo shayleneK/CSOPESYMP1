@@ -6,7 +6,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-
+#include "ConsoleManager.h"
 FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins)
     : Scheduler(num_cores, min_ins, max_ins)
 {
@@ -16,6 +16,39 @@ FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins)
 
 FCFSScheduler::~FCFSScheduler() { stop_scheduler(); }
 
+// void FCFSScheduler::start()
+// {
+//     if (generating_processes.load())
+//         return;
+
+//     generating_processes.store(true);
+//     running = true;
+
+//     generator_thread = std::thread([this]()
+//                                    {
+//         int cycle_counter = 0;
+//         const int batch_process_frequency = 100;
+
+//         while (generating_processes.load() && running)
+//         {
+//             std::this_thread::sleep_for(std::chrono::milliseconds(50));
+//             if (++cycle_counter >= batch_process_frequency)
+//             {
+//                 std::ostringstream oss;
+//                 oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
+//                 std::string name = oss.str();
+
+//                 auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions);
+//                 process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
+//                 add_process(process);
+
+//                 ConsoleManager::getInstance()->createConsole("screen", name);
+
+//                 cycle_counter = 0;
+//             }
+//         } });
+// }
+
 void FCFSScheduler::start()
 {
     if (generating_processes.load())
@@ -23,28 +56,6 @@ void FCFSScheduler::start()
 
     generating_processes.store(true);
     running = true;
-
-    generator_thread = std::thread([this]()
-                                   {
-        int cycle_counter = 0;
-        const int batch_process_frequency = 100;
-
-        while (generating_processes.load() && running)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            if (++cycle_counter >= batch_process_frequency)
-            {
-                std::ostringstream oss;
-                oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
-                std::string name = oss.str();
-
-                auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions);
-                process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
-                add_process(process);
-
-                cycle_counter = 0;
-            }
-        } });
 }
 
 void FCFSScheduler::start_process_generator()
@@ -128,4 +139,42 @@ void FCFSScheduler::run_core(int core_id)
             }
         }
     }
+}
+void FCFSScheduler::on_cpu_cycle(uint64_t cycle_number)
+{
+    if (!generating_processes.load())
+        return;
+
+    if (cycle_number % batch_process_freq == 0)
+    {
+        generate_new_process();
+    }
+}
+
+void FCFSScheduler::generate_new_process()
+{
+    // Generate unique name
+    std::ostringstream oss;
+    oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
+    std::string name = oss.str();
+
+    // Create the process
+    auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions);
+
+    // Optional: only add final print if not already present
+    auto finalPrint = std::make_shared<PrintCommand>("Process " + name + " has completed all its commands.");
+    process->add_command(finalPrint);
+
+    // Add to scheduler queue
+    add_process(process);
+
+    // Create screen only if not already present
+    ConsoleManager *cm = ConsoleManager::getInstance();
+    if (!cm->hasConsole(name))
+    {
+        cm->createConsole("screen", name);
+    }
+
+    std::cout << "[FCFS] Generated new process " << name
+              << " at CPU cycle " << ConsoleManager::getCpuCycles() << std::endl;
 }
