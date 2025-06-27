@@ -63,11 +63,6 @@ void MainConsole::process(std::string &command)
         manager.switchConsole(name);
         // return true;
     }
-    else if (command == "screen -l")
-    {
-        manager.listScreens();
-        // return false;
-    }
     else if (command == "clear")
     {
         clearConsole();
@@ -82,7 +77,7 @@ void MainConsole::process(std::string &command)
 
     else if (command == "marquee")
     {
-    manager.switchConsole(MARQUEE_CONSOLE);
+        manager.switchConsole(MARQUEE_CONSOLE);
     }
 
     else

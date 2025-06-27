@@ -1,23 +1,17 @@
-#ifndef COMMAND_H
-#define COMMAND_H
+#pragma once
 
 #include <string>
-#include <fstream>
-#include <chrono>
-#include <ctime>
-#include <iomanip>
 #include <memory>
-#include <iostream>
 #include <vector>
-#include <stdint.h>
+#include <cstdint>
 
 class Process;
 
 class Command
 {
 public:
-    virtual void execute(Process *proc, int core_id, std::ofstream &output_file, const std::string &process_name) = 0;
     virtual ~Command() = default;
+    virtual void execute(Process *proc, int core_id, const std::string &process_name) = 0;
 };
 
 class PrintCommand : public Command
@@ -27,8 +21,7 @@ private:
 
 public:
     PrintCommand(const std::string &msg);
-    // Executes print, writes to output_file with timestamp and core ID.
-    void execute(Process *proc, int core_id, std::ofstream &output_file, const std::string &process_name);
+    void execute(Process *proc, int core_id, const std::string &process_name) override;
 };
 
 class SleepCommand : public Command
@@ -38,8 +31,7 @@ private:
 
 public:
     SleepCommand(int duration);
-    // Simulates work by pausing the current thread.
-    void execute(Process *proc, int core_id, std::ofstream &output_file, const std::string &process_name);
+    void execute(Process *proc, int core_id, const std::string &process_name) override;
 };
 
 class DeclareCommand : public Command
@@ -50,7 +42,7 @@ private:
 
 public:
     DeclareCommand(const std::string &var, uint16_t val);
-    void execute(Process *proc, int core_id, std::ofstream &output_file, const std::string &process_name);
+    void execute(Process *proc, int core_id, const std::string &process_name) override;
 };
 
 class AddCommand : public Command
@@ -62,9 +54,8 @@ private:
 
 public:
     AddCommand(const std::string &tgt, const std::string &o1, const std::string &o2,
-               bool o1_var = true, bool o2_var = true,
-               uint16_t v1 = 0, uint16_t v2 = 0);
-    void execute(Process *proc, int core_id, std::ofstream &output_file, const std::string &process_name);
+               bool o1_var, bool o2_var, uint16_t v1, uint16_t v2);
+    void execute(Process *proc, int core_id, const std::string &process_name) override;
 };
 
 class SubtractCommand : public Command
@@ -76,9 +67,8 @@ private:
 
 public:
     SubtractCommand(const std::string &tgt, const std::string &o1, const std::string &o2,
-                    bool o1_var = true, bool o2_var = true,
-                    uint16_t v1 = 0, uint16_t v2 = 0);
-    void execute(Process *proc, int core_id, std::ofstream &output_file, const std::string &process_name);
+                    bool o1_var, bool o2_var, uint16_t v1, uint16_t v2);
+    void execute(Process *proc, int core_id, const std::string &process_name) override;
 };
 
 class ForCommand : public Command
@@ -89,7 +79,5 @@ private:
 
 public:
     ForCommand(const std::vector<std::shared_ptr<Command>> &cmds, int reps);
-    void execute(Process *proc, int core_id, std::ofstream &output_file, const std::string &process_name);
+    void execute(Process *proc, int core_id, const std::string &process_name) override;
 };
-
-#endif // COMMAND_H

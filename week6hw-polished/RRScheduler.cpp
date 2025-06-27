@@ -12,7 +12,7 @@
 #include <iomanip>
 #include <sstream>
 
-RRScheduler::RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins)
+RRScheduler::RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins, int delay_per_exec)
     : Scheduler(num_cores, min_ins, max_ins), time_quantum(quantum_ms)
 {
     if (quantum_ms % 50 != 0)
@@ -67,10 +67,6 @@ void RRScheduler::generate_new_process()
     {
         screen->attachProcess(process);
     }
-    else
-    {
-        std::cout << "[ERROR] Could not create screen for: " << name << "\n";
-    }
 }
 
 void RRScheduler::start_process_generator()
@@ -119,6 +115,7 @@ void RRScheduler::run_core(int core_id)
                 process = ready_queue.front();
                 ready_queue.pop();
                 core_available[core_id] = false;
+                std::cout << "[RR][Core " << core_id << "] Picked process " << process->getName() << " from ready queue.\n";
             }
             else
             {
@@ -133,39 +130,42 @@ void RRScheduler::run_core(int core_id)
                 current_processes[core_id] = process;
             }
 
-            int commands_per_quantum = time_quantum / 50;
-            for (int i = 0; i < commands_per_quantum && !process->is_finished; ++i)
+            int cpu_ticks_exec = 0;
+            int max_cpu_ticks = time_quantum;
+            std::cout << "[RR][Core " << core_id << "] Executing up to " << max_cpu_ticks
+                      << " commands for process " << process->getName() << ".\n";
+
+            while (cpu_ticks_exec < max_cpu_ticks && !process->isFinished())
             {
-                auto start = std::chrono::high_resolution_clock::now();
-                process->execute(core_id);
-                auto end = std::chrono::high_resolution_clock::now();
-
-                int duration = static_cast<int>(
-                    std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
-
+                if (process->can_execute())
                 {
-                    std::unique_lock<std::mutex> lock(queue_mutex);
-                    core_util_time[core_id] += duration;
-                    core_process_count[core_id]++;
-                    total_cpu_time = std::max(total_cpu_time, core_util_time[core_id]);
+                    process->execute(core_id);
+                    cpu_ticks_exec++;
+                }
+                else
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10)); // busy wait
                 }
             }
 
             {
                 std::unique_lock<std::mutex> lock(queue_mutex);
-                if (!process->is_finished)
+                if (!process->isFinished())
                 {
                     ready_queue.push(process);
+                    std::cout << "[RR][Core " << core_id << "] Preempting process " << process->getName()
+                              << " after " << cpu_ticks_exec << " CPU ticks.\n";
                 }
                 core_available[core_id] = true;
             }
 
             {
                 std::unique_lock<std::mutex> lock(running_mutex);
-                if (process->is_finished)
+                if (process->isFinished())
                 {
                     current_processes.erase(core_id);
-                    std::cout << "[RR] Process " << process->name << " finished on core " << core_id << std::endl;
+                    std::cout << "[RR][Core " << core_id << "] Process " << process->getName()
+                              << " finished and removed from running list.\n";
                 }
             }
         }

@@ -4,12 +4,16 @@
 #include <iostream>
 #include <thread>
 #include <sstream>
+#include <chrono>
+#include <ctime>
+#include <iostream>
+#include <iomanip>
 
 Process *current_process = nullptr;
 
 PrintCommand::PrintCommand(const std::string &msg) : message(msg) {}
 
-void PrintCommand::execute(Process *proc, int core_id, std::ofstream &output_file, const std::string &process_name)
+void PrintCommand::execute(Process *proc, int core_id, const std::string &process_name)
 {
     std::string output;
 
@@ -51,7 +55,7 @@ void PrintCommand::execute(Process *proc, int core_id, std::ofstream &output_fil
 
 SleepCommand::SleepCommand(int duration) : duration_ms(duration) {}
 
-void SleepCommand::execute(Process *proc, int core_id, std::ofstream &output_file, const std::string &process_name)
+void SleepCommand::execute(Process *proc, int core_id, const std::string &process_name)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(duration_ms));
 }
@@ -59,7 +63,7 @@ void SleepCommand::execute(Process *proc, int core_id, std::ofstream &output_fil
 DeclareCommand::DeclareCommand(const std::string &var, uint16_t val)
     : var_name(var), value(val) {}
 
-void DeclareCommand::execute(Process *proc, int core_id, std::ofstream &output_file, const std::string &process_name)
+void DeclareCommand::execute(Process *proc, int core_id, const std::string &process_name)
 {
     proc->set_var(var_name, value);
 }
@@ -69,7 +73,7 @@ AddCommand::AddCommand(const std::string &tgt, const std::string &o1, const std:
     : target(tgt), op1(o1), op2(o2), op1_is_var(o1_var), op2_is_var(o2_var),
       val1(v1), val2(v2) {}
 
-void AddCommand::execute(Process *proc, int core_id, std::ofstream &output_file, const std::string &process_name)
+void AddCommand::execute(Process *proc, int core_id, const std::string &process_name)
 {
     uint16_t a = op1_is_var ? proc->get_var(op1) : val1;
     uint16_t b = op2_is_var ? proc->get_var(op2) : val2;
@@ -84,7 +88,7 @@ SubtractCommand::SubtractCommand(const std::string &tgt, const std::string &o1, 
     : target(tgt), op1(o1), op2(o2), op1_is_var(o1_var), op2_is_var(o2_var),
       val1(v1), val2(v2) {}
 
-void SubtractCommand::execute(Process *proc, int core_id, std::ofstream &output_file, const std::string &process_name)
+void SubtractCommand::execute(Process *proc, int core_id, const std::string &process_name)
 {
     int32_t a = op1_is_var ? proc->get_var(op1) : val1;
     int32_t b = op2_is_var ? proc->get_var(op2) : val2;
@@ -97,13 +101,13 @@ void SubtractCommand::execute(Process *proc, int core_id, std::ofstream &output_
 ForCommand::ForCommand(const std::vector<std::shared_ptr<Command>> &cmds, int reps)
     : instructions(cmds), repeat(reps) {}
 
-void ForCommand::execute(Process *proc, int core_id, std::ofstream &output_file, const std::string &process_name)
+void ForCommand::execute(Process *proc, int core_id, const std::string &process_name)
 {
     for (int i = 0; i < repeat; ++i)
     {
         for (auto &cmd : instructions)
         {
-            cmd->execute(proc, core_id, output_file, process_name);
+            cmd->execute(proc, core_id, process_name);
         }
     }
 }

@@ -54,7 +54,6 @@ private:
 
 public:
     static ConsoleManager *getInstance();
-
     void drawConsole();
     void processInput();
 
@@ -73,7 +72,7 @@ public:
 
     void createConsole(const std::string &type, const std::string &name);
     void switchConsole(const std::string &name);
-    void listScreens() const;
+    // void listScreens() const;
     bool hasConsole(const std::string &name) const;
 
     void render_header();

@@ -8,7 +8,7 @@
 class RRScheduler : public Scheduler
 {
 public:
-    RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins);
+    RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins, int delay_per_exec);
     ~RRScheduler();
 
     void run_core(int core_id) override;

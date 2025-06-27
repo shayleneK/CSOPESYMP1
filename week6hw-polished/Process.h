@@ -1,45 +1,53 @@
-#ifndef PROCESS_H
-#define PROCESS_H
+#pragma once
 
 #include <string>
 #include <vector>
+#include <map>
 #include <memory>
 #include <chrono>
-#include <fstream> // Required for std::ofstream
-#include <unordered_map>
 
-class Command; // Forward declaration
+class Command;
 
 class Process
 {
 public:
     std::string name;
-    std::vector<std::shared_ptr<Command>> commands;
-    bool has_started = false;
     bool is_finished = false;
-    std::vector<std::string> logs;
+    bool has_started = false;
+    int current_command_index = 0;
+    int current_core = -1; // Default unless set via constructor
 
     std::chrono::system_clock::time_point start_time;
     std::chrono::system_clock::time_point finish_time;
 
-    std::string output_filename; // Log file name for this process
-    std::ofstream output_file;   // Stream to the log file
+    std::vector<std::shared_ptr<Command>> commands;
+    std::vector<std::string> logs;
 
-    std::unordered_map<std::string, uint16_t> variables; // storing variables
-
-    Process(const std::string &name);
-    ~Process(); // Closes the output_file
+    Process(const std::string &name, int core_id = -1); // updated constructor
 
     void add_command(std::shared_ptr<Command> cmd);
-    void execute(int core_id); // Executes commands, logs to output_file
-
-    int current_core = -1;         // Core ID where this process is running
-    int current_command_index = 0; // Index of current command being executed
+    void execute(int core_id);
 
     uint16_t get_var(const std::string &var_name);
     void set_var(const std::string &var_name, uint16_t value);
 
     size_t get_instruction_count() const;
-};
+    bool can_execute();
 
-#endif // PROCESS_H
+    void log_execution(int core_id, const std::string &message);
+
+    // Getters
+    std::string getName() const;
+    bool isFinished() const;
+    bool hasStarted() const;
+    int getCurrentCore() const;
+    int getCurrentCommandIndex() const;
+    std::chrono::system_clock::time_point getStartTime() const;
+    std::chrono::system_clock::time_point getFinishTime() const;
+    const std::vector<std::string> &getLogs() const;
+
+private:
+    int delay_per_exec = 0;
+    int delay_counter = 0;
+    std::map<std::string, uint16_t> variables;
+};
