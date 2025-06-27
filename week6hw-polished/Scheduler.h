@@ -42,7 +42,7 @@ public:
 
     virtual bool is_scheduler_running() const = 0;
 
-    virtual void stop_scheduler() {}
+    virtual void stop_scheduler();
 
 protected:
     std::vector<bool> core_available;

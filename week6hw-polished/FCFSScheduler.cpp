@@ -19,7 +19,7 @@ FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins)
 
 FCFSScheduler::~FCFSScheduler()
 {
-    stop_scheduler();
+    shutdown();
 }
 
 void FCFSScheduler::start()
@@ -34,10 +34,27 @@ void FCFSScheduler::start_process_generator()
     start();
 }
 
+void FCFSScheduler::shutdown()
+{
+    running = false;
+    stop_scheduler();
+
+    // Stop all core threads
+    queue_condition.notify_all(); // Unblock waiting threads
+    for (auto &t : cpu_cores)
+    {
+        if (t.joinable())
+            t.join();
+    }
+}
+
 void FCFSScheduler::stop_scheduler()
 {
-    generating_processes.store(false);
-    std::cout << "[FCFS DEBUG] Scheduler stopped\n";
+    generating_processes = false;
+    if (generator_thread.joinable())
+    {
+        generator_thread.join();
+    }
 }
 
 bool FCFSScheduler::is_scheduler_running() const

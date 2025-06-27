@@ -176,3 +176,13 @@ std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats()
 
     return stats;
 }
+
+void Scheduler::stop_scheduler()
+{
+    generating_processes = false;
+
+    if (generator_thread.joinable())
+    {
+        generator_thread.join();
+    }
+}

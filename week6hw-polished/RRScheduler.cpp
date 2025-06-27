@@ -23,7 +23,7 @@ RRScheduler::RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins
 
 RRScheduler::~RRScheduler()
 {
-    stop_scheduler();
+    shutdown();
 }
 
 void RRScheduler::start()
@@ -47,6 +47,19 @@ void RRScheduler::start()
                 cycle_counter = 0;
             }
         } });
+}
+void RRScheduler::shutdown()
+{
+    running = false;
+    stop_scheduler();
+
+    // Stop all core threads
+    queue_condition.notify_all(); // Unblock waiting threads
+    for (auto &t : cpu_cores)
+    {
+        if (t.joinable())
+            t.join();
+    }
 }
 
 void RRScheduler::generate_new_process()
