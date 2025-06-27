@@ -24,6 +24,7 @@ ConsoleManager::ConsoleManager()
 {
     // Initialize consoles
     consoleTable[MAIN_CONSOLE] = std::make_shared<MainConsole>();
+    consoleTable[MARQUEE_CONSOLE] = std::make_shared<MarqueeConsole>();
     // consoleTable[MARQUEE_CONSOLE] = std::make_shared<MarqueeConsole>(scheduler);
     // consoleTable[SCHEDULING_CONSOLE] = std::make_shared<SchedulingConsole>(scheduler);
 

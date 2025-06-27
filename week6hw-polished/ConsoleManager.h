@@ -16,9 +16,9 @@
 enum ConsoleType
 {
     MAIN_CONSOLE,
-    MARQUEE_CONSOLE,
     SCHEDULING_CONSOLE,
-    MEMORY_CONSOLE
+    MEMORY_CONSOLE,
+    MARQUEE_CONSOLE
 };
 
 class Scheduler; // Forward declaration

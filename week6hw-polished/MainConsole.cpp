@@ -1,7 +1,7 @@
 #include "MainConsole.h"
 #include "ConsoleManager.h"
 #include "MarqueeConsole.h"
-// #include "ScreenConsole.h" // Ensure this exists
+#include "ScreenConsole.h" // Ensure this exists
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>
@@ -78,11 +78,11 @@ void MainConsole::process(std::string &command)
         std::cout << "Exiting CLI. Goodbye!\n";
         manager.setRunning(false);
         // return false;
-        
     }
-    else if (command == "marquee") {
-    MarqueeConsole *marquee = new MarqueeConsole();
-    this->requestSubconsole(marquee);
+
+    else if (command == "marquee")
+    {
+    manager.switchConsole(MARQUEE_CONSOLE);
     }
 
     else
