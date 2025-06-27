@@ -47,7 +47,7 @@ void Scheduler::shutdown()
         generator_thread.join();
 
     // stop and join core threads
-    for (auto &t : core_threads)
+    for (auto &t : cpu_cores)
     {
         if (t.joinable())
             t.join();

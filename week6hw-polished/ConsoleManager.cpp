@@ -158,6 +158,15 @@ void ConsoleManager::startCpuLoop()
     cpuThread = std::thread(&ConsoleManager::cpuCycleLoop, this);
 }
 
+void ConsoleManager::stopCpuLoop()
+{
+    std::cerr << "[DEBUG] stopCpuLoop called\n";
+    runningCpuLoop = false;
+    if (cpuThread.joinable())
+        cpuThread.join();
+    std::cerr << "[DEBUG] cpuThread.join() done\n";
+}
+
 void ConsoleManager::cpuCycleLoop()
 {
     while (runningCpuLoop && isRunning())
@@ -169,6 +178,8 @@ void ConsoleManager::cpuCycleLoop()
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+
+    std::cerr << "[DEBUG] Exiting cpuCycleLoop()\n";
 }
 
 void ConsoleManager::processInput()
@@ -186,7 +197,13 @@ void ConsoleManager::processInput()
             try
             {
                 if (scheduler)
-                    scheduler->shutdown(); // Might be triggering termination
+                    ConsoleManager::getInstance()->stopCpuLoop(); // STOP THIS FIRST
+                std::cerr << "CPU stopped " << "\n";
+
+                if (scheduler)
+                    scheduler->shutdown(); // Then shut down scheduler logic
+
+                setRunning(false); // breaks main loop
             }
             catch (const std::exception &e)
             {

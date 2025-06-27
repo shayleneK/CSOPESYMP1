@@ -37,7 +37,6 @@ private:
     std::shared_ptr<AConsole> m_previousConsole;
 
     std::atomic<bool> cpu_loop_running = false;
-    std::thread cpu_loop_thread;
     std::atomic<int> global_tick = 0;
     ConsoleManager();
     void initializeConsoles();
@@ -81,6 +80,7 @@ public:
     void render_finished_processes(const std::vector<std::shared_ptr<Process>> &processes);
 
     void startCpuLoop();
+    void stopCpuLoop();
     static uint64_t getCpuCycles();
 };
 
