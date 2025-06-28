@@ -37,7 +37,7 @@ void RRScheduler::start()
 
         while (generating_processes.load() && running)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            //std::this_thread::sleep_for(std::chrono::milliseconds(50));
             if (++cycle_counter >= batch_process_freq)
             {
                 generate_new_process();
@@ -151,10 +151,7 @@ void RRScheduler::run_core(int core_id)
                     process->execute(core_id);
                     cpu_ticks_exec++;
                 }
-                else
-                {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                }
+                
             }
 
             auto end = std::chrono::high_resolution_clock::now();

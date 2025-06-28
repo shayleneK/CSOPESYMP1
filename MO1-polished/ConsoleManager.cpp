@@ -179,7 +179,7 @@ void ConsoleManager::cpuCycleLoop()
             scheduler->on_cpu_cycle(cpu_cycles.load());
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        
     }
 }
 

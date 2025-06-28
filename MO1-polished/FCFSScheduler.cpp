@@ -104,10 +104,7 @@ void FCFSScheduler::run_core(int core_id)
                 {
                     process->execute(core_id);
                 }
-                else
-                {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                }
+                
             }
 
             auto end = std::chrono::high_resolution_clock::now();
