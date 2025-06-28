@@ -1,8 +1,12 @@
 Names: 
 BIACORA, Marcus Bruno
+
 JALANDONI, Cassandra
+
 KINTANAR, Shaylene Cassandra
+
 QUIRANTE, Julian Roy
+
 
 Instructions:
 1. Open Terminal
