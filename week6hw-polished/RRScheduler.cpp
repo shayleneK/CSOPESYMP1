@@ -200,25 +200,10 @@ std::vector<std::shared_ptr<Process>> RRScheduler::get_running_processes()
 {
     std::vector<std::shared_ptr<Process>> result;
 
+    std::unique_lock<std::mutex> lock(running_mutex);
+    for (const auto &entry : current_processes)
     {
-        std::unique_lock<std::mutex> lock(queue_mutex);
-        std::queue<std::shared_ptr<Process>> temp = ready_queue;
-        while (!temp.empty())
-        {
-            auto proc = temp.front();
-            temp.pop();
-
-            if (proc->getCurrentCommandIndex() > 0)
-                result.push_back(proc);
-        }
-    }
-
-    {
-        std::unique_lock<std::mutex> lock(running_mutex);
-        for (const auto &entry : current_processes)
-        {
-            result.push_back(entry.second);
-        }
+        result.push_back(entry.second);
     }
 
     return result;
