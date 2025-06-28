@@ -463,19 +463,6 @@ void ConsoleManager::render_header(std::ostream &out)
 
     out << std::string(80, '-') << "\n\n";
 
-    for (const auto& [core_id, data] : stats)
-    {
-        float util = data.count("util") ? data.at("util") : 0.0f;
-        bool available = data.count("available") ? data.at("available") > 0.5f : false;
-        bool busy = data.count("busy") ? data.at("busy") > 0.5f : false;
-
-        out << std::setw(10) << core_id
-            << std::setw(12) << std::fixed << std::setprecision(2) << util
-            << std::setw(12) << (available ? "Yes" : "No")
-            << std::setw(8) << (busy ? "Yes" : "No") << "\n";
-    }
-
-    out << std::string(80, '-') << "\n\n";
 }
 
 void ConsoleManager::render_footer(std::ostream &out)
