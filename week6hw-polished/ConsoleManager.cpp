@@ -291,10 +291,26 @@ void ConsoleManager::processInput()
     }
     else if (command == "screen -ls")
     {
-        render_header();
-        render_running_processes(scheduler->get_running_processes());
-        render_finished_processes(scheduler->get_finished_processes());
-        render_footer();
+        render_header(std::cout);
+        render_running_processes(scheduler->get_running_processes(),std::cout);
+        render_finished_processes(scheduler->get_finished_processes(),std::cout);
+        render_footer(std::cout);
+    }
+    else if( command == "report-util"){
+        std::ofstream log_file("csopesy-log.txt", std::ios::app);
+        if (!log_file)
+        {
+            std::cerr << "[ERROR] Unable to open csopesy-log.txt for writing.\n";
+            return;
+        }
+
+        render_header(log_file);
+        render_running_processes(scheduler->get_running_processes(), log_file);
+        render_finished_processes(scheduler->get_finished_processes(), log_file);
+        render_footer(log_file);
+        log_file << "Type \"screen -ls\" to view processes or \"exit\" to quit.\n";
+        log_file << std::string(80, '=') << "\n\n";
+        log_file.close();
     }
     else if (command == "marquee")
     {
@@ -357,16 +373,17 @@ void ConsoleManager::processInput()
     }
 }
 
-void ConsoleManager::render_header()
+void ConsoleManager::render_header(std::ostream &out)
 {
+    auto stats = scheduler->get_cpu_stats(); 
     std::string type = dynamic_cast<FCFSScheduler *>(scheduler.get()) ? "FCFS Scheduler"
                        : dynamic_cast<RRScheduler *>(scheduler.get()) ? "RR Scheduler"
                                                                       : "Unknown";
 
     std::string title = "CSOPESY Operating System Emulator - " + type;
 
-    std::cout << title << "\n";
-    std::cout << std::string(80, '-') << "\n\n";
+    out << title << "\n";
+    out << std::string(80, '-') << "\n\n";
 
     if (scheduler)
     {
@@ -385,20 +402,30 @@ void ConsoleManager::render_header()
         if (total_cores > 0)
             avg_util /= total_cores;
 
-        std::cout << "Cores Used: " << used << " / " << total_cores << "\n";
-        std::cout << "Cores Available: " << (total_cores - used) << "\n";
-        std::cout << "Average CPU Utilization: " << std::fixed << std::setprecision(1) << avg_util << " %\n";
+        out << "Cores Used: " << used << " / " << total_cores << "\n";
+        out << "Cores Available: " << (total_cores - used) << "\n";
+        out << "Average CPU Utilization: " << std::fixed << std::setprecision(1) << avg_util << " %\n";
     }
 
-    std::cout << std::string(80, '-') << "\n\n";
+    out << std::string(80, '-') << "\n\n";
+
+    for (const auto &[core_id, data] : stats)
+        {
+            out << "Core " << core_id
+                << ": Utilization = " << std::fixed << std::setprecision(1)
+                << data.at("util") << "%, Status = "
+                << (data.at("busy") > 0.0f ? "Busy" : "Idle") << "\n";
+        }
+
+        out << std::string(80, '-') << "\n\n";
 }
 
-void ConsoleManager::render_footer()
+void ConsoleManager::render_footer(std::ostream &out)
 {
     std::cout << "\nType \"screen -ls\" to view processes or \"exit\" to quit.\n";
 }
 
-void ConsoleManager::render_running_processes(const std::vector<std::shared_ptr<Process>> &list)
+void ConsoleManager::render_running_processes(const std::vector<std::shared_ptr<Process>> &list, std::ostream &out)
 {
     std::cout << "Running Processes:\n";
     if (list.empty())
@@ -421,7 +448,7 @@ void ConsoleManager::render_running_processes(const std::vector<std::shared_ptr<
     }
 }
 
-void ConsoleManager::render_finished_processes(const std::vector<std::shared_ptr<Process>> &list)
+void ConsoleManager::render_finished_processes(const std::vector<std::shared_ptr<Process>> &list, std::ostream &out)
 {
     std::cout << "Finished Processes:\n";
     if (list.empty())
