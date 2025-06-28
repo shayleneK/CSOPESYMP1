@@ -205,8 +205,11 @@ std::vector<std::shared_ptr<Process>> RRScheduler::get_running_processes()
         std::queue<std::shared_ptr<Process>> temp = ready_queue;
         while (!temp.empty())
         {
-            result.push_back(temp.front());
+            auto proc = temp.front();
             temp.pop();
+
+            if (proc->getCurrentCommandIndex() > 0)
+                result.push_back(proc);
         }
     }
 
