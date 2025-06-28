@@ -4,6 +4,7 @@
 #include <chrono>
 #include <conio.h>
 #include <windows.h>
+#include "ConsoleManager.h"
 
 MarqueeConsole::MarqueeConsole() : AConsole("Marquee Console") {}
 
@@ -29,16 +30,20 @@ bool MarqueeConsole::isRunning() const {
     return !exitFlag;
 }
 
-void MarqueeConsole::run() {
+void MarqueeConsole::run()
+{
     exitFlag = false;
-    x = 1; y = 2;
-    dx = 1; dy = 1;
+    x = 1;
+    y = 2;
+    dx = 1;
+    dy = 1;
     input.clear();
 
     int width = getConsoleWidth();
     int height = getConsoleHeight();
 
-    while (!exitFlag) {
+    while (!exitFlag)
+    {
         clearScreen();
         drawTitle();
         drawMarquee(x, y, marqueeText);
@@ -53,28 +58,41 @@ void MarqueeConsole::run() {
         if (y <= 1 || y >= height - 5)
             dy *= -1;
 
-        if (_kbhit()) {
+        if (_kbhit())
+        {
             char c = _getch();
-            if (c == '\r') {
-                if (input == "exit") {
+            if (c == '\r')
+            {
+                if (input == "exit")
+                {
                     exitFlag = true;
-                } else if (input == "clear") {
+                }
+                else if (input == "clear")
+                {
                     commandHistory.clear();
-                } else {
+                }
+                else
+                {
                     commandHistory.push_back(input);
                 }
                 input.clear();
-            } else if (c == '\b') {
-                if (!input.empty()) input.pop_back();
-            } else if (isprint(c)) {
+            }
+            else if (c == '\b')
+            {
+                if (!input.empty())
+                    input.pop_back();
+            }
+            else if (isprint(c))
+            {
                 input += c;
             }
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(REFRESH_DELAY));
     }
-}
 
+    ConsoleManager::getInstance()->switchConsole(MAIN_CONSOLE);
+}
 void MarqueeConsole::drawTitle() {
     COORD titlePos = {0, 0};
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), titlePos);
