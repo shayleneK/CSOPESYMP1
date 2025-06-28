@@ -76,10 +76,10 @@ public:
     // void listScreens() const;
     bool hasConsole(const std::string &name) const;
 
-    void render_header();
-    void render_footer();
-    void render_running_processes(const std::vector<std::shared_ptr<Process>> &processes);
-    void render_finished_processes(const std::vector<std::shared_ptr<Process>> &processes);
+    void render_header(std::ostream &out);
+    void render_footer(std::ostream &out);
+    void render_running_processes(const std::vector<std::shared_ptr<Process>> &processes, std::ostream &out);
+    void render_finished_processes(const std::vector<std::shared_ptr<Process>> &processes, std::ostream &out);
 
     void startCpuLoop();
     void stopCpuLoop();
