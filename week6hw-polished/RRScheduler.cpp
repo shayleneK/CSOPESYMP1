@@ -130,6 +130,7 @@ void RRScheduler::run_core(int core_id)
             {
                 std::unique_lock<std::mutex> lock(running_mutex);
                 current_processes[core_id] = process;
+                process_to_core[process] = core_id;
             }
 
             int cpu_ticks_exec = 0;
@@ -183,6 +184,7 @@ void RRScheduler::run_core(int core_id)
                 if (process->isFinished())
                 {
                     current_processes.erase(core_id);
+                    process_to_core.erase(process);
                     std::cout << "[RR][Core " << core_id << "] Process " << process->getName()
                               << " finished and removed from running list.\n";
                 }

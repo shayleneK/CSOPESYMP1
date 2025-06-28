@@ -28,6 +28,7 @@ public:
     virtual std::vector<std::shared_ptr<Process>> get_running_processes();
     std::vector<std::shared_ptr<Process>> get_finished_processes();
     std::vector<std::shared_ptr<Process>> get_all_processes();
+    int get_core_of_process(const std::shared_ptr<Process>& p);
     virtual void start_process_generator();
     std::map<int, std::map<std::string, float>> get_cpu_stats();
 
@@ -49,6 +50,7 @@ protected:
     std::queue<std::shared_ptr<Process>> ready_queue;
     std::vector<std::shared_ptr<Process>> all_processes;
     std::map<int, std::shared_ptr<Process>> current_processes; // core_id -> Process
+    std::map<std::shared_ptr<Process>, int> process_to_core;
     std::mutex running_mutex;
     int next_pid = 0;
 

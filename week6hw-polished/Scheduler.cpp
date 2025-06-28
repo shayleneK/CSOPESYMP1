@@ -140,6 +140,15 @@ std::vector<std::shared_ptr<Process>> Scheduler::get_all_processes()
     return all_processes;
 }
 
+int Scheduler::get_core_of_process(const std::shared_ptr<Process>& p) {
+    std::unique_lock<std::mutex> lock(running_mutex);
+    auto it = process_to_core.find(p);
+    if (it != process_to_core.end()) {
+        return it->second;
+    }
+    return -1; // Not found
+}
+
 bool Scheduler::is_done()
 {
     std::unique_lock<std::mutex> lock(queue_mutex);

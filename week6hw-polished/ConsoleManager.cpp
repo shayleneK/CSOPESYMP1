@@ -9,6 +9,7 @@
 #include "SchedulingConsole.h"
 #include "RRScheduler.h"
 #include "FCFSScheduler.h"
+#include "Scheduler.h"
 
 #include <iostream>
 #include <fstream>
@@ -489,8 +490,14 @@ void ConsoleManager::render_running_processes(const std::vector<std::shared_ptr<
             oss << " (" << std::put_time(std::localtime(&start), "%Y-%m-%d %H:%M:%S") << ")";
         }
         oss << "  " << p->getCurrentCommandIndex() << " / " << p->get_instruction_count();
-        out << oss.str() << "\n";
+
+    int core_id = scheduler->get_core_of_process(p);
+    if (core_id != -1)
+        out << " (Core: " << core_id << ")";
+    else
+        out << " (Core: N/A)";
     }
+    out << endl;
 }
 
 void ConsoleManager::render_finished_processes(const std::vector<std::shared_ptr<Process>> &list, std::ostream &out)
