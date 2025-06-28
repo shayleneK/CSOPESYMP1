@@ -480,15 +480,15 @@ void ConsoleManager::render_header(std::ostream &out)
 
 void ConsoleManager::render_footer(std::ostream &out)
 {
-    std::cout << "\nType \"screen -ls\" to view processes or \"exit\" to quit.\n";
+    out << "\nType \"screen -ls\" to view processes or \"exit\" to quit.\n";
 }
 
 void ConsoleManager::render_running_processes(const std::vector<std::shared_ptr<Process>> &list, std::ostream &out)
 {
-    std::cout << "Running Processes:\n";
+    out << "Running Processes:\n";
     if (list.empty())
     {
-        std::cout << "  (None)\n";
+        out << "  (None)\n";
         return;
     }
 
@@ -502,16 +502,16 @@ void ConsoleManager::render_running_processes(const std::vector<std::shared_ptr<
             oss << " (" << std::put_time(std::localtime(&start), "%Y-%m-%d %H:%M:%S") << ")";
         }
         oss << "  " << p->getCurrentCommandIndex() << " / " << p->get_instruction_count();
-        std::cout << oss.str() << "\n";
+        out << oss.str() << "\n";
     }
 }
 
 void ConsoleManager::render_finished_processes(const std::vector<std::shared_ptr<Process>> &list, std::ostream &out)
 {
-    std::cout << "Finished Processes:\n";
+    out << "Finished Processes:\n";
     if (list.empty())
     {
-        std::cout << "  (None)\n";
+        out << "  (None)\n";
         return;
     }
 
@@ -521,7 +521,7 @@ void ConsoleManager::render_finished_processes(const std::vector<std::shared_ptr
             continue;
 
         auto finish = std::chrono::system_clock::to_time_t(p->getFinishTime());
-        std::cout << " - " << p->getName()
+        out << " - " << p->getName()
                   << " (" << std::put_time(std::localtime(&finish), "%Y-%m-%d %H:%M:%S") << ")\n";
     }
 }
