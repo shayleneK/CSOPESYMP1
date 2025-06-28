@@ -273,7 +273,6 @@ void ConsoleManager::processInput()
     }
     else if (command.rfind("screen -s ", 0) == 0)
     {
-
         if (!scheduler)
         {
             std::cout << "[ERROR] Scheduler not initialized.\n";
@@ -290,8 +289,23 @@ void ConsoleManager::processInput()
 
         createConsole("screen", name);
 
-        auto proc = ProcessFactory::generate_dummy_process(name, scheduler->get_min_instructions(), scheduler->get_max_instructions());
-        proc->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
+        // Use min_ins (which == max_ins == 100000)
+        int instruction_count = scheduler->get_min_instructions();
+        auto proc = std::make_shared<Process>(name, -1); // -1 for unassigned core
+
+        // Declare variable x = 0
+        proc->add_command(std::make_shared<DeclareCommand>("x", 0));
+
+        // Alternating PRINT and ADD instructions
+        for (int i = 0; i < instruction_count - 1; i += 2)
+        {
+            proc->add_command(std::make_shared<PrintCommand>("\"Value from: \" + x"));
+
+            int randVal = 1 + (std::rand() % 10); // Random value from 1 to 10
+            proc->add_command(std::make_shared<AddCommand>(
+                "x", "x", "", true, false, 0, randVal));
+        }
+
         scheduler->add_process(proc);
 
         auto screen = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);
@@ -301,6 +315,7 @@ void ConsoleManager::processInput()
         switchConsole(name);
         std::cout << "[screen] Process \"" << name << "\" created and added.\n";
     }
+
     else if (command.rfind("screen -r ", 0) == 0)
     {
         if (!scheduler)
