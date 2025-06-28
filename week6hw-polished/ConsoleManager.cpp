@@ -446,15 +446,15 @@ void ConsoleManager::render_header(std::ostream &out)
 
     out << std::string(80, '-') << "\n\n";
 
-    for (const auto &[core_id, data] : stats)
-        {
-            out << "Core " << core_id
-                << ": Utilization = " << std::fixed << std::setprecision(1)
-                << data.at("util") << "%, Status = "
-                << (data.at("busy") > 0.0f ? "Busy" : "Idle") << "\n";
-        }
+    for (const auto& [core_id, data] : stats)
+    {
+        out << std::setw(10) << core_id
+            << std::setw(12) << std::fixed << std::setprecision(2) << data.at("util")
+            << std::setw(12) << (data.at("available") > 0.5 ? "Yes" : "No")
+            << std::setw(8) << (data.at("busy") > 0.5 ? "Yes" : "No") << "\n";
+    }
 
-        out << std::string(80, '-') << "\n\n";
+    out << std::string(80, '-') << "\n\n";
 }
 
 void ConsoleManager::render_footer(std::ostream &out)

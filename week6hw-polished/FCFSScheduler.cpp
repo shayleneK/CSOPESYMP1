@@ -89,6 +89,8 @@ void FCFSScheduler::run_core(int core_id)
                 current_processes[core_id] = process;
             }
 
+            auto start = std::chrono::high_resolution_clock::now();
+
             while (!process->isFinished())
             {
                 if (!running)
@@ -107,6 +109,15 @@ void FCFSScheduler::run_core(int core_id)
                 }
             }
 
+            auto end = std::chrono::high_resolution_clock::now();
+            int duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+            {
+                std::unique_lock<std::mutex> lock(running_mutex);
+                core_util_time[core_id] += duration_ms;
+                total_cpu_time = std::max(total_cpu_time, core_util_time[core_id]);
+            }
+
             {
                 std::unique_lock<std::mutex> lock(queue_mutex);
                 core_available[core_id] = true;
@@ -114,6 +125,8 @@ void FCFSScheduler::run_core(int core_id)
 
             {
                 std::unique_lock<std::mutex> lock(running_mutex);
+                core_util_time[core_id] += duration_ms;
+                total_cpu_time = std::max(total_cpu_time, core_util_time[core_id]);
                 current_processes.erase(core_id);
                 //std::cout << "[FCFS][Core " << core_id << "] Process " << process->getName()
                        //   << " finished and removed from running list.\n";
