@@ -317,6 +317,13 @@ void ConsoleManager::processInput()
         render_footer(std::cout);
     }   
     else if( command == "report-util"){
+
+        if (!scheduler)
+        {
+            std::cout << "[ERROR] Scheduler not initialized.\n";
+            return;
+        }
+
         std::ofstream log_file("csopesy-log.txt", std::ios::app);
         if (!log_file)
         {
@@ -328,7 +335,7 @@ void ConsoleManager::processInput()
         render_running_processes(scheduler->get_running_processes(), log_file);
         render_finished_processes(scheduler->get_finished_processes(), log_file);
         render_footer(log_file);
-        log_file << "Type \"screen -ls\" to view processes or \"exit\" to quit.\n";
+        //log_file << "Type \"screen -ls\" to view processes or \"exit\" to quit.\n";
         log_file << std::string(80, '=') << "\n\n";
         log_file.close();
     }

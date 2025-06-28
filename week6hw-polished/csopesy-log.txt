@@ -12,3 +12,74 @@ Finished Processes:
 
 Type "screen -ls" to view processes or "cpu-util" for CPU stats.
 Type "exit" to quit the emulator.
+CSOPESY Operating System Emulator - FCFS Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 0 / 2
+Cores Available: 2
+Average CPU Utilization: 0.0 %
+--------------------------------------------------------------------------------
+
+Core 0: Utilization = 0.0%, Status = Idle
+Core 1: Utilization = 0.0%, Status = Idle
+--------------------------------------------------------------------------------
+
+Type "screen -ls" to view processes or "exit" to quit.
+================================================================================
+
+CSOPESY Operating System Emulator - FCFS Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 0 / 2
+Cores Available: 2
+Average CPU Utilization: 0.0 %
+--------------------------------------------------------------------------------
+
+Core 0: Utilization = 0.0%, Status = Idle
+Core 1: Utilization = 0.0%, Status = Idle
+--------------------------------------------------------------------------------
+
+================================================================================
+
+CSOPESY Operating System Emulator - FCFS Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 2 / 2
+Cores Available: 0
+Average CPU Utilization: 0.0 %
+--------------------------------------------------------------------------------
+
+Core 0: Utilization = 0.0%, Status = Busy
+Core 1: Utilization = 0.0%, Status = Busy
+--------------------------------------------------------------------------------
+
+================================================================================
+
+CSOPESY Operating System Emulator - FCFS Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 2 / 2
+Cores Available: 0
+Average CPU Utilization: 0.0 %
+--------------------------------------------------------------------------------
+
+Core 0: Utilization = 0.0%, Status = Busy
+Core 1: Utilization = 0.0%, Status = Busy
+--------------------------------------------------------------------------------
+
+================================================================================
+
+CSOPESY Operating System Emulator - FCFS Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 2 / 2
+Cores Available: 0
+Average CPU Utilization: 0.0 %
+--------------------------------------------------------------------------------
+
+Core 0: Utilization = 0.0%, Status = Busy
+Core 1: Utilization = 0.0%, Status = Busy
+--------------------------------------------------------------------------------
+
+================================================================================
+
