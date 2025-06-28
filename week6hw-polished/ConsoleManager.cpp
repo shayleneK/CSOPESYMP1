@@ -269,7 +269,14 @@ void ConsoleManager::processInput()
         scheduler_initialized = true;
     }
     else if (command.rfind("screen -s ", 0) == 0)
-    {
+    {   
+
+        if (!scheduler)
+        {
+            std::cout << "[ERROR] Scheduler not initialized.\n";
+            return;
+        }
+        
         std::string name = command.substr(10);
         createConsole("screen", name);
 
@@ -285,19 +292,36 @@ void ConsoleManager::processInput()
         std::cout << "[screen] Process \"" << name << "\" created and added.\n";
     }
     else if (command.rfind("screen -r ", 0) == 0)
-    {
+    {   
+        if (!scheduler)
+        {
+            std::cout << "[ERROR] Scheduler not initialized.\n";
+            return;
+        }
+
         std::string name = command.substr(10);
         switchConsole(name);
     }
     else if (command == "screen -ls")
-    {
+    {   
+        if (!scheduler)
+        {
+            std::cout << "[ERROR] Scheduler not initialized.\n";
+            return;
+        }
+
         render_header();
         render_running_processes(scheduler->get_running_processes());
         render_finished_processes(scheduler->get_finished_processes());
         render_footer();
     }
     else if (command == "marquee")
-    {
+    {   
+        if (!scheduler)
+        {
+            std::cout << "[ERROR] Scheduler not initialized.\n";
+            return;
+        }
         switchConsole(MARQUEE_CONSOLE);
     }
     else if (command == "scheduler-start")
