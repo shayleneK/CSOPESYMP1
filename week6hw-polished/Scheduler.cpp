@@ -156,18 +156,15 @@ std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats()
 {
     std::map<int, std::map<std::string, float>> stats;
     std::unique_lock<std::mutex> lock(queue_mutex);
-
+    uint64_t safe_total_time = total_cpu_time > 0 ? total_cpu_time : 1;
     for (size_t core_id = 0; core_id < core_available.size(); ++core_id)
     {
-        float util = 0.0f;
-        if (total_cpu_time > 0)
-        {
-            util = (static_cast<float>(core_util_time[core_id]) / total_cpu_time) * 100.0f;
-        }
+        float util_percent = (static_cast<float>(core_util_time[core_id]) / safe_total_time) * 100.0f;
 
-        stats[core_id]["util"] = util;
-        stats[core_id]["available"] = core_available[core_id] ? 1.0f : 0.0f;
-        stats[core_id]["busy"] = core_available[core_id] ? 0.0f : 1.0f;
+        stats[static_cast<int>(core_id)]["util"] = util_percent;
+        stats[static_cast<int>(core_id)]["busy_time_ms"] = static_cast<float>(core_util_time[core_id]);
+        stats[static_cast<int>(core_id)]["process_count"] = static_cast<float>(core_process_count[core_id]);
+        stats[static_cast<int>(core_id)]["available"] = core_available[core_id] ? 1.0f : 0.0f;
     }
 
     return stats;

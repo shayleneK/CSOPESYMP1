@@ -138,6 +138,8 @@ void RRScheduler::run_core(int core_id)
             std::cout << "[RR][Core " << core_id << "] Executing up to " << max_cpu_ticks
                       << " commands for process " << process->getName() << ".\n";
 
+            auto start = std::chrono::high_resolution_clock::now();
+
             while (cpu_ticks_exec < max_cpu_ticks && !process->isFinished())
             {
                 if (!running)
@@ -157,6 +159,15 @@ void RRScheduler::run_core(int core_id)
                 }
             }
 
+            auto end = std::chrono::high_resolution_clock::now();
+            int duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+            {
+                std::unique_lock<std::mutex> lock(running_mutex);
+                core_util_time[core_id] += duration_ms;
+                total_cpu_time = std::max(total_cpu_time, core_util_time[core_id]);
+            }
+
             {
                 std::unique_lock<std::mutex> lock(queue_mutex);
                 if (!process->isFinished())
@@ -170,6 +181,8 @@ void RRScheduler::run_core(int core_id)
 
             {
                 std::unique_lock<std::mutex> lock(running_mutex);
+                core_util_time[core_id] += duration_ms;
+                total_cpu_time = std::max(total_cpu_time, core_util_time[core_id]);
                 if (process->isFinished())
                 {
                     current_processes.erase(core_id);
@@ -192,8 +205,11 @@ std::vector<std::shared_ptr<Process>> RRScheduler::get_running_processes()
         std::queue<std::shared_ptr<Process>> temp = ready_queue;
         while (!temp.empty())
         {
-            result.push_back(temp.front());
+            auto proc = temp.front();
             temp.pop();
+
+            if (proc->getCurrentCommandIndex() > 0)
+                result.push_back(proc);
         }
     }
 
