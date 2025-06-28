@@ -19,7 +19,7 @@ bool ConfigManager::load(const std::string& filename) {
 
         if (!key.empty()) {
             config_map[key] = value;
-            std::cout << "[DEBUG] Loaded config: " << key << " = " << value << "\n";
+            //std::cout << "[DEBUG] Loaded config: " << key << " = " << value << "\n";
         }
     }
 

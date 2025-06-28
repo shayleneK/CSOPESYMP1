@@ -63,7 +63,7 @@ void FCFSScheduler::run_core(int core_id)
 
             if (!running)
             {
-                std::cout << "[FCFS][Core " << core_id << "] Immediate shutdown triggered.\n";
+               // std::cout << "[FCFS][Core " << core_id << "] Immediate shutdown triggered.\n";
                 break;
             }
 
@@ -125,8 +125,8 @@ void FCFSScheduler::run_core(int core_id)
                 std::unique_lock<std::mutex> lock(running_mutex);
                 current_processes.erase(core_id);
                 process_to_core.erase(process);
-                std::cout << "[FCFS][Core " << core_id << "] Process " << process->getName()
-                          << " finished and removed from running list.\n";
+               // std::cout << "[FCFS][Core " << core_id << "] Process " << process->getName()
+                      //    << " finished and removed from running list.\n";
             }
         }
     }
@@ -178,7 +178,7 @@ void FCFSScheduler::generate_new_process()
     }
     else
     {
-        std::cout << "[FCFS DEBUG] Failed to attach process to screen console: " << name << "\n";
+       // std::cout << "[FCFS DEBUG] Failed to attach process to screen console: " << name << "\n";
     }
 
     //std::cout << "[FCFS DEBUG] New process " << name << " created at tick "

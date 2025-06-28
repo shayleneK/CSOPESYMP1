@@ -84,7 +84,7 @@ void SchedulingConsole::render_footer()
 
 void SchedulingConsole::render_running_processes(const std::vector<std::shared_ptr<Process>> &processes)
 {
-    std::cout << "[DEBUG] Rendering Running Processes " << "\n";
+    //std::cout << "[DEBUG] Rendering Running Processes " << "\n";
 
     std::cout << "Running Processes:\n";
     if (processes.empty())

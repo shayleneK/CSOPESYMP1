@@ -102,7 +102,7 @@ void ConsoleManager::createConsole(const std::string &type, const std::string &n
     if (type == "screen")
     {
         m_consoleTable[name] = std::make_shared<ScreenConsole>(name);
-        std::cout << "Created screen: " << name << "\n";
+       // std::cout << "Created screen: " << name << "\n";
     }
     else
     {
@@ -156,11 +156,11 @@ void ConsoleManager::startCpuLoop()
 
 void ConsoleManager::stopCpuLoop()
 {
-    std::cerr << "[DEBUG] stopCpuLoop called\n";
+    //std::cerr << "[DEBUG] stopCpuLoop called\n";
     runningCpuLoop = false;
     if (cpuThread.joinable())
         cpuThread.join();
-    std::cerr << "[DEBUG] cpuThread.join() done\n";
+   // std::cerr << "[DEBUG] cpuThread.join() done\n";
 }
 
 void ConsoleManager::cpuCycleLoop()
@@ -382,6 +382,7 @@ void ConsoleManager::processInput()
     {   
         if (start_flag) {
             std::cout << "[ERROR] Already started Scheduler\n";
+            return;
         }
 
         if (!scheduler)
