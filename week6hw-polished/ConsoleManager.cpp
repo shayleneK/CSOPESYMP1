@@ -172,14 +172,28 @@ void ConsoleManager::cpuCycleLoop()
     while (runningCpuLoop && isRunning())
     {
         cpu_cycles.fetch_add(1);
+        total_cycles.fetch_add(1);
 
         if (scheduler && scheduler_initialized)
+        {
+            auto running = scheduler->get_running_processes();
+            if (!running.empty())
+                busy_cycles.fetch_add(1);
+
             scheduler->on_cpu_cycle(cpu_cycles.load());
+        }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+}
 
-    std::cerr << "[DEBUG] Exiting cpuCycleLoop()\n";
+double ConsoleManager::getCpuUtilization() const
+{
+    uint64_t total = total_cycles.load();
+    if (total == 0)
+        return 0.0;
+
+    return 100.0 * busy_cycles.load() / total;
 }
 
 void ConsoleManager::processInput()
@@ -345,14 +359,37 @@ void ConsoleManager::processInput()
 
 void ConsoleManager::render_header()
 {
-    std::string type = dynamic_cast<FCFSScheduler *>(scheduler.get()) ? "FCFS Scheduler" : dynamic_cast<RRScheduler *>(scheduler.get()) ? "RR Scheduler"
-                                                                                                                                        : "Unknown";
+    std::string type = dynamic_cast<FCFSScheduler *>(scheduler.get()) ? "FCFS Scheduler"
+                       : dynamic_cast<RRScheduler *>(scheduler.get()) ? "RR Scheduler"
+                                                                      : "Unknown";
 
     std::string title = "CSOPESY Operating System Emulator - " + type;
-    std::string padding((80 - title.length()) / 2, ' ');
 
-    std::cout << std::string(80, '-') << "\n";
-    std::cout << padding << title << "\n";
+    std::cout << title << "\n";
+    std::cout << std::string(80, '-') << "\n\n";
+
+    if (scheduler)
+    {
+        auto stats = scheduler->get_cpu_stats();
+        int total_cores = stats.size();
+        int used = 0;
+        float avg_util = 0.0f;
+
+        for (const auto &[core, data] : stats)
+        {
+            if (data.at("busy") > 0.0f)
+                used++;
+            avg_util += data.at("util");
+        }
+
+        if (total_cores > 0)
+            avg_util /= total_cores;
+
+        std::cout << "Cores Used: " << used << " / " << total_cores << "\n";
+        std::cout << "Cores Available: " << (total_cores - used) << "\n";
+        std::cout << "Average CPU Utilization: " << std::fixed << std::setprecision(1) << avg_util << " %\n";
+    }
+
     std::cout << std::string(80, '-') << "\n\n";
 }
 

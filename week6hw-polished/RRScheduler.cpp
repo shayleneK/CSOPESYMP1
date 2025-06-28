@@ -48,21 +48,6 @@ void RRScheduler::start()
             }
         } });
 }
-void RRScheduler::shutdown()
-{
-    global_shutdown = true;
-    running = false;
-    stop_scheduler();
-
-    // 🔔 Wake all blocked threads
-    queue_condition.notify_all();
-
-    for (auto &t : cpu_cores)
-    {
-        if (t.joinable())
-            t.join();
-    }
-}
 
 void RRScheduler::generate_new_process()
 {

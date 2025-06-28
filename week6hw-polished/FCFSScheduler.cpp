@@ -34,21 +34,6 @@ void FCFSScheduler::start_process_generator()
     start();
 }
 
-void FCFSScheduler::shutdown()
-{
-    global_shutdown = true;
-    running = false;
-    stop_scheduler();
-
-    queue_condition.notify_all();
-
-    for (auto &t : cpu_cores)
-    {
-        if (t.joinable())
-            t.join();
-    }
-}
-
 void FCFSScheduler::stop_scheduler()
 {
     generating_processes = false;

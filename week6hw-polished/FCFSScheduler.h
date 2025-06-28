@@ -12,7 +12,6 @@ public:
     ~FCFSScheduler();
 
     void start() override;
-    void shutdown();
     void stop_scheduler() override;
     bool is_scheduler_running() const override;
     void start_core_threads() override;

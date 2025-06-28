@@ -50,6 +50,8 @@ private:
     bool runningCpuLoop = false;
 
     void cpuCycleLoop(); // The actual loop function
+    std::atomic<uint64_t> total_cycles{0};
+    std::atomic<uint64_t> busy_cycles{0};
 
 public:
     static ConsoleManager *getInstance();
@@ -82,6 +84,7 @@ public:
     void startCpuLoop();
     void stopCpuLoop();
     static uint64_t getCpuCycles();
+    double getCpuUtilization() const;
 };
 
 #endif // CONSOLEMANAGER_H

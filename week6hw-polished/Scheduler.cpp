@@ -38,15 +38,12 @@ void Scheduler::start_core_threads() // IMPORTANT: check where should u run
 
 void Scheduler::shutdown()
 {
-
-    generating_processes.store(false);
+    global_shutdown = true;
     running = false;
+    stop_scheduler();
 
-    // join generator thread
-    if (generator_thread.joinable())
-        generator_thread.join();
+    queue_condition.notify_all();
 
-    // stop and join core threads
     for (auto &t : cpu_cores)
     {
         if (t.joinable())
@@ -168,10 +165,9 @@ std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats()
             util = (static_cast<float>(core_util_time[core_id]) / total_cpu_time) * 100.0f;
         }
 
-        int queue_size = ready_queue.size();
-
         stats[core_id]["util"] = util;
-        stats[core_id]["queue_size"] = static_cast<float>(queue_size);
+        stats[core_id]["available"] = core_available[core_id] ? 1.0f : 0.0f;
+        stats[core_id]["busy"] = core_available[core_id] ? 0.0f : 1.0f;
     }
 
     return stats;

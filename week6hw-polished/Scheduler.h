@@ -56,6 +56,8 @@ protected:
     std::map<int, int> core_util_time;
     int total_cpu_time = 0;
     bool running = true;
+    std::map<int, uint64_t> total_ticks_per_core;
+    std::map<int, uint64_t> busy_ticks_per_core;
 
     std::mutex queue_mutex;
     std::condition_variable queue_condition;

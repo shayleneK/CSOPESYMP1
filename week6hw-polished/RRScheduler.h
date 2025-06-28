@@ -15,7 +15,6 @@ public:
     void start_core_threads() override;
 
     void start() override;
-    void shutdown();
     void stop_scheduler();
     bool is_scheduler_running() const;
     void start_process_generator() override;
