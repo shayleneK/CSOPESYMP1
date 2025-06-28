@@ -358,6 +358,15 @@ void ConsoleManager::processInput()
         scheduler->start();
         std::cout << "[INFO] Scheduler started.\n";
     }
+    else if  (command== "scheduler-stop"){
+       if (!scheduler)
+        {
+            std::cout << "[ERROR] Scheduler not initialized.\n";
+            return;
+        }
+        scheduler->stop_scheduler();
+        std::cout << "[INFO] Scheduler stopped.\n";
+    } 
     else if (command == "process-smi")
     {   
         if (!scheduler)
