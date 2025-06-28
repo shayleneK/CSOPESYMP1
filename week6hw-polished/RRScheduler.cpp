@@ -163,26 +163,23 @@ void RRScheduler::run_core(int core_id)
             int duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
             {
-                std::unique_lock<std::mutex> lock(running_mutex);
-                core_util_time[core_id] += duration_ms;
-                total_cpu_time = std::max(total_cpu_time, core_util_time[core_id]);
-            }
-
-            {
                 std::unique_lock<std::mutex> lock(queue_mutex);
+                core_util_time[core_id] += duration_ms;
+                core_process_count[core_id]++;
+                total_cpu_time = std::max(total_cpu_time, core_util_time[core_id]);
+
                 if (!process->isFinished())
                 {
                     ready_queue.push(process);
                     std::cout << "[RR][Core " << core_id << "] Preempting process " << process->getName()
                               << " after " << cpu_ticks_exec << " CPU ticks.\n";
                 }
+
                 core_available[core_id] = true;
             }
 
             {
                 std::unique_lock<std::mutex> lock(running_mutex);
-                core_util_time[core_id] += duration_ms;
-                total_cpu_time = std::max(total_cpu_time, core_util_time[core_id]);
                 if (process->isFinished())
                 {
                     current_processes.erase(core_id);

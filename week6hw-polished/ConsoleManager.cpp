@@ -421,7 +421,14 @@ void ConsoleManager::processInput()
 
 void ConsoleManager::render_header(std::ostream &out)
 {
-    auto stats = scheduler->get_cpu_stats(); 
+    if (!scheduler)
+    {
+        out << "No scheduler initialized.\n";
+        out << std::string(80, '-') << "\n\n";
+        return;
+    }
+
+    auto stats = scheduler->get_cpu_stats();    
     std::string type = dynamic_cast<FCFSScheduler *>(scheduler.get()) ? "FCFS Scheduler"
                        : dynamic_cast<RRScheduler *>(scheduler.get()) ? "RR Scheduler"
                                                                       : "Unknown";
@@ -431,36 +438,41 @@ void ConsoleManager::render_header(std::ostream &out)
     out << title << "\n";
     out << std::string(80, '-') << "\n\n";
 
-    if (scheduler)
+    int total_cores = stats.size();
+    int used = 0;
+    float avg_util = 0.0f;
+
+    for (const auto &[core, data] : stats)
     {
-        auto stats = scheduler->get_cpu_stats();
-        int total_cores = stats.size();
-        int used = 0;
-        float avg_util = 0.0f;
+        auto it_busy = data.find("busy");
+        auto it_util = data.find("util");
 
-        for (const auto &[core, data] : stats)
-        {
-            if (data.at("busy") > 0.0f)
-                used++;
-            avg_util += data.at("util");
-        }
-
-        if (total_cores > 0)
-            avg_util /= total_cores;
-
-        out << "Cores Used: " << used << " / " << total_cores << "\n";
-        out << "Cores Available: " << (total_cores - used) << "\n";
-        out << "Average CPU Utilization: " << std::fixed << std::setprecision(1) << avg_util << " %\n";
+        if (it_busy != data.end() && it_busy->second > 0.0f)
+            used++;
+        if (it_util != data.end())
+            avg_util += it_util->second;
     }
+
+    if (total_cores > 0)
+        avg_util /= total_cores;
+
+    out << "Cores Used: " << used << " / " << total_cores << "\n";
+    out << "Cores Available: " << (total_cores - used) << "\n";
+    out << "Average CPU Utilization: " << std::fixed << std::setprecision(1) << avg_util << " %\n";
+
 
     out << std::string(80, '-') << "\n\n";
 
     for (const auto& [core_id, data] : stats)
     {
+        float util = data.count("util") ? data.at("util") : 0.0f;
+        bool available = data.count("available") ? data.at("available") > 0.5f : false;
+        bool busy = data.count("busy") ? data.at("busy") > 0.5f : false;
+
         out << std::setw(10) << core_id
-            << std::setw(12) << std::fixed << std::setprecision(2) << data.at("util")
-            << std::setw(12) << (data.at("available") > 0.5 ? "Yes" : "No")
-            << std::setw(8) << (data.at("busy") > 0.5 ? "Yes" : "No") << "\n";
+            << std::setw(12) << std::fixed << std::setprecision(2) << util
+            << std::setw(12) << (available ? "Yes" : "No")
+            << std::setw(8) << (busy ? "Yes" : "No") << "\n";
     }
 
     out << std::string(80, '-') << "\n\n";
