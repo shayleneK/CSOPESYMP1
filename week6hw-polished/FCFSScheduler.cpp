@@ -36,11 +36,12 @@ void FCFSScheduler::start_process_generator()
 
 void FCFSScheduler::shutdown()
 {
+    global_shutdown = true;
     running = false;
     stop_scheduler();
 
-    // Stop all core threads
-    queue_condition.notify_all(); // Unblock waiting threads
+    queue_condition.notify_all();
+
     for (auto &t : cpu_cores)
     {
         if (t.joinable())
@@ -76,7 +77,10 @@ void FCFSScheduler::run_core(int core_id)
                                  { return !running || !ready_queue.empty(); });
 
             if (!running)
+            {
+                std::cout << "[FCFS][Core " << core_id << "] Immediate shutdown triggered.\n";
                 break;
+            }
 
             if (!ready_queue.empty())
             {
@@ -102,6 +106,12 @@ void FCFSScheduler::run_core(int core_id)
 
             while (!process->isFinished())
             {
+                if (!running)
+                {
+                    std::cout << "[FCFS][Core " << core_id << "] Immediate shutdown triggered inside loop.\n";
+                    break;
+                }
+
                 if (process->can_execute())
                 {
                     process->execute(core_id);

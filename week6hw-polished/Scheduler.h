@@ -62,6 +62,7 @@ protected:
 
     std::thread generator_thread;
     std::atomic<bool> generating_processes{false};
+    std::atomic<bool> global_shutdown{false};
 
     // config
     std::vector<std::thread> cpu_cores;

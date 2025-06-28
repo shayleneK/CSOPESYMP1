@@ -50,11 +50,13 @@ void RRScheduler::start()
 }
 void RRScheduler::shutdown()
 {
+    global_shutdown = true;
     running = false;
     stop_scheduler();
 
-    // Stop all core threads
-    queue_condition.notify_all(); // Unblock waiting threads
+    // 🔔 Wake all blocked threads
+    queue_condition.notify_all();
+
     for (auto &t : cpu_cores)
     {
         if (t.joinable())
@@ -128,7 +130,9 @@ void RRScheduler::run_core(int core_id)
                 process = ready_queue.front();
                 ready_queue.pop();
                 core_available[core_id] = false;
-                std::cout << "[RR][Core " << core_id << "] Picked process " << process->getName() << " from ready queue.\n";
+
+                std::cout << "[RR][Core " << core_id << "] Picked process " << process->getName()
+                          << " from ready queue.\n";
             }
             else
             {
@@ -145,11 +149,18 @@ void RRScheduler::run_core(int core_id)
 
             int cpu_ticks_exec = 0;
             int max_cpu_ticks = time_quantum;
+
             std::cout << "[RR][Core " << core_id << "] Executing up to " << max_cpu_ticks
                       << " commands for process " << process->getName() << ".\n";
 
             while (cpu_ticks_exec < max_cpu_ticks && !process->isFinished())
             {
+                if (!running)
+                {
+                    std::cout << "[RR][Core " << core_id << "] Immediate shutdown triggered.\n";
+                    break;
+                }
+
                 if (process->can_execute())
                 {
                     process->execute(core_id);
@@ -157,7 +168,7 @@ void RRScheduler::run_core(int core_id)
                 }
                 else
                 {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10)); // busy wait
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
             }
 
@@ -183,6 +194,8 @@ void RRScheduler::run_core(int core_id)
             }
         }
     }
+
+    std::cout << "[RR][Core " << core_id << "] Core thread exiting.\n";
 }
 
 std::vector<std::shared_ptr<Process>> RRScheduler::get_running_processes()

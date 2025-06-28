@@ -1,5 +1,6 @@
 #include "Process.h"
 #include "Command.h"
+#include "ConsoleManager.h"
 #include <sstream>
 #include <iomanip>
 #include <chrono>
@@ -19,6 +20,8 @@ void Process::execute(int core_id)
         return;
 
     current_core = core_id;
+    if (!ConsoleManager::getInstance()->isRunning()) // or custom global flag
+        return;
 
     if (!has_started)
     {
