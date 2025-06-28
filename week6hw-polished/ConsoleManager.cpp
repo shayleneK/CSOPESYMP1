@@ -482,7 +482,7 @@ void ConsoleManager::render_header(std::ostream &out)
         auto it_busy = data.find("busy");
         auto it_util = data.find("util");
 
-        if (it_busy != data.end() && it_busy->second > 0.0f)
+        if (it_util != data.end() && it_util->second > 0.0f)
             used++;
         if (it_util != data.end())
             avg_util += it_util->second;
