@@ -97,11 +97,6 @@ std::shared_ptr<AConsole> ConsoleManager::getConsoleByName(const std::string &na
 
 void ConsoleManager::createConsole(const std::string &type, const std::string &name)
 {
-    if (m_consoleTable.count(name))
-    {
-        std::cout << "Console \"" << name << "\" already exists.\n";
-        return;
-    }
 
     if (type == "screen")
     {
@@ -276,8 +271,15 @@ void ConsoleManager::processInput()
             std::cout << "[ERROR] Scheduler not initialized.\n";
             return;
         }
-        
+
         std::string name = command.substr(10);
+
+        if (hasConsole(name)) {
+            std::cout << "[ERROR] A screen with this name already exists.\n";
+            return;
+        }
+
+        
         createConsole("screen", name);
 
         auto proc = ProcessFactory::generate_dummy_process(name, scheduler->get_min_instructions(), scheduler->get_max_instructions());
@@ -335,7 +337,12 @@ void ConsoleManager::processInput()
         std::cout << "[INFO] Scheduler started.\n";
     }
     else if (command == "process-smi")
-    {
+    {   
+        if (!scheduler)
+        {
+            std::cout << "[ERROR] Scheduler not initialized.\n";
+            return;
+        }
         auto screen = std::dynamic_pointer_cast<ScreenConsole>(getActiveConsole());
         if (!screen)
         {
