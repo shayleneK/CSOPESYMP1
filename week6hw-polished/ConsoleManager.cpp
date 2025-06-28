@@ -238,7 +238,13 @@ void ConsoleManager::processInput()
         drawConsole();
     }
     else if (command == "initialize")
-    {
+    {   
+
+        if(scheduler_initialized) {
+            std::cout << "[ERROR] Already initialized. \n";
+            return;
+        }
+
         ConfigManager cfg;
         if (!cfg.load("config.txt"))
         {
@@ -253,6 +259,29 @@ void ConsoleManager::processInput()
         int min_ins = cfg.getInt("min-ins", 1000);
         int max_ins = cfg.getInt("max-ins", 2000);
         int delay_per_exec = cfg.getInt("delay-per-exec", 100);
+
+        auto in_range = [](auto v, auto lo, auto hi) { return v >= lo && v <= hi; };
+
+        if (!in_range(num_cpu, 1, 128) ||
+            !in_range(quantum, 1, UINT32_MAX) ||
+            !in_range(batch_freq, 1, UINT32_MAX) ||
+            !in_range(min_ins, 1, UINT32_MAX) ||
+            !in_range(max_ins, 1, UINT32_MAX) ||
+            !in_range(delay_per_exec, 0, UINT32_MAX) ||
+            (min_ins > max_ins) ||
+            (scheduler_type != "rr" && scheduler_type != "fcfs"))
+        {
+            std::cout << "[ERROR] Invalid configuration values:\n";
+            if (!in_range(num_cpu, 1, 128)) std::cout << " - num-cpu must be [1, 128]\n";
+            if (!in_range(quantum, 1, UINT32_MAX)) std::cout << " - quantum-cycles must be [1, 2^32]\n";
+            if (!in_range(batch_freq, 1, UINT32_MAX)) std::cout << " - batch-process-freq must be [1, 2^32]\n";
+            if (!in_range(min_ins, 1, UINT32_MAX)) std::cout << " - min-ins must be [1, 2^32]\n";
+            if (!in_range(max_ins, 1, UINT32_MAX)) std::cout << " - max-ins must be [1, 2^32]\n";
+            if (min_ins > max_ins) std::cout << " - min-ins cannot be greater than max-ins\n";
+            if (!in_range(delay_per_exec, 0, UINT32_MAX)) std::cout << " - delay-per-exec must be [0, 2^32]\n";
+            if (scheduler_type != "rr" && scheduler_type != "fcfs") std::cout << " - scheduler must be \"rr\" or \"fcfs\"\n";
+            return;
+        }
 
         if (scheduler_type == "rr")
             scheduler = std::make_unique<RRScheduler>(num_cpu, quantum, min_ins, max_ins, delay_per_exec);
@@ -350,13 +379,18 @@ void ConsoleManager::processInput()
         switchConsole(MARQUEE_CONSOLE);
     }
     else if (command == "scheduler-start")
-    {
+    {   
+        if (start_flag) {
+            std::cout << "[ERROR] Already started Scheduler\n";
+        }
+
         if (!scheduler)
         {
             std::cout << "[ERROR] Scheduler not initialized.\n";
             return;
         }
         scheduler->start();
+        start_flag = true;
         std::cout << "[INFO] Scheduler started.\n";
     }
     else if  (command== "scheduler-stop"){

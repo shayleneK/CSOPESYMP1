@@ -85,6 +85,8 @@ public:
     void stopCpuLoop();
     static uint64_t getCpuCycles();
     double getCpuUtilization() const;
+
+    bool start_flag = false; 
 };
 
 #endif // CONSOLEMANAGER_H

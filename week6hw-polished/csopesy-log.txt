@@ -274,3 +274,224 @@ Finished Processes:
 Type "screen -ls" to view processes or "exit" to quit.
 ================================================================================
 
+CSOPESY Operating System Emulator - RR Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 0 / 2
+Cores Available: 2
+Average CPU Utilization: 95.7 %
+--------------------------------------------------------------------------------
+
+Running Processes:
+ - p03 (2025-06-28 20:26:35)  147 / 1918 (Core: 0)
+ - p01 (2025-06-28 20:26:27)  585 / 1483 (Core: 1)
+Finished Processes:
+  (None)
+
+Type "screen -ls" to view processes or "exit" to quit.
+================================================================================
+
+CSOPESY Operating System Emulator - RR Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 0 / 2
+Cores Available: 2
+Average CPU Utilization: 76.2 %
+--------------------------------------------------------------------------------
+
+Running Processes:
+ - p02 (2025-06-28 20:26:29)  504 / 4186 (Core: 0)
+ - p01 (2025-06-28 20:26:27)  887 / 1483 (Core: 1)
+Finished Processes:
+  (None)
+
+Type "screen -ls" to view processes or "exit" to quit.
+================================================================================
+
+CSOPESY Operating System Emulator - RR Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 0 / 2
+Cores Available: 2
+Average CPU Utilization: 98.5 %
+--------------------------------------------------------------------------------
+
+Running Processes:
+ - p01 (2025-06-28 20:26:27)  1351 / 1483 (Core: 0)
+ - p02 (2025-06-28 20:26:29)  1196 / 4186 (Core: 1)
+Finished Processes:
+  (None)
+
+Type "screen -ls" to view processes or "exit" to quit.
+================================================================================
+
+CSOPESY Operating System Emulator - RR Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 0 / 2
+Cores Available: 2
+Average CPU Utilization: 97.8 %
+--------------------------------------------------------------------------------
+
+Running Processes:
+ - p03 (2025-06-28 20:26:35)  1352 / 1918 (Core: 0)
+ - p02 (2025-06-28 20:26:29)  1636 / 4186 (Core: 1)
+Finished Processes:
+ - p01 (2025-06-28 20:26:56)
+
+Type "screen -ls" to view processes or "exit" to quit.
+================================================================================
+
+CSOPESY Operating System Emulator - RR Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 0 / 2
+Cores Available: 2
+Average CPU Utilization: 98.1 %
+--------------------------------------------------------------------------------
+
+Running Processes:
+ - p02 (2025-06-28 20:26:29)  2515 / 4186 (Core: 1)
+Finished Processes:
+ - p01 (2025-06-28 20:26:56)
+ - p03 (2025-06-28 20:27:10)
+
+Type "screen -ls" to view processes or "exit" to quit.
+================================================================================
+
+CSOPESY Operating System Emulator - RR Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 0 / 2
+Cores Available: 2
+Average CPU Utilization: 98.1 %
+--------------------------------------------------------------------------------
+
+Running Processes:
+ - p02 (2025-06-28 20:26:29)  2812 / 4186 (Core: 1)
+Finished Processes:
+ - p01 (2025-06-28 20:26:56)
+ - p03 (2025-06-28 20:27:10)
+
+Type "screen -ls" to view processes or "exit" to quit.
+================================================================================
+
+CSOPESY Operating System Emulator - RR Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 0 / 2
+Cores Available: 2
+Average CPU Utilization: 91.5 %
+--------------------------------------------------------------------------------
+
+Running Processes:
+ - p02 (2025-06-28 20:26:29)  3282 / 4186 (Core: 1)
+Finished Processes:
+ - p01 (2025-06-28 20:26:56)
+ - p03 (2025-06-28 20:27:10)
+
+Type "screen -ls" to view processes or "exit" to quit.
+================================================================================
+
+CSOPESY Operating System Emulator - RR Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 0 / 2
+Cores Available: 2
+Average CPU Utilization: 86.2 %
+--------------------------------------------------------------------------------
+
+Running Processes:
+ - p02 (2025-06-28 20:26:29)  3602 / 4186 (Core: 1)
+Finished Processes:
+ - p01 (2025-06-28 20:26:56)
+ - p03 (2025-06-28 20:27:10)
+
+Type "screen -ls" to view processes or "exit" to quit.
+================================================================================
+
+CSOPESY Operating System Emulator - RR Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 0 / 2
+Cores Available: 2
+Average CPU Utilization: 77.1 %
+--------------------------------------------------------------------------------
+
+Running Processes:
+ - p05 (2025-06-28 20:27:58)  261 / 1976 (Core: 0)
+ - p04 (2025-06-28 20:27:53)  488 / 4312 (Core: 1)
+Finished Processes:
+  (None)
+
+Type "screen -ls" to view processes or "exit" to quit.
+================================================================================
+
+CSOPESY Operating System Emulator - RR Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 0 / 2
+Cores Available: 2
+Average CPU Utilization: 88.2 %
+--------------------------------------------------------------------------------
+
+Running Processes:
+ - p06 (2025-06-28 20:28:05)  212 / 1384 (Core: 0)
+ - p01 (2025-06-28 20:27:44)  982 / 1544 (Core: 1)
+Finished Processes:
+  (None)
+
+Type "screen -ls" to view processes or "exit" to quit.
+================================================================================
+
+CSOPESY Operating System Emulator - RR Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 0 / 2
+Cores Available: 2
+Average CPU Utilization: 94.4 %
+--------------------------------------------------------------------------------
+
+Running Processes:
+ - p06 (2025-06-28 20:28:05)  475 / 1384 (Core: 0)
+ - p07 (2025-06-28 20:28:09)  234 / 3901 (Core: 1)
+Finished Processes:
+  (None)
+
+Type "screen -ls" to view processes or "exit" to quit.
+================================================================================
+
+CSOPESY Operating System Emulator - RR Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 0 / 2
+Cores Available: 2
+Average CPU Utilization: 97.2 %
+--------------------------------------------------------------------------------
+
+Running Processes:
+ - p02 (2025-06-28 20:27:46)  733 / 3468 (Core: 0)
+ - p08 (2025-06-28 20:28:16)  90 / 2329 (Core: 1)
+Finished Processes:
+  (None)
+
+Type "screen -ls" to view processes or "exit" to quit.
+================================================================================
+
+CSOPESY Operating System Emulator - RR Scheduler
+--------------------------------------------------------------------------------
+
+Cores Used: 0 / 2
+Cores Available: 2
+Average CPU Utilization: 90.4 %
+--------------------------------------------------------------------------------
+
+Running Processes:
+ - p09 (2025-06-28 20:28:21)  169 / 2802 (Core: 0)
+ - p08 (2025-06-28 20:28:16)  483 / 2329 (Core: 1)
+Finished Processes:
+  (None)
+
+Type "screen -ls" to view processes or "exit" to quit.
+================================================================================
+
