@@ -15,7 +15,6 @@
 RRScheduler::RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins, int delay_per_exec)
     : Scheduler(num_cores, min_ins, max_ins), time_quantum(quantum_ms)
 {
-    
 }
 
 RRScheduler::~RRScheduler()
@@ -37,7 +36,7 @@ void RRScheduler::start()
 
         while (generating_processes.load() && running)
         {
-            //std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
             if (++cycle_counter >= batch_process_freq)
             {
                 generate_new_process();
@@ -113,8 +112,8 @@ void RRScheduler::run_core(int core_id)
                 ready_queue.pop();
                 core_available[core_id] = false;
 
-                //std::cout << "[RR][Core " << core_id << "] Picked process " << process->getName()
-                      //    << " from ready queue.\n";
+                // std::cout << "[RR][Core " << core_id << "] Picked process " << process->getName()
+                //     << " from ready queue.\n";
             }
             else
             {
@@ -133,8 +132,8 @@ void RRScheduler::run_core(int core_id)
             int cpu_ticks_exec = 0;
             int max_cpu_ticks = time_quantum;
 
-           // std::cout << "[RR][Core " << core_id << "] Executing up to " << max_cpu_ticks
-               //       << " commands for process " << process->getName() << ".\n";
+            // std::cout << "[RR][Core " << core_id << "] Executing up to " << max_cpu_ticks
+            //       << " commands for process " << process->getName() << ".\n";
 
             auto start = std::chrono::high_resolution_clock::now();
 
@@ -142,7 +141,7 @@ void RRScheduler::run_core(int core_id)
             {
                 if (!running)
                 {
-                    //std::cout << "[RR][Core " << core_id << "] Immediate shutdown triggered.\n";
+                    // std::cout << "[RR][Core " << core_id << "] Immediate shutdown triggered.\n";
                     break;
                 }
 
@@ -151,7 +150,6 @@ void RRScheduler::run_core(int core_id)
                     process->execute(core_id);
                     cpu_ticks_exec++;
                 }
-                
             }
 
             auto end = std::chrono::high_resolution_clock::now();
@@ -167,8 +165,8 @@ void RRScheduler::run_core(int core_id)
                 {
                     process_to_core.erase(process);
                     ready_queue.push(process);
-                    //std::cout << "[RR][Core " << core_id << "] Preempting process " << process->getName()
-                       //       << " after " << cpu_ticks_exec << " CPU ticks.\n";
+                    // std::cout << "[RR][Core " << core_id << "] Preempting process " << process->getName()
+                    //        << " after " << cpu_ticks_exec << " CPU ticks.\n";
                 }
 
                 core_available[core_id] = true;
@@ -180,14 +178,14 @@ void RRScheduler::run_core(int core_id)
                 {
                     current_processes.erase(core_id);
                     process_to_core.erase(process);
-                   // std::cout << "[RR][Core " << core_id << "] Process " << process->getName()
-                         //     << " finished and removed from running list.\n";
+                    // std::cout << "[RR][Core " << core_id << "] Process " << process->getName()
+                    //     << " finished and removed from running list.\n";
                 }
             }
         }
     }
 
-   // std::cout << "[RR][Core " << core_id << "] Core thread exiting.\n";
+    // std::cout << "[RR][Core " << core_id << "] Core thread exiting.\n";
 }
 
 std::vector<std::shared_ptr<Process>> RRScheduler::get_running_processes()

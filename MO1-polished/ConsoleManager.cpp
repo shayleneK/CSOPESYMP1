@@ -102,7 +102,7 @@ void ConsoleManager::createConsole(const std::string &type, const std::string &n
     if (type == "screen")
     {
         m_consoleTable[name] = std::make_shared<ScreenConsole>(name);
-       // std::cout << "Created screen: " << name << "\n";
+        // std::cout << "Created screen: " << name << "\n";
     }
     else
     {
@@ -156,11 +156,11 @@ void ConsoleManager::startCpuLoop()
 
 void ConsoleManager::stopCpuLoop()
 {
-    //std::cerr << "[DEBUG] stopCpuLoop called\n";
+    // std::cerr << "[DEBUG] stopCpuLoop called\n";
     runningCpuLoop = false;
     if (cpuThread.joinable())
         cpuThread.join();
-   // std::cerr << "[DEBUG] cpuThread.join() done\n";
+    // std::cerr << "[DEBUG] cpuThread.join() done\n";
 }
 
 void ConsoleManager::cpuCycleLoop()
@@ -179,7 +179,7 @@ void ConsoleManager::cpuCycleLoop()
             scheduler->on_cpu_cycle(cpu_cycles.load());
         }
 
-        
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 }
 
@@ -238,9 +238,10 @@ void ConsoleManager::processInput()
         drawConsole();
     }
     else if (command == "initialize")
-    {   
+    {
 
-        if(scheduler_initialized) {
+        if (scheduler_initialized)
+        {
             std::cout << "[ERROR] Already initialized. \n";
             return;
         }
@@ -260,8 +261,6 @@ void ConsoleManager::processInput()
         int max_ins = cfg.getInt("max-ins", 2000);
         int delay_per_exec = cfg.getInt("delay-per-exec", 100);
 
-        
-
         if (scheduler_type == "rr")
             scheduler = std::make_unique<RRScheduler>(num_cpu, quantum, min_ins, max_ins, delay_per_exec);
         else
@@ -273,7 +272,7 @@ void ConsoleManager::processInput()
         scheduler_initialized = true;
     }
     else if (command.rfind("screen -s ", 0) == 0)
-    {   
+    {
 
         if (!scheduler)
         {
@@ -283,12 +282,12 @@ void ConsoleManager::processInput()
 
         std::string name = command.substr(10);
 
-        if (hasConsole(name)) {
+        if (hasConsole(name))
+        {
             std::cout << "[ERROR] A screen with this name already exists.\n";
             return;
         }
 
-        
         createConsole("screen", name);
 
         auto proc = ProcessFactory::generate_dummy_process(name, scheduler->get_min_instructions(), scheduler->get_max_instructions());
@@ -303,7 +302,7 @@ void ConsoleManager::processInput()
         std::cout << "[screen] Process \"" << name << "\" created and added.\n";
     }
     else if (command.rfind("screen -r ", 0) == 0)
-    {   
+    {
         if (!scheduler)
         {
             std::cout << "[ERROR] Scheduler not initialized.\n";
@@ -314,18 +313,19 @@ void ConsoleManager::processInput()
         switchConsole(name);
     }
     else if (command == "screen -ls")
-    {   
+    {
         if (!scheduler)
         {
             std::cout << "[ERROR] Scheduler not initialized.\n";
             return;
         }
         render_header(std::cout);
-        render_running_processes(scheduler->get_running_processes(),std::cout);
-        render_finished_processes(scheduler->get_finished_processes(),std::cout);
+        render_running_processes(scheduler->get_running_processes(), std::cout);
+        render_finished_processes(scheduler->get_finished_processes(), std::cout);
         render_footer(std::cout);
-    }   
-    else if( command == "report-util"){
+    }
+    else if (command == "report-util")
+    {
 
         if (!scheduler)
         {
@@ -344,12 +344,12 @@ void ConsoleManager::processInput()
         render_running_processes(scheduler->get_running_processes(), log_file);
         render_finished_processes(scheduler->get_finished_processes(), log_file);
         render_footer(log_file);
-        //log_file << "Type \"screen -ls\" to view processes or \"exit\" to quit.\n";
+        // log_file << "Type \"screen -ls\" to view processes or \"exit\" to quit.\n";
         log_file << std::string(80, '=') << "\n\n";
         log_file.close();
     }
     else if (command == "marquee")
-    {   
+    {
         if (!scheduler)
         {
             std::cout << "[ERROR] Scheduler not initialized.\n";
@@ -358,8 +358,9 @@ void ConsoleManager::processInput()
         switchConsole(MARQUEE_CONSOLE);
     }
     else if (command == "scheduler-start")
-    {   
-        if (start_flag) {
+    {
+        if (start_flag)
+        {
             std::cout << "[ERROR] Already started Scheduler\n";
             return;
         }
@@ -373,17 +374,18 @@ void ConsoleManager::processInput()
         start_flag = true;
         std::cout << "[INFO] Scheduler started.\n";
     }
-    else if  (command== "scheduler-stop"){
-       if (!scheduler)
+    else if (command == "scheduler-stop")
+    {
+        if (!scheduler)
         {
             std::cout << "[ERROR] Scheduler not initialized.\n";
             return;
         }
         scheduler->stop_scheduler();
         std::cout << "[INFO] Scheduler stopped.\n";
-    } 
+    }
     else if (command == "process-smi")
-    {   
+    {
         if (!scheduler)
         {
             std::cout << "[ERROR] Scheduler not initialized.\n";
@@ -443,7 +445,7 @@ void ConsoleManager::render_header(std::ostream &out)
         return;
     }
 
-    auto stats = scheduler->get_cpu_stats();    
+    auto stats = scheduler->get_cpu_stats();
     std::string type = dynamic_cast<FCFSScheduler *>(scheduler.get()) ? "FCFS Scheduler"
                        : dynamic_cast<RRScheduler *>(scheduler.get()) ? "RR Scheduler"
                                                                       : "Unknown";
@@ -455,29 +457,17 @@ void ConsoleManager::render_header(std::ostream &out)
 
     int total_cores = stats.size();
     int used = 0;
-    float avg_util = 0.0f;
-
-    for (const auto &[core, data] : stats)
-    {
-        auto it_busy = data.find("busy");
-        auto it_util = data.find("util");
-
-        if (it_util != data.end() && it_util->second > 0.0f)
-            used++;
-        if (it_util != data.end())
-            avg_util += it_util->second;
-    }
+    int running_processes = scheduler->get_running_processes().size();
+    float current_util = 0.0f;
 
     if (total_cores > 0)
-        avg_util /= total_cores;
+        current_util = (100.0f * running_processes) / total_cores;
 
-    out << "Cores Used: " << used << " / " << total_cores << "\n";
-    out << "Cores Available: " << (total_cores - used) << "\n";
-    out << "Average CPU Utilization: " << std::fixed << std::setprecision(1) << avg_util << " %\n";
-
+    out << "Cores Used: " << running_processes << " / " << total_cores << "\n";
+    out << "Cores Available: " << (total_cores - running_processes) << "\n";
+    out << "Current CPU Utilization: " << std::fixed << std::setprecision(1) << current_util << " %\n";
 
     out << std::string(80, '-') << "\n\n";
-
 }
 
 void ConsoleManager::render_footer(std::ostream &out)
@@ -505,16 +495,21 @@ void ConsoleManager::render_running_processes(const std::vector<std::shared_ptr<
         }
         oss << "  " << p->getCurrentCommandIndex() << " / " << p->get_instruction_count();
 
-        try {
+        try
+        {
             int core_id = scheduler->get_core_of_process(p);
             if (core_id != -1)
                 oss << " (Core: " << core_id << ")";
             else
                 oss << " (Core: N/A)";
-        } catch (const std::exception &e) {
+        }
+        catch (const std::exception &e)
+        {
             oss << " (Core: ?? - error)";
             std::cerr << "[Error] Failed to get core of process: " << e.what() << "\n";
-        } catch (...) {
+        }
+        catch (...)
+        {
             oss << " (Core: ?? - unknown error)";
             std::cerr << "[Error] Unknown exception in get_core_of_process()\n";
         }
@@ -539,6 +534,6 @@ void ConsoleManager::render_finished_processes(const std::vector<std::shared_ptr
 
         auto finish = std::chrono::system_clock::to_time_t(p->getFinishTime());
         out << " - " << p->getName()
-                  << " (" << std::put_time(std::localtime(&finish), "%Y-%m-%d %H:%M:%S") << ")\n";
+            << " (" << std::put_time(std::localtime(&finish), "%Y-%m-%d %H:%M:%S") << ")\n";
     }
 }
