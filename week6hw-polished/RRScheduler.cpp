@@ -171,6 +171,7 @@ void RRScheduler::run_core(int core_id)
 
                 if (!process->isFinished())
                 {
+                    process_to_core.erase(process);
                     ready_queue.push(process);
                     std::cout << "[RR][Core " << core_id << "] Preempting process " << process->getName()
                               << " after " << cpu_ticks_exec << " CPU ticks.\n";
