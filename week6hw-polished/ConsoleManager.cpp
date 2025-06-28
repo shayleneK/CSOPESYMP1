@@ -491,13 +491,22 @@ void ConsoleManager::render_running_processes(const std::vector<std::shared_ptr<
         }
         oss << "  " << p->getCurrentCommandIndex() << " / " << p->get_instruction_count();
 
-    int core_id = scheduler->get_core_of_process(p);
-    if (core_id != -1)
-        out << " (Core: " << core_id << ")";
-    else
-        out << " (Core: N/A)";
+        try {
+            int core_id = scheduler->get_core_of_process(p);
+            if (core_id != -1)
+                oss << " (Core: " << core_id << ")";
+            else
+                oss << " (Core: N/A)";
+        } catch (const std::exception &e) {
+            oss << " (Core: ?? - error)";
+            std::cerr << "[Error] Failed to get core of process: " << e.what() << "\n";
+        } catch (...) {
+            oss << " (Core: ?? - unknown error)";
+            std::cerr << "[Error] Unknown exception in get_core_of_process()\n";
+        }
+
+        out << oss.str() << "\n";
     }
-    out << endl;
 }
 
 void ConsoleManager::render_finished_processes(const std::vector<std::shared_ptr<Process>> &list, std::ostream &out)
