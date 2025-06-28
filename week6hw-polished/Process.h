@@ -11,6 +11,10 @@ class Command;
 class Process
 {
 public:
+    // === Constructors ===
+    Process(const std::string &name, int core_id = -1);
+
+    // === Public Data Members ===
     std::string name;
     bool is_finished = false;
     bool has_started = false;
@@ -20,23 +24,24 @@ public:
     std::chrono::system_clock::time_point start_time;
     std::chrono::system_clock::time_point finish_time;
 
+    // === Command Management ===
     std::vector<std::shared_ptr<Command>> commands;
-    std::vector<std::string> logs;
-
-    Process(const std::string &name, int core_id = -1); // updated constructor
-
     void add_command(std::shared_ptr<Command> cmd);
-    void execute(int core_id);
+    size_t get_instruction_count() const;
 
+    // === Execution Logic ===
+    void execute(int core_id);
+    bool can_execute();
+
+    // === Variable Management ===
     uint16_t get_var(const std::string &var_name);
     void set_var(const std::string &var_name, uint16_t value);
 
-    size_t get_instruction_count() const;
-    bool can_execute();
-
+    // === Logging ===
+    std::vector<std::string> logs;
     void log_execution(int core_id, const std::string &message);
 
-    // Getters
+    // === Getters ===
     std::string getName() const;
     bool isFinished() const;
     bool hasStarted() const;
@@ -47,6 +52,7 @@ public:
     const std::vector<std::string> &getLogs() const;
 
 private:
+    // === Internal State ===
     int delay_per_exec = 0;
     int delay_counter = 0;
     std::map<std::string, uint16_t> variables;

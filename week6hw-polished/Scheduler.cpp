@@ -104,8 +104,8 @@ void Scheduler::run_core(int core_id)
 }
 void Scheduler::start()
 {
-    start_core_threads();
-    start_process_generator();
+    generating_processes.store(true);
+    running = true;
 }
 
 std::vector<std::shared_ptr<Process>> Scheduler::get_running_processes()
@@ -173,7 +173,6 @@ std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats()
 void Scheduler::stop_scheduler()
 {
     generating_processes = false;
-    
 
     if (generator_thread.joinable())
     {
