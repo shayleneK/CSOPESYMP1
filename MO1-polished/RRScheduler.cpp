@@ -15,10 +15,7 @@
 RRScheduler::RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins, int delay_per_exec)
     : Scheduler(num_cores, min_ins, max_ins), time_quantum(quantum_ms)
 {
-    if (quantum_ms % 50 != 0)
-    {
-        std::cerr << "[WARNING] Time quantum should be a multiple of 50ms.\n";
-    }
+    
 }
 
 RRScheduler::~RRScheduler()
