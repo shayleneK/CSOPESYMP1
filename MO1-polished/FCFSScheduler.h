@@ -8,7 +8,7 @@
 class FCFSScheduler : public Scheduler
 {
 public:
-    FCFSScheduler(int num_cores, int min_ins, int max_ins);
+    FCFSScheduler(int num_cores, int min_ins, int max_ins, int mem_per_proc = 1000);
     ~FCFSScheduler();
 
     void start() override;

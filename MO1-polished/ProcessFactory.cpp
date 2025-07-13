@@ -1,12 +1,17 @@
 #include "ProcessFactory.h"
+#include "Process.h"
 #include "Command.h"
 
 #include <random>
 #include <sstream>
 
-std::shared_ptr<Process> ProcessFactory::generate_dummy_process(const std::string &name, int min_ins, int max_ins)
+std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
+    const std::string &name,
+    size_t mem_required,
+    int min_ins,
+    int max_ins)
 {
-    auto process = std::make_shared<Process>(name);
+    auto process = std::make_shared<Process>(name, mem_required);
 
     std::random_device rd;
     std::mt19937 gen(rd());

@@ -4,17 +4,24 @@
 #include "ConsoleManager.h"
 #include "ScreenConsole.h"
 #include "Command.h"
-#include "ConsoleManager.h"
 
 #include <random>
 #include <chrono>
 #include <iostream>
 #include <iomanip>
+#include <thread>
 #include <sstream>
+#include <fstream>
+#include <cstdint>
+#include <algorithm>
 
-RRScheduler::RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins, int delay_per_exec)
-    : Scheduler(num_cores, min_ins, max_ins), time_quantum(quantum_ms)
+RRScheduler::RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins,
+                         int delay_per_exec, int mem_per_proc, MemoryManager &mem_mgr)
+    : Scheduler(num_cores, min_ins, max_ins, mem_per_proc),
+      time_quantum(quantum_ms),
+      memory_manager_(mem_mgr)
 {
+    process_memory_map_.clear();
 }
 
 RRScheduler::~RRScheduler()
@@ -33,14 +40,18 @@ void RRScheduler::start()
     generator_thread = std::thread([this]()
                                    {
         int cycle_counter = 0;
+        int batch_counter = 0;
 
         while (generating_processes.load() && running)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             if (++cycle_counter >= batch_process_freq)
             {
                 generate_new_process();
                 cycle_counter = 0;
+                save_memory_snapshot(batch_counter);
+                batch_counter++;
+
             }
         } });
 }
@@ -48,26 +59,45 @@ void RRScheduler::start()
 void RRScheduler::generate_new_process()
 {
     std::ostringstream oss;
+    std::cout << "[RR] Creating process with mem_per_proc = " << mem_per_proc << "\n";
+
     oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
     std::string name = oss.str();
 
-    auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions);
+    size_t mem_required = mem_per_proc;
+
+    auto process = ProcessFactory::generate_dummy_process(name, mem_required, min_instructions, max_instructions);
     process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
-    add_process(process);
 
-    ConsoleManager::getInstance()->createConsole("screen", name);
+    int start_address = memory_manager_.allocate(mem_required, process->name);
 
-    auto screen = std::dynamic_pointer_cast<ScreenConsole>(
-        ConsoleManager::getInstance()->getConsoleByName(name));
-    if (screen)
+    if (start_address != -1)
     {
-        screen->attachProcess(process);
+        process->loadToMemory(start_address);
+        add_process(process);
+        process_memory_map_.push_back(process->name);
+
+        ConsoleManager::getInstance()->createConsole("screen", name);
+
+        auto screen = std::dynamic_pointer_cast<ScreenConsole>(
+            ConsoleManager::getInstance()->getConsoleByName(name));
+        if (screen)
+        {
+            screen->attachProcess(process);
+        }
+
+        std::cout << "[RR] Process " << name << " allocated at ["
+                  << start_address << "-" << start_address + mem_required - 1 << "]" << std::endl;
+    }
+    else
+    {
+        std::cout << "[RR] Process " << name << " could not be loaded into memory. Re-queued." << std::endl;
     }
 }
 
 void RRScheduler::start_process_generator()
 {
-    start(); // Same behavior now
+    start();
 }
 
 void RRScheduler::start_core_threads()
@@ -111,9 +141,6 @@ void RRScheduler::run_core(int core_id)
                 process = ready_queue.front();
                 ready_queue.pop();
                 core_available[core_id] = false;
-
-                // std::cout << "[RR][Core " << core_id << "] Picked process " << process->getName()
-                //     << " from ready queue.\n";
             }
             else
             {
@@ -132,18 +159,12 @@ void RRScheduler::run_core(int core_id)
             int cpu_ticks_exec = 0;
             int max_cpu_ticks = time_quantum;
 
-            // std::cout << "[RR][Core " << core_id << "] Executing up to " << max_cpu_ticks
-            //       << " commands for process " << process->getName() << ".\n";
-
             auto start = std::chrono::high_resolution_clock::now();
 
             while (cpu_ticks_exec < max_cpu_ticks && !process->isFinished())
             {
                 if (!running)
-                {
-                    // std::cout << "[RR][Core " << core_id << "] Immediate shutdown triggered.\n";
                     break;
-                }
 
                 if (process->can_execute())
                 {
@@ -165,8 +186,6 @@ void RRScheduler::run_core(int core_id)
                 {
                     process_to_core.erase(process);
                     ready_queue.push(process);
-                    // std::cout << "[RR][Core " << core_id << "] Preempting process " << process->getName()
-                    //        << " after " << cpu_ticks_exec << " CPU ticks.\n";
                 }
 
                 core_available[core_id] = true;
@@ -178,14 +197,18 @@ void RRScheduler::run_core(int core_id)
                 {
                     current_processes.erase(core_id);
                     process_to_core.erase(process);
-                    // std::cout << "[RR][Core " << core_id << "] Process " << process->getName()
-                    //     << " finished and removed from running list.\n";
+
+                    memory_manager_.deallocate(process->name);
+                    process_memory_map_.erase(
+                        std::remove(process_memory_map_.begin(), process_memory_map_.end(), process->name),
+                        process_memory_map_.end());
+
+                    std::cout << "[RR][Core " << core_id << "] Process " << process->getName()
+                              << " finished and memory released." << std::endl;
                 }
             }
         }
     }
-
-    // std::cout << "[RR][Core " << core_id << "] Core thread exiting.\n";
 }
 
 std::vector<std::shared_ptr<Process>> RRScheduler::get_running_processes()
@@ -203,11 +226,52 @@ std::vector<std::shared_ptr<Process>> RRScheduler::get_running_processes()
 
 void RRScheduler::on_cpu_cycle(uint64_t cycle_number)
 {
-    if (!generating_processes.load())
-        return;
+    // if (!generating_processes.load())
+    //     return;
 
-    if (cycle_number % batch_process_freq == 0)
+    // if (cycle_number % batch_process_freq == 0)
+    // {
+    //     generate_new_process();
+
+    //     static uint64_t cycle_counter = 0;
+    //     if (++cycle_counter % time_quantum == 0)
+    //     {
+    //         save_memory_snapshot(cycle_counter);
+    //     }
+    // }
+}
+
+void RRScheduler::save_memory_snapshot(uint64_t batch_number)
+{
+    // Step 1: Generate the filename
+    std::ostringstream filename;
+    filename << "memory_stamp_" << batch_number << ".txt";
+
+    // Step 2: Open the file for writing
+    std::ofstream file(filename.str());
+    if (!file.is_open())
     {
-        generate_new_process();
+        std::cerr << "Failed to open " << filename.str() << std::endl;
+        return;
     }
+
+    // Step 3: Write the timestamp in the desired format
+    std::time_t now = std::time(nullptr);
+    std::tm *local_time = std::localtime(&now);
+    file << "Timestamp: (";
+    file << std::put_time(local_time, "%m/%d/%Y %I:%M:%S%p");
+    file << ")\n";
+
+    // Step 4: Write the number of processes in memory
+    file << "Number of processes in memory: " << process_memory_map_.size() << "\n";
+
+    // Step 5: Write the total external fragmentation
+    file << "Total external fragmentation in KB: " << memory_manager_.getExternalFragmentation() << "\n";
+
+    // Step 6: Write the memory layout
+    file << memory_manager_.printMemoryLayout() << "\n";
+
+    // Step 7: Close the file and log the success
+    file.close();
+    std::cout << "[RR] Saved memory snapshot to " << filename.str() << std::endl;
 }

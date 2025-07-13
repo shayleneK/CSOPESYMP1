@@ -4,12 +4,14 @@
 #include <algorithm>
 #include <iostream>
 
-Scheduler::Scheduler(int num_cores, int min_ins, int max_ins)
-    : min_instructions(min_ins), max_instructions(max_ins)
+Scheduler::Scheduler(int num_cores, int min_ins, int max_ins, int mem_per_proc)
+    : core_available(num_cores, true),
+      min_instructions(min_ins),
+      max_instructions(max_ins),
+      mem_per_proc(mem_per_proc)
 {
     for (int i = 0; i < num_cores; ++i)
     {
-        core_available.push_back(true);
         core_process_count[i] = 0;
         core_util_time[i] = 0;
     }
@@ -140,10 +142,12 @@ std::vector<std::shared_ptr<Process>> Scheduler::get_all_processes()
     return all_processes;
 }
 
-int Scheduler::get_core_of_process(const std::shared_ptr<Process>& p) {
+int Scheduler::get_core_of_process(const std::shared_ptr<Process> &p)
+{
     std::unique_lock<std::mutex> lock(running_mutex);
     auto it = process_to_core.find(p);
-    if (it != process_to_core.end()) {
+    if (it != process_to_core.end())
+    {
         return it->second;
     }
     return -1; // Not found
@@ -182,7 +186,6 @@ std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats()
 void Scheduler::stop_scheduler()
 {
     generating_processes = false;
-    
 
     if (generator_thread.joinable())
     {

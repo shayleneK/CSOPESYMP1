@@ -6,8 +6,8 @@
 #include <chrono>
 #include <ctime>
 
-Process::Process(const std::string &name, int core_id)
-    : name(name), current_core(core_id), delay_per_exec(0), delay_counter(0) {}
+Process::Process(const std::string &name, size_t mem_required, int core_id)
+    : name(name), memory_required(mem_required), current_core(core_id) {}
 
 void Process::add_command(std::shared_ptr<Command> cmd)
 {
@@ -95,6 +95,32 @@ void Process::log_execution(int core_id, const std::string &message)
 
     logs.push_back(oss.str());
 }
+
+void Process::loadToMemory(size_t start_addr)
+{
+    if (!is_in_memory)
+    {
+        start_address = start_addr;
+        end_address = start_address + memory_required - 1;
+        is_in_memory = true;
+        log_execution(current_core, "Loaded into memory");
+    }
+}
+
+void Process::releaseFromMemory()
+{
+    if (is_in_memory)
+    {
+        is_in_memory = false;
+        log_execution(current_core, "Released from memory");
+    }
+}
+
+// Memory getters
+size_t Process::getMemoryRequired() const { return memory_required; }
+size_t Process::getStartAddress() const { return start_address; }
+size_t Process::getEndAddress() const { return end_address; }
+bool Process::isInMemory() const { return is_in_memory; }
 
 // --- Getters ---
 std::string Process::getName() const { return name; }

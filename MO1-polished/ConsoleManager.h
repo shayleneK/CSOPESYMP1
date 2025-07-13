@@ -53,6 +53,8 @@ private:
     std::atomic<uint64_t> total_cycles{0};
     std::atomic<uint64_t> busy_cycles{0};
 
+    int mem_per_proc = 1000;
+
 public:
     static ConsoleManager *getInstance();
     void drawConsole();
@@ -86,7 +88,7 @@ public:
     static uint64_t getCpuCycles();
     double getCpuUtilization() const;
 
-    bool start_flag = false; 
+    bool start_flag = false;
 };
 
 #endif // CONSOLEMANAGER_H
