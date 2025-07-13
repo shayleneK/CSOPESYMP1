@@ -4,6 +4,8 @@
 #include <map>
 #include <string>
 #include <unordered_map>
+#include <cstddef>  // for size_t
+#include <cstdint>  
 
 class ConfigManager {
 private:
@@ -18,6 +20,9 @@ public:
 
     // Retrieves a string value by key, with a default fallback
     std::string getString(const std::string& key, const std::string& default_val) const;
+
+    size_t get_max_memory() const;
+    size_t get_mem_per_proc() const;
 };
 
 #endif // CONFIG_MANAGER_H

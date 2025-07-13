@@ -47,3 +47,11 @@ std::string ConfigManager::getString(const std::string& key, const std::string& 
     }
     return default_val;
 }
+
+size_t ConfigManager::get_max_memory() const {
+    return getInt("max-overall-mem", 16384);
+}
+
+size_t ConfigManager::get_mem_per_proc() const {
+    return getInt("mem-per-proc", 4096);
+}
