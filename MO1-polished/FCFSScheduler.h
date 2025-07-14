@@ -8,7 +8,7 @@
 class FCFSScheduler : public Scheduler
 {
 public:
-    FCFSScheduler(int num_cores, int min_ins, int max_ins, MemoryManager *mem_manager);
+    FCFSScheduler(int num_cores, int min_ins, int max_ins, MemoryManager *mem_manager, int mem_per_proc);
     ~FCFSScheduler();
 
     void start() override;
@@ -26,4 +26,5 @@ protected:
 private:
     std::atomic<bool> generating_processes{false};
     std::thread generator_thread;
+    int mem_per_process;
 };

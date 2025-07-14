@@ -4,7 +4,10 @@
 #include <random>
 #include <sstream>
 
-std::shared_ptr<Process> ProcessFactory::generate_dummy_process(const std::string &name, int min_ins, int max_ins)
+std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
+    const std::string &name,
+    int min_ins, int max_ins,
+    int mem_required) // <- new param
 {
     auto process = std::make_shared<Process>(name);
 
@@ -109,5 +112,5 @@ std::shared_ptr<Process> ProcessFactory::generate_dummy_process(const std::strin
         }
     }
 
-    return process;
+    return std::make_shared<Process>(name, mem_required);
 }

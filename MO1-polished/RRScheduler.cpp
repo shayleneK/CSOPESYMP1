@@ -11,10 +11,13 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <fstream>
 
-RRScheduler::RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins, int delay_per_exec, MemoryManager *memory_manager)
-    : Scheduler(num_cores, min_ins, max_ins, memory_manager)
-
+RRScheduler::RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins, int delay_per_exec, MemoryManager *memory_manager, int mem_per_proc)
+    : Scheduler(num_cores, min_ins, max_ins, memory_manager),
+      time_quantum(quantum_ms),
+      delay_per_execution(delay_per_exec),
+      mem_per_process(mem_per_proc)
 {
 }
 
@@ -52,7 +55,7 @@ void RRScheduler::generate_new_process()
     oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
     std::string name = oss.str();
 
-    auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions);
+    auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions, mem_per_process);
     process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
     add_process(process);
 
@@ -188,7 +191,8 @@ void RRScheduler::run_core(int core_id)
             }
             if (memory_manager_)
             {
-                std::cout << memory_manager_->printMemoryLayout() << std::endl;
+                static std::atomic<uint64_t> snapshot_id{1};
+                save_memory_snapshot(snapshot_id++);
             }
         }
     }
@@ -218,4 +222,46 @@ void RRScheduler::on_cpu_cycle(uint64_t cycle_number)
     {
         generate_new_process();
     }
+}
+
+void RRScheduler::save_memory_snapshot(uint64_t batch_number)
+{
+    if (!memory_manager_)
+    {
+        std::cerr << "[RR] Cannot save memory snapshot: memory manager is null.\n";
+        return;
+    }
+
+    // Step 1: Generate the filename
+    std::ostringstream filename;
+    filename << "memory_stamp_" << batch_number << ".txt";
+
+    // Step 2: Open the file for writing
+    std::ofstream file(filename.str());
+    if (!file.is_open())
+    {
+        std::cerr << "[RR] Failed to open " << filename.str() << " for writing.\n";
+        return;
+    }
+
+    // Step 3: Write the timestamp in the desired format
+    std::time_t now = std::time(nullptr);
+    std::tm *local_time = std::localtime(&now);
+    file << "Timestamp: (";
+    file << std::put_time(local_time, "%m/%d/%Y %I:%M:%S%p");
+    file << ")\n";
+
+    // Step 4: Write the number of processes in memory (you could track this yourself or ask the memory manager)
+    size_t in_memory = memory_manager_->countAllocatedProcesses(); // <- implement this in MemoryManager
+    file << "Number of processes in memory: " << in_memory << "\n";
+
+    // Step 5: Write the total external fragmentation
+    file << "Total external fragmentation in KB: " << memory_manager_->getExternalFragmentation() << "\n";
+
+    // Step 6: Write the memory layout
+    file << memory_manager_->printMemoryLayout() << "\n";
+
+    // Step 7: Close the file and log the success
+    file.close();
+    std::cout << "[RR] Saved memory snapshot to " << filename.str() << std::endl;
 }

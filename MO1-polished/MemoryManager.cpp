@@ -107,3 +107,14 @@ void MemoryManager::defragment()
         }
     }
 }
+
+size_t MemoryManager::countAllocatedProcesses() const
+{
+    size_t count = 0;
+    for (const auto &block : memory_blocks_)
+    {
+        if (block.allocated)
+            ++count;
+    }
+    return count;
+}

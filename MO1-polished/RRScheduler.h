@@ -8,7 +8,7 @@
 class RRScheduler : public Scheduler
 {
 public:
-    RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins, int delay_per_exec, MemoryManager *mem_manager);
+    RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins, int delay_per_exec, MemoryManager *mem_manager, int mem_per_process);
     ~RRScheduler();
 
     void run_core(int core_id) override;
@@ -18,6 +18,8 @@ public:
     void stop_scheduler();
     bool is_scheduler_running() const;
     void start_process_generator() override;
+    void save_memory_snapshot(uint64_t batch_number);
+
     void set_batch_frequency(int freq)
     {
         batch_process_freq = freq;
@@ -31,6 +33,8 @@ protected:
     int time_quantum;
     int min_ins;
     int max_ins;
+    int delay_per_execution;
+    int mem_per_process;
 
     std::mutex running_mutex;
     std::map<int, std::shared_ptr<Process>> current_processes;

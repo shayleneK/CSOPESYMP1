@@ -7,5 +7,5 @@
 class ProcessFactory
 {
 public:
-    static std::shared_ptr<Process> generate_dummy_process(const std::string &name, int min_ins, int max_ins);
+    static std::shared_ptr<Process> generate_dummy_process(const std::string &name, int min_ins, int max_ins, int mem_required);
 };

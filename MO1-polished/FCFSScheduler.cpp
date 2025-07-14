@@ -10,8 +10,8 @@
 #include <iomanip>
 #include <sstream>
 
-FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins, MemoryManager *mem_manager)
-    : Scheduler(num_cores, min_ins, max_ins, mem_manager)
+FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins, MemoryManager *mem_manager, int mem_per_proc)
+    : Scheduler(num_cores, min_ins, max_ins, mem_manager), mem_per_process(mem_per_proc)
 {
 }
 
@@ -154,7 +154,7 @@ void FCFSScheduler::generate_new_process()
     oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
     std::string name = oss.str();
 
-    auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions);
+    auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions, mem_per_process);
     process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
 
     add_process(process);

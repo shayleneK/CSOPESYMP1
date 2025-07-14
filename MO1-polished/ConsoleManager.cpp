@@ -263,13 +263,15 @@ void ConsoleManager::processInput()
         int max_ins = cfg.getInt("max-ins", 2000);
         int delay_per_exec = cfg.getInt("delay-per-exec", 100);
         int max_overall_mem = cfg.getInt("max-overall-mem", 100000);
+        int mem_per_frame = cfg.getInt("mem-per-frame", 1000);
+        mem_per_proc = cfg.getInt("mem-per-proc", 1000);
 
         memory_manager = std::make_unique<MemoryManager>(max_overall_mem);
 
         if (scheduler_type == "rr")
-            scheduler = std::make_unique<RRScheduler>(num_cpu, quantum, min_ins, max_ins, delay_per_exec, memory_manager.get());
+            scheduler = std::make_unique<RRScheduler>(num_cpu, quantum, min_ins, max_ins, delay_per_exec, memory_manager.get(), mem_per_proc);
         else
-            scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins, memory_manager.get());
+            scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins, memory_manager.get(), mem_per_proc);
 
         scheduler->set_batch_frequency(batch_freq);
         scheduler->start_core_threads();
@@ -295,7 +297,7 @@ void ConsoleManager::processInput()
 
         createConsole("screen", name);
 
-        auto proc = ProcessFactory::generate_dummy_process(name, scheduler->get_min_instructions(), scheduler->get_max_instructions());
+        auto proc = ProcessFactory::generate_dummy_process(name, scheduler->get_min_instructions(), scheduler->get_max_instructions(), mem_per_proc);
         proc->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
         scheduler->add_process(proc);
 

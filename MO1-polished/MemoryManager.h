@@ -27,6 +27,7 @@ public:
     void deallocate(const std::string &process_id);
     double getExternalFragmentation();
     std::string printMemoryLayout();
+    size_t countAllocatedProcesses() const;
 
 private:
     std::vector<MemoryBlock> memory_blocks_;

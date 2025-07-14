@@ -55,6 +55,8 @@ private:
     std::atomic<uint64_t> total_cycles{0};
     std::atomic<uint64_t> busy_cycles{0};
 
+    int mem_per_proc;
+
 public:
     static ConsoleManager *getInstance();
     void drawConsole();
