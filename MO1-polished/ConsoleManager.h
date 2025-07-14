@@ -30,6 +30,8 @@ class ConsoleManager
 
 private:
     static ConsoleManager *instance;
+    std::unique_ptr<MemoryManager> memory_manager;
+
     std::unordered_map<ConsoleType, std::shared_ptr<AConsole>> consoleTable;
     ConsoleType currentConsole;
     bool running;
@@ -86,7 +88,7 @@ public:
     static uint64_t getCpuCycles();
     double getCpuUtilization() const;
 
-    bool start_flag = false; 
+    bool start_flag = false;
 };
 
 #endif // CONSOLEMANAGER_H

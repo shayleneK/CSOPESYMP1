@@ -10,11 +10,9 @@
 #include <iomanip>
 #include <sstream>
 
-FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins)
-    : Scheduler(num_cores, min_ins, max_ins)
+FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins, MemoryManager *mem_manager)
+    : Scheduler(num_cores, min_ins, max_ins, mem_manager)
 {
-    //std::cout << "[FCFS DEBUG] Constructor received min_ins=" << min_ins
-      //        << ", max_ins=" << max_ins << std::endl;
 }
 
 FCFSScheduler::~FCFSScheduler()
@@ -26,7 +24,7 @@ void FCFSScheduler::start()
 {
     generating_processes.store(true);
     running = true;
-   // std::cout << "[FCFS DEBUG] Scheduler started (CPU ticks will drive generation)\n";
+    // std::cout << "[FCFS DEBUG] Scheduler started (CPU ticks will drive generation)\n";
 }
 
 void FCFSScheduler::start_process_generator()
@@ -50,7 +48,7 @@ bool FCFSScheduler::is_scheduler_running() const
 
 void FCFSScheduler::run_core(int core_id)
 {
-    //std::cout << "[FCFS][Core " << core_id << "] Core thread started.\n";
+    // std::cout << "[FCFS][Core " << core_id << "] Core thread started.\n";
 
     while (running)
     {
@@ -63,7 +61,7 @@ void FCFSScheduler::run_core(int core_id)
 
             if (!running)
             {
-               // std::cout << "[FCFS][Core " << core_id << "] Immediate shutdown triggered.\n";
+                // std::cout << "[FCFS][Core " << core_id << "] Immediate shutdown triggered.\n";
                 break;
             }
 
@@ -73,8 +71,8 @@ void FCFSScheduler::run_core(int core_id)
                 ready_queue.pop();
                 core_available[core_id] = false;
 
-                //std::cout << "[FCFS][Core " << core_id << "] Picked process "
-                    //      << process->getName() << " from ready queue.\n";
+                // std::cout << "[FCFS][Core " << core_id << "] Picked process "
+                //       << process->getName() << " from ready queue.\n";
             }
             else
             {
@@ -96,7 +94,7 @@ void FCFSScheduler::run_core(int core_id)
             {
                 if (!running)
                 {
-                   // std::cout << "[FCFS][Core " << core_id << "] Immediate shutdown triggered inside loop.\n";
+                    // std::cout << "[FCFS][Core " << core_id << "] Immediate shutdown triggered inside loop.\n";
                     break;
                 }
 
@@ -104,7 +102,6 @@ void FCFSScheduler::run_core(int core_id)
                 {
                     process->execute(core_id);
                 }
-                
             }
 
             auto end = std::chrono::high_resolution_clock::now();
@@ -122,8 +119,8 @@ void FCFSScheduler::run_core(int core_id)
                 std::unique_lock<std::mutex> lock(running_mutex);
                 current_processes.erase(core_id);
                 process_to_core.erase(process);
-               // std::cout << "[FCFS][Core " << core_id << "] Process " << process->getName()
-                      //    << " finished and removed from running list.\n";
+                // std::cout << "[FCFS][Core " << core_id << "] Process " << process->getName()
+                //    << " finished and removed from running list.\n";
             }
         }
     }
@@ -175,9 +172,9 @@ void FCFSScheduler::generate_new_process()
     }
     else
     {
-       // std::cout << "[FCFS DEBUG] Failed to attach process to screen console: " << name << "\n";
+        // std::cout << "[FCFS DEBUG] Failed to attach process to screen console: " << name << "\n";
     }
 
-    //std::cout << "[FCFS DEBUG] New process " << name << " created at tick "
-          //    << ConsoleManager::getCpuCycles() << "\n";
+    // std::cout << "[FCFS DEBUG] New process " << name << " created at tick "
+    //     << ConsoleManager::getCpuCycles() << "\n";
 }

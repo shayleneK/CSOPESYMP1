@@ -12,8 +12,9 @@
 #include <iomanip>
 #include <sstream>
 
-RRScheduler::RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins, int delay_per_exec)
-    : Scheduler(num_cores, min_ins, max_ins), time_quantum(quantum_ms)
+RRScheduler::RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins, int delay_per_exec, MemoryManager *memory_manager)
+    : Scheduler(num_cores, min_ins, max_ins, memory_manager)
+
 {
 }
 
@@ -178,9 +179,16 @@ void RRScheduler::run_core(int core_id)
                 {
                     current_processes.erase(core_id);
                     process_to_core.erase(process);
-                    // std::cout << "[RR][Core " << core_id << "] Process " << process->getName()
-                    //     << " finished and removed from running list.\n";
+
+                    if (memory_manager_)
+                    {
+                        memory_manager_->deallocate(process->getName());
+                    }
                 }
+            }
+            if (memory_manager_)
+            {
+                std::cout << memory_manager_->printMemoryLayout() << std::endl;
             }
         }
     }

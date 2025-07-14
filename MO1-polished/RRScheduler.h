@@ -1,6 +1,6 @@
 // RRScheduler.h
 #pragma once
-
+#include "MemoryManager.h"
 #include "Scheduler.h"
 #include <atomic>
 #include <thread>
@@ -8,7 +8,7 @@
 class RRScheduler : public Scheduler
 {
 public:
-    RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins, int delay_per_exec);
+    RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins, int delay_per_exec, MemoryManager *mem_manager);
     ~RRScheduler();
 
     void run_core(int core_id) override;
@@ -18,7 +18,10 @@ public:
     void stop_scheduler();
     bool is_scheduler_running() const;
     void start_process_generator() override;
-    void set_batch_frequency(int freq) { batch_process_freq = freq; }
+    void set_batch_frequency(int freq)
+    {
+        batch_process_freq = freq;
+    }
     void on_cpu_cycle(uint64_t cycle_number) override;
     void generate_new_process();
 

@@ -1,11 +1,12 @@
 // Scheduler.cpp
 #include "Scheduler.h"
+#include "MemoryManager.h"
 #include <chrono>
 #include <algorithm>
 #include <iostream>
 
-Scheduler::Scheduler(int num_cores, int min_ins, int max_ins)
-    : min_instructions(min_ins), max_instructions(max_ins)
+Scheduler::Scheduler(int num_cores, int min_ins, int max_ins, MemoryManager *mem_manager)
+    : min_instructions(min_ins), max_instructions(max_ins), memory_manager_(mem_manager)
 {
     for (int i = 0; i < num_cores; ++i)
     {
@@ -22,6 +23,17 @@ Scheduler::~Scheduler()
 
 void Scheduler::add_process(std::shared_ptr<Process> process)
 {
+    if (memory_manager_)
+    {
+        int start = memory_manager_->allocate(process->getMemoryRequired(), process->getName());
+        if (start == -1)
+        {
+            std::cout << "[MemoryManager] Allocation failed for " << process->getName() << "\n";
+            return; // reject process if allocation fails
+        }
+        process->setMemoryStart(start); // optional tracking
+    }
+
     std::unique_lock<std::mutex> lock(queue_mutex);
     ready_queue.push(process);
     all_processes.push_back(process);
@@ -95,9 +107,9 @@ void Scheduler::run_core(int core_id)
             total_cpu_time = std::max(total_cpu_time, core_util_time[core_id]);
 
             core_available[core_id] = true;
-            if (process->is_finished)
+            if (process->is_finished && memory_manager_)
             {
-                current_processes.erase(core_id);
+                memory_manager_->deallocate(process->getName());
             }
         }
     }
@@ -140,10 +152,12 @@ std::vector<std::shared_ptr<Process>> Scheduler::get_all_processes()
     return all_processes;
 }
 
-int Scheduler::get_core_of_process(const std::shared_ptr<Process>& p) {
+int Scheduler::get_core_of_process(const std::shared_ptr<Process> &p)
+{
     std::unique_lock<std::mutex> lock(running_mutex);
     auto it = process_to_core.find(p);
-    if (it != process_to_core.end()) {
+    if (it != process_to_core.end())
+    {
         return it->second;
     }
     return -1; // Not found
@@ -182,7 +196,6 @@ std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats()
 void Scheduler::stop_scheduler()
 {
     generating_processes = false;
-    
 
     if (generator_thread.joinable())
     {

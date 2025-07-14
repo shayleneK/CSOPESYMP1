@@ -46,8 +46,13 @@ public:
     std::chrono::system_clock::time_point getFinishTime() const;
     const std::vector<std::string> &getLogs() const;
 
+    size_t getMemoryRequired() const { return memory_required; }
+    void setMemoryStart(int start) { memory_start = start; }
+
 private:
     int delay_per_exec = 0;
     int delay_counter = 0;
     std::map<std::string, uint16_t> variables;
+    size_t memory_required;
+    int memory_start = -1;
 };

@@ -9,6 +9,8 @@
 #include "SchedulingConsole.h"
 #include "RRScheduler.h"
 #include "FCFSScheduler.h"
+#include "MemoryManager.h"
+
 #include "Scheduler.h"
 
 #include <iostream>
@@ -260,11 +262,14 @@ void ConsoleManager::processInput()
         int min_ins = cfg.getInt("min-ins", 1000);
         int max_ins = cfg.getInt("max-ins", 2000);
         int delay_per_exec = cfg.getInt("delay-per-exec", 100);
+        int max_overall_mem = cfg.getInt("max-overall-mem", 100000);
+
+        memory_manager = std::make_unique<MemoryManager>(max_overall_mem);
 
         if (scheduler_type == "rr")
-            scheduler = std::make_unique<RRScheduler>(num_cpu, quantum, min_ins, max_ins, delay_per_exec);
+            scheduler = std::make_unique<RRScheduler>(num_cpu, quantum, min_ins, max_ins, delay_per_exec, memory_manager.get());
         else
-            scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins);
+            scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins, memory_manager.get());
 
         scheduler->set_batch_frequency(batch_freq);
         scheduler->start_core_threads();

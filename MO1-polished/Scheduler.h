@@ -2,6 +2,8 @@
 #pragma once
 
 #include "Process.h"
+#include "MemoryManager.h"
+
 #include <vector>
 #include <queue>
 #include <map>
@@ -14,7 +16,7 @@
 class Scheduler
 {
 public:
-    Scheduler(int num_cores, int min_instructions, int max_instructions);
+    Scheduler(int num_cores, int min_ins, int max_ins, MemoryManager *mem_manager);
     virtual ~Scheduler();
 
     virtual void run_core(int core_id);
@@ -28,7 +30,7 @@ public:
     virtual std::vector<std::shared_ptr<Process>> get_running_processes();
     std::vector<std::shared_ptr<Process>> get_finished_processes();
     std::vector<std::shared_ptr<Process>> get_all_processes();
-    int get_core_of_process(const std::shared_ptr<Process>& p);
+    int get_core_of_process(const std::shared_ptr<Process> &p);
     virtual void start_process_generator();
     std::map<int, std::map<std::string, float>> get_cpu_stats();
 
@@ -53,6 +55,7 @@ protected:
     std::map<std::shared_ptr<Process>, int> process_to_core;
     std::mutex running_mutex;
     int next_pid = 0;
+    MemoryManager *memory_manager_;
 
     std::map<int, int> core_process_count;
     std::map<int, int> core_util_time;
