@@ -272,7 +272,7 @@ void ConsoleManager::processInput()
             scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins);
 
         scheduler->set_batch_frequency(batch_freq);
-        scheduler->start_core_threads();
+        
         startCpuLoop();
         scheduler_initialized = true;
     }
@@ -378,6 +378,7 @@ void ConsoleManager::processInput()
             return;
         }
         scheduler->start();
+        scheduler->start_core_threads();
         start_flag = true;
         std::cout << "[INFO] Scheduler started.\n";
     }
