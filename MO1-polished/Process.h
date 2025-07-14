@@ -23,7 +23,7 @@ public:
     std::vector<std::shared_ptr<Command>> commands;
     std::vector<std::string> logs;
 
-    Process(const std::string &name, int core_id = -1); // updated constructor
+    Process(const std::string &name, size_t mem_required, int core_id = -1);
 
     void add_command(std::shared_ptr<Command> cmd);
     void execute(int core_id);

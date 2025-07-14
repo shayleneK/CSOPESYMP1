@@ -37,14 +37,18 @@ void RRScheduler::start()
     generator_thread = std::thread([this]()
                                    {
         int cycle_counter = 0;
+        int quantum_counter = 0;
 
         while (generating_processes.load() && running)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             if (++cycle_counter >= batch_process_freq)
             {
                 generate_new_process();
                 cycle_counter = 0;
+                quantum_counter ++;
+                static std::atomic<uint64_t> snapshot_id{1};
+                save_memory_snapshot(snapshot_id++);
             }
         } });
 }
@@ -56,6 +60,9 @@ void RRScheduler::generate_new_process()
     std::string name = oss.str();
 
     auto process = ProcessFactory::generate_dummy_process(name, min_instructions, max_instructions, mem_per_process);
+    std::cout << "[RR] Created process: " << name
+              << " (requires " << mem_per_process << " KB memory)\n";
+
     process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
     add_process(process);
 
@@ -148,6 +155,9 @@ void RRScheduler::run_core(int core_id)
                     // std::cout << "[RR][Core " << core_id << "] Immediate shutdown triggered.\n";
                     break;
                 }
+                // std::cout << "[RR][Core " << core_id << "] Executing process "
+                //           << process->getName() << " at command index "
+                //           << process->getCurrentCommandIndex() << std::endl;
 
                 if (process->can_execute())
                 {
@@ -188,11 +198,6 @@ void RRScheduler::run_core(int core_id)
                         memory_manager_->deallocate(process->getName());
                     }
                 }
-            }
-            if (memory_manager_)
-            {
-                static std::atomic<uint64_t> snapshot_id{1};
-                save_memory_snapshot(snapshot_id++);
             }
         }
     }

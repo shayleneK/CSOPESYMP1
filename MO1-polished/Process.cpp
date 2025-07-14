@@ -6,8 +6,12 @@
 #include <chrono>
 #include <ctime>
 
-Process::Process(const std::string &name, int core_id)
-    : name(name), current_core(core_id), delay_per_exec(0), delay_counter(0) {}
+Process::Process(const std::string &name, size_t mem_required, int core_id)
+    : name(name),
+      current_core(core_id),
+      memory_required(mem_required)
+{
+}
 
 void Process::add_command(std::shared_ptr<Command> cmd)
 {
