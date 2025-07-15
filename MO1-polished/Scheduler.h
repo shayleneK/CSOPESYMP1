@@ -23,7 +23,7 @@ public:
     virtual void start();
 
     void add_process(std::shared_ptr<Process> process);
-    void shutdown();
+    virtual void shutdown();
 
     virtual std::vector<std::shared_ptr<Process>> get_running_processes();
     std::vector<std::shared_ptr<Process>> get_finished_processes();

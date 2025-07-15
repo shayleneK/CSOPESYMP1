@@ -37,22 +37,16 @@ void RRScheduler::start()
     generating_processes.store(true);
     running = true;
 
-    generator_thread = std::thread([this]()
+    start_core_threads();
+
+    // Start CPU cycle thread
+    cpu_cycle_running = true;
+    cpu_cycle_thread = std::thread([this]()
                                    {
-        int cycle_counter = 0;
-        int batch_counter = 0;
-
-        while (generating_processes.load() && running)
+        while (cpu_cycle_running)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            if (++cycle_counter >= batch_process_freq)
-            {
-                generate_new_process();
-                cycle_counter = 0;
-                save_memory_snapshot(batch_counter);
-                batch_counter++;
-
-            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(2000)); 
+            on_cpu_cycle(cycle_number++);
         } });
 }
 
@@ -66,10 +60,16 @@ void RRScheduler::generate_new_process()
 
     size_t mem_required = mem_per_proc;
 
+    std::cout << "[RR] Creating process: " << name << std::endl;
+
     auto process = ProcessFactory::generate_dummy_process(name, mem_required, min_instructions, max_instructions);
+
+    std::cout << "[RR] Process created: " << name << std::endl;
+    process->setDelayPerExec(delay_per_exec);
+
     process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
 
-    int start_address = memory_manager_.allocate(mem_required, process->name);
+    int start_address = memory_manager_.allocate(mem_required, process->getName());
 
     if (start_address != -1)
     {
@@ -86,12 +86,12 @@ void RRScheduler::generate_new_process()
             screen->attachProcess(process);
         }
 
-        std::cout << "[RR] Process " << name << " allocated at ["
-                  << start_address << "-" << start_address + mem_required - 1 << "]" << std::endl;
+        // std::cout << "[RR] Process " << name << " allocated at ["
+        //         << start_address << "-" << start_address + mem_required - 1 << "]" << std::endl;
     }
     else
     {
-        std::cout << "[RR] Process " << name << " could not be loaded into memory. Re-queued." << std::endl;
+        // std::cout << "[RR] Process " << name << " could not be loaded into memory. Re-queued." << std::endl;
     }
 }
 
@@ -111,10 +111,9 @@ void RRScheduler::start_core_threads()
 void RRScheduler::stop_scheduler()
 {
     generating_processes = false;
+
     if (generator_thread.joinable())
-    {
         generator_thread.join();
-    }
 }
 
 bool RRScheduler::is_scheduler_running() const
@@ -168,9 +167,21 @@ void RRScheduler::run_core(int core_id)
 
                 if (process->can_execute())
                 {
-                    process->execute(core_id);
-                    cpu_ticks_exec++;
+                    try
+                    {
+                        process->execute(core_id);
+                    }
+                    catch (const std::exception &e)
+                    {
+                        std::cerr << "Crash during execute(): " << e.what() << std::endl;
+                    }
+                    catch (...)
+                    {
+                        std::cerr << "Unknown crash during execute()" << std::endl;
+                    }
                 }
+
+                cpu_ticks_exec++;
             }
 
             auto end = std::chrono::high_resolution_clock::now();
@@ -192,19 +203,27 @@ void RRScheduler::run_core(int core_id)
             }
 
             {
-                std::unique_lock<std::mutex> lock(running_mutex);
-                if (process->isFinished())
                 {
-                    current_processes.erase(core_id);
-                    process_to_core.erase(process);
+                    std::unique_lock<std::mutex> lock(running_mutex);
+                    if (process->isFinished())
+                    {
+                        for (auto it = current_processes.begin(); it != current_processes.end();)
+                        {
+                            if (it->second == process)
+                                it = current_processes.erase(it);
+                            else
+                                ++it;
+                        }
 
-                    memory_manager_.deallocate(process->name);
-                    process_memory_map_.erase(
-                        std::remove(process_memory_map_.begin(), process_memory_map_.end(), process->name),
-                        process_memory_map_.end());
+                        process_to_core.erase(process);
+                        memory_manager_.deallocate(process->getName());
+                        process_memory_map_.erase(
+                            std::remove(process_memory_map_.begin(), process_memory_map_.end(), process->getName()),
+                            process_memory_map_.end());
 
-                    std::cout << "[RR][Core " << core_id << "] Process " << process->getName()
-                              << " finished and memory released." << std::endl;
+                        // std::cout << "[RR][Core " << core_id << "] Process " << process->getName()
+                        //         << " finished and memory released." << std::endl;
+                    }
                 }
             }
         }
@@ -224,21 +243,17 @@ std::vector<std::shared_ptr<Process>> RRScheduler::get_running_processes()
     return result;
 }
 
-void RRScheduler::on_cpu_cycle(uint64_t cycle_number)
+void RRScheduler::on_cpu_cycle(uint64_t cycle)
 {
-    // if (!generating_processes.load())
-    //     return;
+    if (generating_processes.load() && cycle % batch_process_freq == 0)
+    {
+        generate_new_process();
+    }
 
-    // if (cycle_number % batch_process_freq == 0)
-    // {
-    //     generate_new_process();
-
-    //     static uint64_t cycle_counter = 0;
-    //     if (++cycle_counter % time_quantum == 0)
-    //     {
-    //         save_memory_snapshot(cycle_counter);
-    //     }
-    // }
+    if (cycle % batch_process_freq == 0)
+    {
+        save_memory_snapshot(cycle / batch_process_freq);
+    }
 }
 
 void RRScheduler::save_memory_snapshot(uint64_t batch_number)
@@ -273,5 +288,21 @@ void RRScheduler::save_memory_snapshot(uint64_t batch_number)
 
     // Step 7: Close the file and log the success
     file.close();
-    std::cout << "[RR] Saved memory snapshot to " << filename.str() << std::endl;
+    // std::cout << "[RR] Saved memory snapshot to " << filename.str() << std::endl;
+}
+
+void RRScheduler::shutdown()
+{
+    running = false;
+    stop_scheduler();
+
+    cpu_cycle_running = false;
+    if (cpu_cycle_thread.joinable())
+        cpu_cycle_thread.join();
+
+    for (auto &thread : cpu_cores)
+    {
+        if (thread.joinable())
+            thread.join();
+    }
 }

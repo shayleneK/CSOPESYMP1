@@ -11,7 +11,7 @@ std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
     int min_ins,
     int max_ins)
 {
-    auto process = std::make_shared<Process>(name, mem_required);
+    auto process = std::make_shared<Process>(name, mem_required, -1);
 
     std::random_device rd;
     std::mt19937 gen(rd());

@@ -21,8 +21,8 @@ void PrintCommand::execute(Process *proc, int core_id, const std::string &proces
     size_t plus_pos = message.find('+');
     if (plus_pos != std::string::npos)
     {
-        std::string prefix = message.substr(0, plus_pos);
-        std::string var_name = message.substr(plus_pos + 1);
+        std::string prefix = (plus_pos < message.size()) ? message.substr(0, plus_pos) : "";
+        std::string var_name = (plus_pos + 1 < message.size()) ? message.substr(plus_pos + 1) : "";
 
         // Clean quotes and whitespace
         prefix.erase(remove_if(prefix.begin(), prefix.end(), [](char c)

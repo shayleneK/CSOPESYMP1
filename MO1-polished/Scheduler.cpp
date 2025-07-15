@@ -97,7 +97,8 @@ void Scheduler::run_core(int core_id)
             total_cpu_time = std::max(total_cpu_time, core_util_time[core_id]);
 
             core_available[core_id] = true;
-            if (process->is_finished)
+            if (process->isFinished())
+
             {
                 current_processes.erase(core_id);
             }
@@ -116,7 +117,7 @@ std::vector<std::shared_ptr<Process>> Scheduler::get_running_processes()
     std::vector<std::shared_ptr<Process>> running_procs;
     for (const auto &pair : current_processes)
     {
-        if (!pair.second->is_finished)
+        if (!pair.second->isFinished())
         {
             running_procs.push_back(pair.second);
         }
@@ -129,7 +130,7 @@ std::vector<std::shared_ptr<Process>> Scheduler::get_finished_processes()
     std::vector<std::shared_ptr<Process>> finished_procs;
     for (const auto &p : all_processes)
     {
-        if (p->is_finished)
+        if (p->isFinished())
         {
             finished_procs.push_back(p);
         }

@@ -13,6 +13,7 @@ public:
 
     void start() override;
     void stop_scheduler() override;
+    void shutdown() override;
     bool is_scheduler_running() const override;
     void start_core_threads() override;
 

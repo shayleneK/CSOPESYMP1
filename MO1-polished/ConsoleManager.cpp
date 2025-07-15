@@ -263,7 +263,7 @@ void ConsoleManager::processInput()
         int max_overall_mem = cfg.getInt("max-overall-mem", 100000);
         int mem_per_frame = cfg.getInt("mem-per-frame", 1000);
         mem_per_proc = cfg.getInt("mem-per-proc", 1000);
-        std::cout << "[DEBUG] mem_per_proc loaded from config: " << mem_per_proc << "\n";
+        // std::cout << "[DEBUG] mem_per_proc loaded from config: " << mem_per_proc << "\n";
 
         MemoryManager memory_manager_ = MemoryManager(max_overall_mem);
         if (scheduler_type == "rr")
@@ -272,7 +272,7 @@ void ConsoleManager::processInput()
             scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins);
 
         scheduler->set_batch_frequency(batch_freq);
-        
+
         startCpuLoop();
         scheduler_initialized = true;
     }

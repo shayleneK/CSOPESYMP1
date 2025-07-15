@@ -22,6 +22,7 @@ public:
     void start();
     void stop_scheduler();
     bool is_scheduler_running() const;
+    void shutdown();
 
     void start_core_threads();
     void start_process_generator();
@@ -32,8 +33,12 @@ private:
     void generate_new_process();
     void run_core(int core_id);
     void save_memory_snapshot(uint64_t cycle_number);
+    std::thread cpu_cycle_thread;
+    std::atomic<bool> cpu_cycle_running{false};
+    std::atomic<uint64_t> cycle_number{0};
 
     int time_quantum;
+    int delay_per_exec;
     std::atomic<bool> generating_processes{false};
     bool running = false;
 

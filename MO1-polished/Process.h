@@ -36,6 +36,7 @@ public:
 
     uint16_t get_var(const std::string &var_name);
     void set_var(const std::string &var_name, uint16_t value);
+    void setDelayPerExec(int delay);
 
     size_t get_instruction_count() const;
     bool can_execute();

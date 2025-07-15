@@ -65,15 +65,7 @@ void Process::set_var(const std::string &var_name, uint16_t value)
 
 bool Process::can_execute()
 {
-    if (delay_counter == 0)
-    {
-        return true;
-    }
-    else
-    {
-        delay_counter--;
-        return false;
-    }
+    return delay_counter == 0;
 }
 
 size_t Process::get_instruction_count() const
@@ -114,6 +106,11 @@ void Process::releaseFromMemory()
         is_in_memory = false;
         log_execution(current_core, "Released from memory");
     }
+}
+
+void Process::setDelayPerExec(int delay)
+{
+    delay_per_exec = delay;
 }
 
 // Memory getters
