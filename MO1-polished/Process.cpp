@@ -116,6 +116,34 @@ void Process::releaseFromMemory()
     }
 }
 
+uint16_t Process::read_memory(uint16_t address)
+{
+    // simulate memory access
+    if (address < start_address || address > end_address)
+    {
+        // mem access violation
+        is_finished = true;
+        finish_time = std::chrono::system_clock::now();
+        log_execution(current_core, "Memory access violation at 0x" + std::hex << address << std::dec);
+        return 0;
+    }
+    // return dummy value or variable (TEMPORARY)
+    return 0;
+}
+
+void Process::write_memory(uint16_t address, uint16_t value)
+{
+    if (address < start_address || address > end_address)
+    {
+        is_finished = true;
+        finish_time = std::chrono::system_clock::now();
+        log_execution(current_core, "Memory access violation at 0x" + std::hex << address << std::dec);
+        return;
+    }
+
+    // simulate writing (TEMPORARY)
+}
+
 // Memory getters
 size_t Process::getMemoryRequired() const { return memory_required; }
 size_t Process::getStartAddress() const { return start_address; }

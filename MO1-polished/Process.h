@@ -62,6 +62,10 @@ public:
     void loadToMemory(size_t start_addr);
     void releaseFromMemory();
 
+    //read and write memory
+    uint16_t read_memory(uint16_t address);
+    void write_memory(uint16_t address, uint16_t value);
+
 private:
     int delay_per_exec = 0;
     int delay_counter = 0;
