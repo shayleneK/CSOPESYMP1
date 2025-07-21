@@ -111,3 +111,38 @@ void ForCommand::execute(Process *proc, int core_id, const std::string &process_
         }
     }
 }
+// ReadCommand
+ReadCommand::ReadCommand(const std::string &var, uint16_t addr)
+    : var_name(var), address(addr) {}
+
+void ReadCommand::execute(Process *proc, int core_id, const std::string &process_name)
+{
+    if (!proc->isInMemory()) {
+        std::ostringstream oss;
+        oss << "[ERROR] Process " << process_name << " attempted to read outside allocated memory at 0x" 
+            << std::hex << address << std::dec;
+        proc->log_execution(core_id, oss.str());
+        proc->setFinished(true);
+        return;
+    }
+
+    uint16_t value = proc->read_memory(address);
+    proc->set_var(var_name, value);
+}
+
+// WriteCommand
+WriteCommand::WriteCommand(uint16_t addr, uint16_t val)
+    : address(addr), value(val) {}
+void WriteCommand::execute(Process *proc, int core_id, const std::string &process_name)
+{
+    if (!proc->isInMemory()) {
+        std::ostringstream oss;
+        oss << "[ERROR] Process " << process_name << " attempted to write outside allocated memory at 0x" 
+            << std::hex << address << std::dec;
+        proc->log_execution(core_id, oss.str());
+        proc->setFinished(true);
+        return;
+    }
+
+    proc->write_memory(address, value);
+}

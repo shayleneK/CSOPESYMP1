@@ -14,6 +14,19 @@ public:
         size_t mem_required,
         int min_ins,
         int max_ins);
+
+    // For dummy processes
+    static std::shared_ptr<Process> generate_dummy_process(
+        const std::string &name,
+        size_t mem_required,
+        int min_ins,
+        int max_ins);
+
+    // For user-defined processes
+    static std::shared_ptr<Process> generate_custom_process(
+        const std::string &name,
+        size_t mem_required,
+        const std::string &instructions_str);
 };
 
 #endif // PROCESS_FACTORY_H

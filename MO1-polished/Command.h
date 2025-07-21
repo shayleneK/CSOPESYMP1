@@ -81,3 +81,25 @@ public:
     ForCommand(const std::vector<std::shared_ptr<Command>> &cmds, int reps);
     void execute(Process *proc, int core_id, const std::string &process_name) override;
 };
+//For Memory Access Instructions
+class ReadCommand : public Command
+{
+private:
+    std::string var_name;
+    uint16_t address;
+
+public:
+    ReadCommand(const std::string &var, uint16_t addr);
+    void execute(Process *proc, int core_id, const std::string &process_name) override;
+};
+
+class WriteCommand : public Command
+{
+private:
+    uint16_t address;
+    uint16_t value;
+
+public:
+    WriteCommand(uint16_t addr, uint16_t val);
+    void execute(Process *proc, int core_id, const std::string &process_name) override;
+};
