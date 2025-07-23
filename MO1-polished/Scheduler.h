@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Process.h"
+#include "CPUCore.h"
 #include <vector>
 #include <queue>
 #include <map>
@@ -44,6 +45,7 @@ public:
     virtual bool is_scheduler_running() const = 0;
 
     virtual void stop_scheduler();
+    std::vector<std::shared_ptr<CPUCore>> cpu_core_objects;
 
 protected:
     std::vector<bool> core_available;
