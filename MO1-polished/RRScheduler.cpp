@@ -275,3 +275,21 @@ void RRScheduler::save_memory_snapshot(uint64_t batch_number)
     file.close();
     std::cout << "[RR] Saved memory snapshot to " << filename.str() << std::endl;
 }
+
+void RRScheduler::notify_process_started(int core_id, std::shared_ptr<Process> process)
+{
+    // You can add logging or bookkeeping here
+    std::cout << "[RR] Process " << process->getName() << " started on core " << core_id << "\n";
+}
+
+void RRScheduler::notify_process_finished(int core_id, std::shared_ptr<Process> process, int duration_ms)
+{
+    // Add any cleanup or logging you need
+    std::cout << "[RR] Process " << process->getName() << " finished on core " << core_id
+              << " (duration: " << duration_ms << " ms)\n";
+}
+
+int RRScheduler::get_quantum() const
+{
+    return time_quantum; // assuming you have a member `quantum` in RRScheduler
+}

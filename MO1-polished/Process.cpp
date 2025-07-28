@@ -118,14 +118,16 @@ void Process::releaseFromMemory()
 
 uint16_t Process::read_memory(uint16_t address)
 {
+    std::ostringstream oss;
+
     // simulate memory access
     if (address < start_address || address > end_address)
     {
         // mem access violation
         is_finished = true;
         finish_time = std::chrono::system_clock::now();
-        log_execution(current_core, "Memory access violation at 0x" + std::hex << address << std::dec);
-        return 0;
+        oss << "Memory access violation at 0x" << std::hex << address << std::dec;
+        log_execution(current_core, oss.str());
     }
     // return dummy value or variable (TEMPORARY)
     return 0;
@@ -137,7 +139,9 @@ void Process::write_memory(uint16_t address, uint16_t value)
     {
         is_finished = true;
         finish_time = std::chrono::system_clock::now();
-        log_execution(current_core, "Memory access violation at 0x" + std::hex << address << std::dec);
+        std::ostringstream oss;
+        oss << "Memory access violation at 0x" << std::hex << address << std::dec;
+        log_execution(current_core, oss.str());
         return;
     }
 

@@ -27,10 +27,10 @@ public:
     void start_process_generator();
     void on_cpu_cycle(uint64_t cycle_number);
     std::vector<std::shared_ptr<Process>> get_running_processes();
-    virtual std::shared_ptr<Process> get_next_process(int core_id) = 0;
-    virtual void notify_process_started(int core_id, std::shared_ptr<Process> process) = 0;
-    virtual void notify_process_finished(int core_id, std::shared_ptr<Process> process, int duration_ms) = 0;
-    virtual int get_quantum() const = 0;
+    std::shared_ptr<Process> get_next_process(int core_id);
+    void notify_process_started(int core_id, std::shared_ptr<Process> process);
+    void notify_process_finished(int core_id, std::shared_ptr<Process> process, int duration_ms);
+    int get_quantum() const;
 
 private:
     void generate_new_process();

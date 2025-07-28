@@ -4,6 +4,7 @@
 
 #include <random>
 #include <sstream>
+#include <iostream>
 
 std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
     const std::string &name,
@@ -123,7 +124,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
     size_t mem_required,
     const std::string &instructions_str)
 {
-    auto process = std::make_shared<Process>(name, mem_required); //mem size passed
+    auto process = std::make_shared<Process>(name, mem_required); // mem size passed
 
     std::istringstream iss(instructions_str);
     std::string token;
@@ -138,7 +139,8 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
             {
                 std::string var;
                 uint16_t val;
-                if (line >> var >> val) {
+                if (line >> var >> val)
+                {
                     process->add_command(std::make_shared<DeclareCommand>(var, val));
                 }
             }
@@ -203,7 +205,8 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
             else if (cmd == "SLEEP")
             {
                 uint8_t ticks;
-                if (line >> ticks) {
+                if (line >> ticks)
+                {
                     process->add_command(std::make_shared<SleepCommand>(ticks));
                 }
             }

@@ -18,7 +18,7 @@ public:
     Scheduler(int num_cores, int min_instructions, int max_instructions, int mem_per_proc);
     virtual ~Scheduler();
 
-    virtual void run_core(int core_id);
+    virtual void run_core(int core_id) = 0;
 
     virtual void start_core_threads();
     virtual void start();
