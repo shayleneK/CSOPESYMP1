@@ -10,11 +10,20 @@
 #include <iomanip>
 #include <sstream>
 
+/*
 FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins, int mem_per_proc)
-    : Scheduler(num_cores, min_ins, max_ins, mem_per_proc)
+    //: Scheduler(num_cores, min_ins, max_ins, mem_per_proc)
+    : Scheduler(num_cores, min_ins, max_ins)
 {
     // std::cout << "[FCFS DEBUG] Constructor received min_ins=" << min_ins
     //         << ", max_ins=" << max_ins << std::endl;
+    this->mem_per_proc = static_cast<size_t>(mem_per_proc);
+}
+*/
+FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins, int delay_per_exec)
+    : Scheduler(num_cores, min_ins, max_ins)  
+{
+    this->delay_per_exec = delay_per_exec;
 }
 
 FCFSScheduler::~FCFSScheduler()
@@ -48,6 +57,7 @@ bool FCFSScheduler::is_scheduler_running() const
     return generating_processes.load();
 }
 
+/*
 void FCFSScheduler::run_core(int core_id)
 {
     // std::cout << "[FCFS][Core " << core_id << "] Core thread started.\n";
@@ -130,6 +140,8 @@ void FCFSScheduler::run_core(int core_id)
     // std::cout << "[FCFS][Core " << core_id << "] Core thread exiting.\n";
 }
 
+*/
+
 void FCFSScheduler::on_cpu_cycle(uint64_t cycle_number)
 {
     if (!generating_processes.load())
@@ -142,12 +154,22 @@ void FCFSScheduler::on_cpu_cycle(uint64_t cycle_number)
     }
 }
 
+/*
 void FCFSScheduler::start_core_threads()
 {
     for (int i = 0; i < static_cast<int>(core_available.size()); ++i)
     {
         cpu_cores.emplace_back(&FCFSScheduler::run_core, this, i);
     }
+}
+*/
+
+void FCFSScheduler::add_process(std::shared_ptr<Process> proc)
+{
+    std::unique_lock<std::mutex> lock(queue_mutex);
+    ready_queue.push(proc);
+    all_processes.push_back(proc);
+    queue_condition.notify_one();
 }
 
 void FCFSScheduler::generate_new_process()

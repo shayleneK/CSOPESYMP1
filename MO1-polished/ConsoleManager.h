@@ -47,7 +47,8 @@ private:
 
     static std::atomic<uint64_t> cpu_cycles; // Shared CPU counter
     std::thread cpuThread;
-    bool runningCpuLoop = false;
+    //bool runningCpuLoop = false;
+    std::atomic<bool> runningCpuLoop{false};
 
     void cpuCycleLoop(); // The actual loop function
     std::atomic<uint64_t> total_cycles{0};
@@ -87,6 +88,10 @@ public:
     void stopCpuLoop();
     static uint64_t getCpuCycles();
     double getCpuUtilization() const;
+
+    // For Scheduler Access
+    void set_scheduler(std::unique_ptr<Scheduler> sched) { scheduler = std::move(sched); }
+    Scheduler* get_scheduler() const { return scheduler.get(); }
 
     bool start_flag = false;
 };

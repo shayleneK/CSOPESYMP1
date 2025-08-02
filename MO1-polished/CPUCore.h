@@ -25,7 +25,7 @@ private:
 
     int core_id;
     std::function<std::shared_ptr<Process>(int)> fetch_process;
-    std::atomic<bool> running;
+    std::atomic<bool> running = false;
     std::thread worker;
 
     mutable std::mutex stats_mutex;

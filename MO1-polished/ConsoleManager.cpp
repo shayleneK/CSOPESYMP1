@@ -154,6 +154,7 @@ void ConsoleManager::startCpuLoop()
     cpuThread = std::thread(&ConsoleManager::cpuCycleLoop, this);
 }
 
+
 void ConsoleManager::stopCpuLoop()
 {
     // std::cerr << "[DEBUG] stopCpuLoop called\n";
@@ -163,6 +164,7 @@ void ConsoleManager::stopCpuLoop()
     // std::cerr << "[DEBUG] cpuThread.join() done\n";
 }
 
+/*
 void ConsoleManager::cpuCycleLoop()
 {
     while (runningCpuLoop && isRunning())
@@ -180,6 +182,19 @@ void ConsoleManager::cpuCycleLoop()
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+}
+*/
+void ConsoleManager::cpuCycleLoop() {
+    while (runningCpuLoop && isRunning()) {
+        cpu_cycles.fetch_add(1);
+        total_cycles.fetch_add(1);
+
+        if (scheduler && scheduler_initialized) {
+            scheduler->on_cpu_cycle(cpu_cycles.load());
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
@@ -237,6 +252,46 @@ void ConsoleManager::processInput()
         clearScreen();
         drawConsole();
     }
+    else if (command == "initialize") {
+    if (scheduler_initialized) {
+        std::cout << "[ERROR] Already initialized.\n";
+        return;
+    }
+
+    ConfigManager cfg;
+    if (!cfg.load("config.txt")) {
+        std::cout << "[ERROR] config.txt missing or invalid.\n";
+        return;
+    }
+
+    int num_cpu = cfg.getInt("num-cpu", 2);
+    std::string scheduler_type = cfg.getString("scheduler", "rr");
+    int quantum = cfg.getInt("quantum-cycles", 5);
+    int batch_freq = cfg.getInt("batch-process-freq", 1);
+    int min_ins = cfg.getInt("min-ins", 100);
+    int max_ins = cfg.getInt("max-ins", 100);
+    int delay_per_exec = cfg.getInt("delay-per-exec", 0);
+
+    size_t max_overall_mem = cfg.getInt("max-overall-mem", 16384);
+    MemoryManager* mem_mgr = new MemoryManager(max_overall_mem);
+
+    if (scheduler_type == "rr") {
+        scheduler = std::make_unique<RRScheduler>(num_cpu, quantum, min_ins, max_ins, delay_per_exec);
+    } else {
+        scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins, delay_per_exec);
+    }
+    scheduler->set_memory_manager(mem_mgr);
+
+    scheduler->set_mem_per_proc(cfg.getInt("mem-per-proc", 4096));
+
+    scheduler->set_batch_frequency(batch_freq);
+    scheduler->start_core_threads();
+    startCpuLoop();
+    scheduler_initialized = true;
+
+    std::cout << "[SUCCESS] System initialized.\n";
+}
+    /*
     else if (command == "initialize")
     {
 
@@ -276,7 +331,8 @@ void ConsoleManager::processInput()
         startCpuLoop();
         scheduler_initialized = true;
     }
-    else if (command.rfind("screen -s ", 0) == 0)
+    */
+    else if (command.rfind("screen -s", 0) == 0)
     {
 
         if (!scheduler)

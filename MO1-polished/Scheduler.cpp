@@ -5,11 +5,24 @@
 #include <iostream>
 #include <functional>
 
+/*
 Scheduler::Scheduler(int num_cores, int min_ins, int max_ins, int mem_per_proc)
     : core_available(num_cores, true),
       min_instructions(min_ins),
       max_instructions(max_ins),
       mem_per_proc(mem_per_proc)
+{
+    for (int i = 0; i < num_cores; ++i)
+    {
+        core_process_count[i] = 0;
+        core_util_time[i] = 0;
+    }
+}
+*/
+Scheduler::Scheduler(int num_cores, int min_ins, int max_ins)
+    : core_available(num_cores, true),
+      min_instructions(min_ins),
+      max_instructions(max_ins)
 {
     for (int i = 0; i < num_cores; ++i)
     {
@@ -38,6 +51,7 @@ void Scheduler::start_core_threads() // IMPORTANT: check where should u run
         cpu_cores.emplace_back(&Scheduler::run_core, this, i);
     }
 }*/
+/*
 void Scheduler::start_core_threads() {
     for (int i = 0; i < static_cast<int>(core_available.size()); ++i) {
         core_available[i] = true;
@@ -67,8 +81,33 @@ void Scheduler::start_core_threads() {
         core->start();
     }
 }
+*/
+void Scheduler::start_core_threads() {
+    for (int i = 0; i < static_cast<int>(core_available.size()); ++i) {
+        auto core = std::make_shared<CPUCore>(i, [this](int core_id) -> std::shared_ptr<Process> {
+            std::unique_lock<std::mutex> lock(queue_mutex);
+            queue_condition.wait(lock, [this] { return !ready_queue.empty() || !running; });
 
+            if (!running || ready_queue.empty()) return nullptr;
 
+            auto process = ready_queue.front();
+            ready_queue.pop();
+
+            {
+                std::lock_guard<std::mutex> lock2(running_mutex);
+                current_processes[core_id] = process;
+                process_to_core[process] = core_id;
+            }
+
+            return process;
+        });
+
+        cpu_core_objects.push_back(core);
+        core->start();
+    }
+}
+
+/*
 void Scheduler::shutdown()
 {
     global_shutdown = true;
@@ -84,6 +123,23 @@ void Scheduler::shutdown()
     for (auto &t : cpu_cores) {
         if (t.joinable())
             t.join(); 
+    }
+}
+*/
+void Scheduler::shutdown() {
+    global_shutdown = true;
+    running = false;
+    stop_scheduler();
+
+    queue_condition.notify_all();
+
+    //remove this block if cpu_cores is gone:
+    // for (auto &t : cpu_cores) {
+    //     if (t.joinable()) t.join();
+    // }
+
+    for (auto &core : cpu_core_objects) {
+        core->stop();
     }
 }
 /*

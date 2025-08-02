@@ -16,14 +16,18 @@
 class RRScheduler : public Scheduler
 {
 public:
+/*
     RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins, int delay_per_exec, int mem_per_proc, MemoryManager &mem_mgr);
+    ~RRScheduler();
+*/
+    RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins, int delay_per_exec);
     ~RRScheduler();
 
     void start();
     void stop_scheduler();
     bool is_scheduler_running() const;
 
-    void start_core_threads();
+    //void start_core_threads();
     void start_process_generator();
     void on_cpu_cycle(uint64_t cycle_number);
     std::vector<std::shared_ptr<Process>> get_running_processes();
@@ -31,10 +35,11 @@ public:
     void notify_process_started(int core_id, std::shared_ptr<Process> process);
     void notify_process_finished(int core_id, std::shared_ptr<Process> process, int duration_ms);
     int get_quantum() const;
+    void add_process(std::shared_ptr<Process> proc) override;
 
 private:
     void generate_new_process();
-    void run_core(int core_id);
+    //void run_core(int core_id);
     void save_memory_snapshot(uint64_t cycle_number);
 
     int time_quantum;
