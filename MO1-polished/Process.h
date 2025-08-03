@@ -30,18 +30,18 @@ public:
     void addCommand(std::shared_ptr<Command> cmd);
 
     // Memory operations
-    uint16_t readMemory(uint16_t virtualAddr);
-    void writeMemory(uint16_t virtualAddr, uint16_t value);
+    uint32_t readMemory(uint32_t virtualAddr);
+    void writeMemory(uint32_t virtualAddr, uint32_t value);
 
     // Variable access (symbol table)
-    uint16_t getVar(const std::string &name);
-    bool declareVar(const std::string &name, uint16_t value);
+    uint32_t getVar(const std::string &name);
+    bool declareVar(const std::string &name, uint32_t value);
 
     // Lifecycle & state
     bool canExecute() const;
     bool isFinished() const { return is_finished; }
     bool hasStarted() const { return has_started; }
-    void markAsError(uint16_t addr); // for memory violation
+    void markAsError(uint32_t addr); // for memory violation
 
     // Getters
     std::string getName() const { return name; }
@@ -73,7 +73,7 @@ private:
     // Helpers
     int getVirtualPageNumber(uint32_t addr) const;
     int getOffset(uint32_t addr) const;
-    bool isAddressValid(uint16_t addr) const;
+    bool isAddressValid(uint32_t addr) const;
     void triggerPageFault(int virtualPage);
 
     // Process identity
@@ -99,7 +99,7 @@ private:
     // Memory
     size_t memorySize;                         // total memory allocated (power of 2, ≥64)
     int numPages;                              // memorySize / memPerFrame
-    std::map<std::string, uint16_t> variables; // symbol table (max 32 vars)
+    std::map<std::string, uint32_t> variables; // symbol table (max 32 vars)
     std::vector<std::shared_ptr<Command>> commands;
 
     // Page table: virtual page → frame metadata

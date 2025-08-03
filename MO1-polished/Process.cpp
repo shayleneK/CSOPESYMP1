@@ -107,7 +107,7 @@ bool Process::canExecute() const
 }
 
 // --- READ from virtual memory ---
-uint16_t Process::readMemory(uint16_t virtualAddr)
+uint32_t Process::readMemory(uint32_t virtualAddr)
 {
     // Step 1: Check if address is within this process's allocated memory
     if (!isAddressValid(virtualAddr))
@@ -139,11 +139,11 @@ uint16_t Process::readMemory(uint16_t virtualAddr)
     // Step 4: Simulate reading a 16-bit value from memory
     // In real system: access physical frame + offset
     // Here: return dummy data based on address (for demo)
-    return static_cast<uint16_t>(virtualAddr ^ 0xABCD); // Dummy value
+    return static_cast<uint32_t>(virtualAddr ^ 0xABCD); // Dummy value
 }
 
 // --- WRITE to virtual memory ---
-void Process::writeMemory(uint16_t virtualAddr, uint16_t value)
+void Process::writeMemory(uint32_t virtualAddr, uint32_t value)
 {
     // Step 1: Validate memory bounds
     if (!isAddressValid(virtualAddr))
@@ -180,34 +180,24 @@ void Process::writeMemory(uint16_t virtualAddr, uint16_t value)
 }
 
 // --- Get variable value from symbol table ---
-uint16_t Process::getVar(const std::string &name)
+uint32_t Process::getVar(const std::string &name)
 {
-    // Accessing symbol table requires Page 0 to be in memory
+    // Only one check needed: is Page 0 (symbol table) valid?
     if (!isPageValid(0))
     {
-        triggerPageFault(0); // Page 0 = symbol table
+        triggerPageFault(0);
         if (!isPageValid(0))
         {
-            return 0; // If still not loaded, return 0
+            return 0;
         }
     }
 
     auto it = variables.find(name);
-    if (it != variables.end())
-    {
-        // Accessing a variable requires the symbol table page (Page 0)
-        // If it's not in memory, load it via page fault
-        if (!isPageValid(getSymbolTablePageNum()))
-        {
-            triggerPageFault(getSymbolTablePageNum());
-        }
-        return it->second;
-    }
-    return 0; // Undefined variable → return 0 (per spec)
+    return (it != variables.end()) ? it->second : 0;
 }
 
 // --- Declare a new variable ---
-bool Process::declareVar(const std::string &name, uint16_t value)
+bool Process::declareVar(const std::string &name, uint32_t value)
 {
     // MO2 Requirement: Max 32 variables (64 bytes total, 2 bytes each)
     if (variables.size() >= 32)
@@ -238,7 +228,7 @@ int Process::getOffset(uint32_t addr) const
 }
 
 // --- HELPER: Is this virtual address valid? ---
-bool Process::isAddressValid(uint16_t addr) const
+bool Process::isAddressValid(uint32_t addr) const
 {
     // Address must be less than total memory allocated to this process
     return addr < memorySize;
@@ -288,7 +278,7 @@ void Process::triggerPageFault(int virtualPage)
 }
 
 // --- Mark process as crashed due to invalid memory access ---
-void Process::markAsError(uint16_t addr)
+void Process::markAsError(uint32_t addr)
 {
     has_error = true;
     is_finished = true;
