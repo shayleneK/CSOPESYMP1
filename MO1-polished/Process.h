@@ -59,8 +59,7 @@ public:
 
     void setMemoryManager(MemoryManager *mm) { memory_manager = mm; }
 
-        void triggerPageFault(int virtualPage);
-
+    void triggerPageFault(int virtualPage);
 
     // Symbol table info
     size_t getSymbolTableUsage() const { return symbol_table.size() * 2; }
@@ -74,6 +73,7 @@ public:
     int getSymbolTablePageNum() const { return 0; } // Page 0 = symbol table
 
     void logExecution(int coreId, const std::string &message);
+    void markPageValid(int page);
 
 private:
     // Helpers

@@ -7,6 +7,7 @@
 #include <chrono>
 #include <ctime>
 #include <stdexcept>
+#include <iostream>
 
 // --- CONSTRUCTOR: Initialize a new process ---
 Process::Process(const std::string &name, size_t memSize, int pid, size_t frameSize, MemoryManager *memMgr)
@@ -255,7 +256,11 @@ void Process::triggerPageFault(int virtualPage)
 
     if (memoryManager)
     {
+        std::cout << "[" << name << "] Page fault: accessing invalid page " << virtualPage << "\n";
+
         memoryManager->loadPage(name, virtualPage); // use the process name
+
+        pageTable[virtualPage].isValid = true; // Mark this page as loaded into memory
     }
     else
     {
@@ -306,4 +311,10 @@ void Process::logExecution(int coreId, const std::string &message)
     oss << "(" << timestamp << ") Core:" << coreId << " - " << message;
 
     logs.push_back(oss.str());
+}
+
+void Process::markPageValid(int page)
+{
+    if (page >= 0 && page < numPages)
+        pageTable[page].isValid = true;
 }
