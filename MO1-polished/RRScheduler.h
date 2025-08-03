@@ -1,6 +1,7 @@
-#ifndef RR_SCHEDULER_H
-#define RR_SCHEDULER_H
+#pragma once
 
+#include "CPUCycleManager.h"
+#include "Process.h"
 #include "Scheduler.h"
 #include "MemoryManager.h"
 #include <vector>
@@ -21,6 +22,7 @@ public:
 
     void start();
     void stop_scheduler();
+    void shutdown();
     bool is_scheduler_running() const;
 
     void start_core_threads();
@@ -36,6 +38,7 @@ private:
     void generate_new_process();
     void run_core(int core_id);
     void save_memory_snapshot(uint64_t cycle_number);
+    CPUCycleManager cpuCycleManager;
 
     int time_quantum;
     std::atomic<bool> generating_processes{false};
@@ -49,5 +52,3 @@ private:
     // Tracks process names currently occupying memory
     std::vector<std::string> process_memory_map_;
 };
-
-#endif // RR_SCHEDULER_H

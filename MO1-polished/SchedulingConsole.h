@@ -19,7 +19,7 @@ public:
     explicit SchedulingConsole(Scheduler *sched);
 
     void onEnabled() override;
-    void display() override;
+    //void display() override;
     void process(std::string &command) override;
     bool isRunning() const override;
 

@@ -2,7 +2,8 @@
 #pragma once
 
 #include "Process.h"
-#include "CPUCore.h"
+#include "CPUCycleManager.h"
+#include "MemoryManager.h"
 #include <vector>
 #include <queue>
 #include <map>
@@ -45,7 +46,7 @@ public:
     virtual bool is_scheduler_running() const = 0;
 
     virtual void stop_scheduler();
-    std::vector<std::shared_ptr<CPUCore>> cpu_core_objects;
+    //std::vector<std::shared_ptr<CPUCore>> cpu_core_objects;
 
 protected:
     std::vector<bool> core_available;
@@ -55,6 +56,7 @@ protected:
     std::map<std::shared_ptr<Process>, int> process_to_core;
     std::mutex running_mutex;
     int next_pid = 0;
+    MemoryManager memory_manager_;
 
     std::map<int, int> core_process_count;
     std::map<int, int> core_util_time;

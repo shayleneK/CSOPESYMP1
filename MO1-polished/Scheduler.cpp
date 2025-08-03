@@ -1,4 +1,4 @@
-// Scheduler.cpp
+
 #include "Scheduler.h"
 #include <chrono>
 #include <algorithm>
@@ -9,7 +9,8 @@ Scheduler::Scheduler(int num_cores, int min_ins, int max_ins, int mem_per_proc)
     : core_available(num_cores, true),
       min_instructions(min_ins),
       max_instructions(max_ins),
-      mem_per_proc(mem_per_proc)
+      mem_per_proc(mem_per_proc), 
+      memory_manager_(mem_per_proc * num_cores) 
 {
     for (int i = 0; i < num_cores; ++i)
     {
@@ -30,41 +31,13 @@ void Scheduler::add_process(std::shared_ptr<Process> process)
     all_processes.push_back(process);
     queue_condition.notify_one();
 }
-/*
-void Scheduler::start_core_threads() // IMPORTANT: check where should u run
+
+void Scheduler::start_core_threads()
 {
-    for (int i = 0; i < static_cast<int>(core_available.size()); ++i)
+    int num_cores = static_cast<int>(core_available.size());
+    for (int i = 0; i < num_cores; ++i)
     {
         cpu_cores.emplace_back(&Scheduler::run_core, this, i);
-    }
-}*/
-void Scheduler::start_core_threads() {
-    for (int i = 0; i < static_cast<int>(core_available.size()); ++i) {
-        core_available[i] = true;
-
-        auto core = std::make_shared<CPUCore>(i, [this](int core_id) -> std::shared_ptr<Process> {
-            std::unique_lock<std::mutex> lock(queue_mutex);
-
-            if (!ready_queue.empty()) {
-                auto process = ready_queue.front();
-                ready_queue.pop();
-                core_available[core_id] = false;
-
-                {
-                    std::lock_guard<std::mutex> lock2(running_mutex);
-                    current_processes[core_id] = process;
-                    process_to_core[process] = core_id;
-                }
-
-                return process;
-            }
-
-            core_available[core_id] = true;
-            return nullptr;
-        });
-
-        cpu_core_objects.push_back(core);
-        core->start();
     }
 }
 
@@ -77,13 +50,10 @@ void Scheduler::shutdown()
 
     queue_condition.notify_all();
 
-    for (auto &core : cpu_core_objects) {
-        core->stop();
-    }
-
-    for (auto &t : cpu_cores) {
+    for (auto &t : cpu_cores)
+    {
         if (t.joinable())
-            t.join(); 
+            t.join();
     }
 }
 /*
@@ -141,6 +111,7 @@ void Scheduler::run_core(int core_id)
 */
 void Scheduler::start()
 {
+    running = true;
     start_core_threads();
     start_process_generator();
 }
@@ -203,16 +174,15 @@ void Scheduler::start_process_generator()
 std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats() {
     std::map<int, std::map<std::string, float>> stats;
 
-    for (size_t i = 0; i < cpu_core_objects.size(); ++i) {
-        auto &core = cpu_core_objects[i];
-        float busy = static_cast<float>(core->get_busy_time_ms());
-        float count = static_cast<float>(core->get_process_count());
-        float total = busy + 1; // prevent div-by-zero
+    for (const auto& [core_id, busy_time] : core_util_time) {
+        float busy = static_cast<float>(busy_time);
+        float count = static_cast<float>(core_process_count[core_id]);
+        float total = busy + 1.0f; // prevent div-by-zero
 
-        stats[i]["util"] = (busy / total) * 100.0f;
-        stats[i]["busy_time_ms"] = busy;
-        stats[i]["process_count"] = count;
-        stats[i]["available"] = core->is_idle() ? 1.0f : 0.0f;
+        stats[core_id]["util"] = (busy / total) * 100.0f;
+        stats[core_id]["busy_time_ms"] = busy;
+        stats[core_id]["process_count"] = count;
+        stats[core_id]["available"] = core_available[core_id] ? 1.0f : 0.0f;
     }
 
     return stats;

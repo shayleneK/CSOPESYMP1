@@ -19,7 +19,8 @@ RRScheduler::RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins
                          int delay_per_exec, int mem_per_proc, MemoryManager &mem_mgr)
     : Scheduler(num_cores, min_ins, max_ins, mem_per_proc),
       time_quantum(quantum_ms),
-      memory_manager_(mem_mgr)
+      memory_manager_(mem_mgr),
+      cpuCycleManager([this](uint64_t cycle) { this->on_cpu_cycle(cycle); }, 1000)
 {
     process_memory_map_.clear();
 }
@@ -29,31 +30,12 @@ RRScheduler::~RRScheduler()
     shutdown();
 }
 
-void RRScheduler::start()
-{
-    if (generating_processes.load())
-        return;
+void RRScheduler::start() {
+    if (generating_processes.load()) return;
 
     generating_processes.store(true);
     running = true;
-
-    generator_thread = std::thread([this]()
-                                   {
-        int cycle_counter = 0;
-        int batch_counter = 0;
-
-        while (generating_processes.load() && running)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            if (++cycle_counter >= batch_process_freq)
-            {
-                generate_new_process();
-                cycle_counter = 0;
-                save_memory_snapshot(batch_counter);
-                batch_counter++;
-
-            }
-        } });
+    cpuCycleManager.start();  // 🔁 use new manager
 }
 
 void RRScheduler::generate_new_process()
@@ -108,13 +90,25 @@ void RRScheduler::start_core_threads()
     }
 }
 
+void RRScheduler::shutdown() {
+    generating_processes = false;
+    running = false;
+    cpuCycleManager.stop();   // Stop the CPU cycle thread
+
+    stop_scheduler(); // Custom cleanup logic (if any)
+
+    queue_condition.notify_all(); // Wake up any waiting threads
+
+    for (auto& t : cpu_cores) {
+        if (t.joinable())
+            t.join(); // Wait for threads to exit cleanly
+    }
+}
+
 void RRScheduler::stop_scheduler()
 {
     generating_processes = false;
-    if (generator_thread.joinable())
-    {
-        generator_thread.join();
-    }
+    cpuCycleManager.stop();  // stop periodic generation
 }
 
 bool RRScheduler::is_scheduler_running() const
@@ -122,91 +116,43 @@ bool RRScheduler::is_scheduler_running() const
     return generating_processes;
 }
 
-void RRScheduler::run_core(int core_id)
-{
-    while (running)
-    {
-        std::shared_ptr<Process> process;
+void RRScheduler::run_core(int core_id) {
+    while (ConsoleManager::getInstance()->isRunning()) {
+        std::unique_lock<std::mutex> lock(queue_mutex);
 
-        {
-            std::unique_lock<std::mutex> lock(queue_mutex);
-            queue_condition.wait(lock, [this]
-                                 { return !running || !ready_queue.empty(); });
+        if (!ready_queue.empty()) {
+            auto process = ready_queue.front();
+            ready_queue.pop();
+            lock.unlock(); // Unlock during execution
 
-            if (!running)
-                break;
-
-            if (!ready_queue.empty())
-            {
-                process = ready_queue.front();
-                ready_queue.pop();
-                core_available[core_id] = false;
-            }
-            else
-            {
-                continue;
-            }
-        }
-
-        if (process)
-        {
-            {
-                std::unique_lock<std::mutex> lock(running_mutex);
-                current_processes[core_id] = process;
-                process_to_core[process] = core_id;
-            }
-
-            int cpu_ticks_exec = 0;
-            int max_cpu_ticks = time_quantum;
-
-            auto start = std::chrono::high_resolution_clock::now();
-
-            while (cpu_ticks_exec < max_cpu_ticks && !process->isFinished())
-            {
-                if (!running)
-                    break;
-
-                if (process->can_execute())
-                {
-                    process->execute(core_id);
-                    cpu_ticks_exec++;
-                }
-            }
-
-            auto end = std::chrono::high_resolution_clock::now();
-            int duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-
-            {
-                std::unique_lock<std::mutex> lock(queue_mutex);
-                core_util_time[core_id] += duration_ms;
-                core_process_count[core_id]++;
-                total_cpu_time = std::max(total_cpu_time, core_util_time[core_id]);
-
-                if (!process->isFinished())
-                {
-                    process_to_core.erase(process);
+            if (!process->isInMemory()) {
+                size_t addr = memory_manager_.allocate(process->getMemoryRequired(), process->getName());
+                if (addr != SIZE_MAX && addr != static_cast<size_t>(-1)) {
+                    process->loadToMemory(addr);
+                } else {
+                    process->log_execution(core_id, "Memory full. Re-queueing process: " + process->getName());
+                    lock.lock();
                     ready_queue.push(process);
-                }
-
-                core_available[core_id] = true;
-            }
-
-            {
-                std::unique_lock<std::mutex> lock(running_mutex);
-                if (process->isFinished())
-                {
-                    current_processes.erase(core_id);
-                    process_to_core.erase(process);
-
-                    memory_manager_.deallocate(process->name);
-                    process_memory_map_.erase(
-                        std::remove(process_memory_map_.begin(), process_memory_map_.end(), process->name),
-                        process_memory_map_.end());
-
-                    std::cout << "[RR][Core " << core_id << "] Process " << process->getName()
-                              << " finished and memory released." << std::endl;
+                    lock.unlock();
+                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                    continue;
                 }
             }
+
+            process->execute(core_id);
+
+            if (process->isFinished()) {
+                memory_manager_.deallocate(process->getName());
+                process->releaseFromMemory();
+                notify_process_finished(core_id, process, time_quantum);
+            } else {
+                lock.lock();
+                ready_queue.push(process);
+                lock.unlock();
+            }
+        } else {
+            lock.unlock();
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
     }
 }
