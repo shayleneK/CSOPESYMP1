@@ -12,6 +12,8 @@
 #include <thread>
 #include <atomic>
 
+class MemoryManager; 
+
 class Scheduler
 {
 public:
@@ -46,6 +48,9 @@ public:
 
     virtual void stop_scheduler();
     std::vector<std::shared_ptr<CPUCore>> cpu_core_objects;
+
+    MemoryManager* memoryManager = nullptr;
+    void set_memory_manager(MemoryManager* mem) { this->memoryManager = mem; }
 
 protected:
     std::vector<bool> core_available;

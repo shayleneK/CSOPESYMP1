@@ -93,6 +93,7 @@ void SchedulingConsole::render_running_processes(const std::vector<std::shared_p
         return;
     }
 
+    /*
     for (const auto &p : processes)
     {
         if (!p->has_started)
@@ -109,6 +110,28 @@ void SchedulingConsole::render_running_processes(const std::vector<std::shared_p
             << "   (" << std::put_time(start_tm, "%Y-%m-%d %H:%M:%S") << ")"
             << "  Core: " << p->current_core
             << ", " << p->current_command_index << " / 100";
+
+        std::cout << oss.str() << "\n";
+    }
+    std::cout << std::endl;
+    */
+    
+    for (const auto &p : processes)
+    {
+        if (!p->hasStarted())
+        {
+            std::cout << " - " << p->getName() << " (Scheduled, not started)\n";
+            continue;
+        }
+
+        std::time_t start_time_t = std::chrono::system_clock::to_time_t(p->getStartTime());
+        std::tm *start_tm = std::localtime(&start_time_t);
+
+        std::ostringstream oss;
+        oss << " - " << p->getName()
+            << " (" << std::put_time(start_tm, "%Y-%m-%d %H:%M:%S") << ")"
+            << "  Core: " << p->getCurrentCore()
+            << ", " << p->getCurrentCommandIndex() << " / 100";
 
         std::cout << oss.str() << "\n";
     }
@@ -132,6 +155,7 @@ void SchedulingConsole::render_finished_processes(const std::vector<std::shared_
 
     for (const auto &p : processes)
     {
+        /*
         if (p->is_finished)
         {
             std::time_t finish_time_t = std::chrono::system_clock::to_time_t(p->finish_time);
@@ -142,6 +166,19 @@ void SchedulingConsole::render_finished_processes(const std::vector<std::shared_
                 << "   (" << std::put_time(finish_tm, "%Y-%m-%d %H:%M:%S") << ")"
                 << " Finished "
                 << " 100 / 100";
+            std::cout << oss.str() << "\n";
+        }
+        */
+        if (p->isFinished())
+        {
+            std::time_t finish_time_t = std::chrono::system_clock::to_time_t(p->getFinishTime());
+            std::tm *finish_tm = std::localtime(&finish_time_t);
+
+            std::ostringstream oss;
+            oss << " - " << p->getName()
+                << " (" << std::put_time(finish_tm, "%Y-%m-%d %H:%M:%S") << ")"
+                << " Finished";
+
             std::cout << oss.str() << "\n";
         }
     }
@@ -164,3 +201,12 @@ void SchedulingConsole::render_finished_processes(const std::vector<std::shared_
 
     std::cout << std::endl;
 } */
+void SchedulingConsole::display()
+{
+    render_header();
+
+    render_running_processes(scheduler->get_running_processes());
+    render_finished_processes(scheduler->get_finished_processes());
+
+    render_footer();
+}

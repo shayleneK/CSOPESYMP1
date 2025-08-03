@@ -10,6 +10,7 @@
 #include "RRScheduler.h"
 #include "FCFSScheduler.h"
 #include "Scheduler.h"
+#include "MemoryManager.h"
 
 #include <iostream>
 #include <fstream>
@@ -24,6 +25,9 @@
 
 ConsoleManager *ConsoleManager::instance = nullptr;
 std::atomic<uint64_t> ConsoleManager::cpu_cycles(0);
+// Global variables
+extern size_t memPerFrame;
+extern MemoryManager* g_MemoryManager;
 
 ConsoleManager::ConsoleManager()
 {
@@ -268,6 +272,9 @@ void ConsoleManager::processInput()
         mem_per_proc = cfg.getInt("mem-per-proc", 1000);
         std::cout << "[DEBUG] mem_per_proc loaded from config: " << mem_per_proc << "\n";
 
+        memPerFrame = mem_per_frame;
+        g_MemoryManager = new MemoryManager(max_overall_mem, mem_per_frame);
+
         MemoryManager memory_manager_ = MemoryManager(max_overall_mem, mem_per_frame);
         if (scheduler_type == "rr")
             scheduler = std::make_unique<RRScheduler>(num_cpu, quantum, min_ins, max_ins, delay_per_exec, mem_per_proc, memory_manager_);
@@ -438,63 +445,72 @@ void ConsoleManager::processInput()
         for (const auto &log : proc->getLogs())
             std::cout << log << "\n";
     }
-    else if (command.rfind("screen -c ", 0) == 0)
+    else if (command.rfind("screen -c ", 0) == 0) {
+    if (!scheduler || !scheduler->memoryManager)
     {
-        if (!scheduler)
-        {
-            std::cout << "[ERROR] Scheduler not initialized.\n";
-            return;
-        }
-
-        std::istringstream iss(command.substr(10));
-        std::string name;
-        size_t mem_size;
-        std::string instructions_str;
-
-        // read name and memory size
-        if (!(iss >> name >> mem_size))
-        {
-            std::cout << "[ERROR] Invalid syntax. Use: screen -c <name> <mem_size> \"<instructions>\"\n";
-            return;
-        }
-
-        // read quoted instruction string
-        std::getline(iss >> std::ws, instructions_str, '"');
-        if (instructions_str.empty())
-        {
-            std::cout << "[ERROR] No instructions provided.\n";
-            return;
-        }
-
-        // val memory size
-        if (mem_size < 64)
-        {
-            std::cout << "[ERROR] Memory size must be at least 64 bytes.\n";
-            return;
-        }
-
-        // check if process name already exists
-        if (hasConsole(name))
-        {
-            std::cout << "[ERROR] A screen with this name already exists.\n";
-            return;
-        }
-
-        createConsole("screen", name);
-        auto proc = ProcessFactory::generate_custom_process(name, mem_size, instructions_str);
-        scheduler->add_process(proc);
-        auto screen = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);
-        if (screen)
-            screen->attachProcess(proc);
-        switchConsole(name);
-        std::cout << "[screen] Process \"" << name << "\" created with custom instructions.\n";
+        std::cout << "[ERROR] Scheduler or memory manager not initialized.\n";
+        return;
     }
-    else
+
+    std::istringstream iss(command.substr(10));
+    std::string name;
+    size_t mem_size;
+    std::string temp, instructions_str;
+
+    if (!(iss >> name >> mem_size))
     {
-        if (m_activeConsole)
-            m_activeConsole->process(command);
-        else
-            std::cout << "[ERROR] No active console.\n";
+        std::cout << "[ERROR] Invalid syntax. Use: screen -c <name> <mem_size> \"<instructions>\"\n";
+        return;
+    }
+
+    std::getline(iss >> std::ws, temp);
+    size_t start_quote = temp.find('"');
+    size_t end_quote = temp.rfind('"');
+
+    if (start_quote == std::string::npos || end_quote == std::string::npos || start_quote == end_quote)
+    {
+        std::cout << "[ERROR] Instructions must be enclosed in quotes.\n";
+        return;
+    }
+
+    instructions_str = temp.substr(start_quote + 1, end_quote - start_quote - 1);
+
+    if (instructions_str.empty())
+    {
+        std::cout << "[ERROR] No instructions provided.\n";
+        return;
+    }
+
+    if (mem_size < 64)
+    {
+        std::cout << "[ERROR] Memory size must be at least 64 bytes.\n";
+        return;
+    }
+
+    if (hasConsole(name))
+    {
+        std::cout << "[ERROR] A screen with this name already exists.\n";
+        return;
+    }
+
+    int start_address = scheduler->memoryManager->allocate(mem_size, name);
+    if (start_address == -1)
+    {
+        std::cout << "[ERROR] Not enough memory to allocate " << mem_size << " bytes for " << name << ".\n";
+        return;
+    }
+
+    createConsole("screen", name);
+    auto proc = ProcessFactory::generate_custom_process(name, mem_size, instructions_str);
+    proc->loadToMemory(static_cast<size_t>(start_address));  // ✅ Pass start_address
+    scheduler->add_process(proc);
+
+    auto screen = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);
+    if (screen)
+        screen->attachProcess(proc);
+
+    switchConsole(name);
+    std::cout << "[screen] Custom process \"" << name << "\" created.\n";
     }
 }
 

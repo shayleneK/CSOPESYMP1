@@ -72,7 +72,12 @@ public:
 
     void logExecution(int coreId, const std::string &message);
 
+    size_t start_address = 0;
+    void loadToMemory(size_t start_addr);
+
 private:
+    bool is_in_memory = false; 
+
     // Helpers
     int getVirtualPageNumber(uint32_t addr) const;
     int getOffset(uint32_t addr) const;

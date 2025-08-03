@@ -6,6 +6,11 @@
 
 class Process;
 
+// Helper functions for instruction parsing
+std::string trim(const std::string &str);
+bool is_number(const std::string &s);
+uint16_t parse_hex_address(const std::string& str);
+
 class ProcessFactory
 {
 public:

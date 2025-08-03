@@ -5,6 +5,7 @@
 #include <random>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 
 static int global_pid_counter = 0;
 
@@ -133,17 +134,29 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
 
     while (std::getline(iss, token, ';'))
     {
-        std::istringstream line(token);
+        std::string trimmed = trim(token);
+        if (trimmed.empty()) continue;
+
+        std::istringstream line(trimmed);
         std::string cmd;
         if (line >> cmd)
         {
+            // Convert to uppercase
+            std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::toupper);
+
             if (cmd == "DECLARE")
             {
                 std::string var;
-                uint16_t val;
-                if (line >> var >> val)
+                std::string val_str;
+                if (line >> var >> val_str)
                 {
-                    process->addCommand(std::make_shared<DeclareCommand>(var, val));
+                    try {
+                        uint16_t val = static_cast<uint16_t>(std::stoul(val_str));
+                        process->addCommand(std::make_shared<DeclareCommand>(var, val));
+                    }
+                    catch (...) {
+                        std::cerr << "[ERROR] Invalid value in DECLARE: " << val_str << "\n";
+                    }
                 }
             }
             else if (cmd == "ADD")
@@ -154,10 +167,10 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
 
                 if (line >> target >> op1 >> op2)
                 {
-                    op1_is_var = (op1.find_first_not_of("0123456789") != std::string::npos);
-                    op2_is_var = (op2.find_first_not_of("0123456789") != std::string::npos);
-                    val1 = op1_is_var ? 0 : std::stoi(op1);
-                    val2 = op2_is_var ? 0 : std::stoi(op2);
+                    op1_is_var = !is_number(op1);
+                    op2_is_var = !is_number(op2);
+                    if (!op1_is_var) val1 = static_cast<uint16_t>(std::stoul(op1));
+                    if (!op2_is_var) val2 = static_cast<uint16_t>(std::stoul(op2));
 
                     process->addCommand(std::make_shared<AddCommand>(target, op1, op2, op1_is_var, op2_is_var, val1, val2));
                 }
@@ -170,10 +183,10 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
 
                 if (line >> target >> op1 >> op2)
                 {
-                    op1_is_var = (op1.find_first_not_of("0123456789") != std::string::npos);
-                    op2_is_var = (op2.find_first_not_of("0123456789") != std::string::npos);
-                    val1 = op1_is_var ? 0 : std::stoi(op1);
-                    val2 = op2_is_var ? 0 : std::stoi(op2);
+                    op1_is_var = !is_number(op1);
+                    op2_is_var = !is_number(op2);
+                    if (!op1_is_var) val1 = static_cast<uint16_t>(std::stoul(op1));
+                    if (!op2_is_var) val2 = static_cast<uint16_t>(std::stoul(op2));
 
                     process->addCommand(std::make_shared<SubtractCommand>(target, op1, op2, op1_is_var, op2_is_var, val1, val2));
                 }
@@ -181,7 +194,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
             else if (cmd == "PRINT")
             {
                 std::string msg;
-                std::getline(line >> std::ws, msg); // Read full message
+                std::getline(line >> std::ws, msg);
                 process->addCommand(std::make_shared<PrintCommand>(msg));
             }
             else if (cmd == "READ")
@@ -190,8 +203,13 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                 std::string addr_str;
                 if (line >> var_name >> addr_str)
                 {
-                    uint16_t address = std::stoul(addr_str, nullptr, 16); // hex
-                    process->addCommand(std::make_shared<ReadCommand>(var_name, address));
+                    try {
+                        uint16_t address = parse_hex_address(addr_str);
+                        process->addCommand(std::make_shared<ReadCommand>(var_name, address));
+                    }
+                    catch (const std::exception& e) {
+                        std::cerr << "[ERROR] Invalid address in READ: " << addr_str << "\n";
+                    }
                 }
             }
             else if (cmd == "WRITE")
@@ -199,17 +217,28 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                 std::string addr_str, val_str;
                 if (line >> addr_str >> val_str)
                 {
-                    uint16_t address = std::stoul(addr_str, nullptr, 16); // hex
-                    uint16_t value = std::stoi(val_str);
-                    process->addCommand(std::make_shared<WriteCommand>(address, value));
+                    try {
+                        uint16_t address = parse_hex_address(addr_str);
+                        uint16_t value = static_cast<uint16_t>(std::stoul(val_str));
+                        process->addCommand(std::make_shared<WriteCommand>(address, value));
+                    }
+                    catch (const std::exception& e) {
+                        std::cerr << "[ERROR] Invalid address/value in WRITE: " << addr_str << " " << val_str << "\n";
+                    }
                 }
             }
             else if (cmd == "SLEEP")
             {
-                uint8_t ticks;
-                if (line >> ticks)
+                std::string ticks_str;
+                if (line >> ticks_str)
                 {
-                    process->addCommand(std::make_shared<SleepCommand>(ticks));
+                    try {
+                        uint8_t ticks = static_cast<uint8_t>(std::stoul(ticks_str));
+                        process->addCommand(std::make_shared<SleepCommand>(ticks));
+                    }
+                    catch (...) {
+                        std::cerr << "[ERROR] Invalid ticks in SLEEP: " << ticks_str << "\n";
+                    }
                 }
             }
             else
@@ -220,4 +249,23 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
     }
 
     return process;
+}
+std::string trim(const std::string &str) {
+    size_t first = str.find_first_not_of(" \t\n\r");
+    if (first == std::string::npos) return "";
+    size_t last = str.find_last_not_of(" \t\n\r");
+    return str.substr(first, last - first + 1);
+}
+
+bool is_number(const std::string &s) {
+    return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
+}
+
+uint16_t parse_hex_address(const std::string& str) {
+    std::string s = trim(str);
+    if (s.rfind("0x", 0) == 0 || s.rfind("0X", 0) == 0) {
+        s = s.substr(2);
+    }
+    if (s.empty()) throw std::invalid_argument("Empty hex address");
+    return static_cast<uint16_t>(std::stoul(s, nullptr, 16));
 }

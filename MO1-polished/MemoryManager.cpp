@@ -4,6 +4,11 @@
 #include <sstream>
 #include <algorithm>
 
+//TEMP FOR TESTING
+// Global memory manager instance
+MemoryManager* g_MemoryManager = nullptr; 
+int memPerFrame = 16; 
+
 MemoryManager::MemoryManager(size_t total_memory_kb, size_t page_size_bytes)
     : page_size(page_size_bytes)
 {

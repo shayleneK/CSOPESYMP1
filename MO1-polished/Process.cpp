@@ -319,3 +319,14 @@ void Process::logExecution(int coreId, const std::string &message)
 
     logs.push_back(oss.str());
 }
+
+void Process::loadToMemory(size_t start_addr)
+{
+    start_address = start_addr;
+    is_in_memory = true;
+}
+
+int Process::getVirtualPageNumber(uint32_t addr) const
+{
+    return addr / memPerFrame; 
+}
