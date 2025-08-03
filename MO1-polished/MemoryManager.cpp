@@ -4,6 +4,10 @@
 
 #include <sstream>
 
+//remove to test/run
+//MemoryManager g_MemoryManager(16384); 
+//int memPerFrame = 16;
+
 MemoryManager::MemoryManager(size_t MAX_MEMORY)
 {
     memory_blocks_.push_back(MemoryBlock{0, MAX_MEMORY - 1, false, ""});

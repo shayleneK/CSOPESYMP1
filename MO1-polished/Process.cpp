@@ -328,3 +328,9 @@ void Process::logExecution(int coreId, const std::string &message)
 
     logs.push_back(oss.str());
 }
+int Process::getVirtualPageNumber(uint32_t addr) const
+{
+    //return addr / 16; 
+     return addr / memPerFrame;
+}
+
