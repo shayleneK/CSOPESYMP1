@@ -59,6 +59,9 @@ public:
 
     void setMemoryManager(MemoryManager *mm) { memory_manager = mm; }
 
+        void triggerPageFault(int virtualPage);
+
+
     // Symbol table info
     size_t getSymbolTableUsage() const { return symbol_table.size() * 2; }
 
@@ -77,7 +80,6 @@ private:
     int getVirtualPageNumber(uint32_t addr) const;
     int getOffset(uint32_t addr) const;
     bool isAddressValid(uint32_t addr) const;
-    void triggerPageFault(int virtualPage);
     MemoryManager *memory_manager = nullptr;
 
     // Process identity

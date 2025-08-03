@@ -119,6 +119,13 @@ void RRScheduler::generate_new_process()
     try
     {
         start_address = memory_manager_.allocate(random_mem, process->getName());
+
+        int num_pages = (random_mem * 1024 + memory_manager_.getPageSize() - 1) / memory_manager_.getPageSize();
+        for (int i = 0; i < num_pages; ++i)
+        {
+            process->triggerPageFault(i);
+        }
+
     }
     catch (const std::invalid_argument &e)
     {
