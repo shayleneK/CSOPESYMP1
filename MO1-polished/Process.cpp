@@ -1,6 +1,7 @@
 #include "Process.h"
 #include "Command.h"
 #include "ConsoleManager.h"
+#include "MemoryManager.h"
 #include <sstream>
 #include <iomanip>
 #include <chrono>
@@ -107,77 +108,72 @@ bool Process::canExecute() const
 }
 
 // --- READ from virtual memory ---
-uint16_t Process::readMemory(uint16_t virtualAddr)
+uint16_t Process::readMemory(uint16_t virtual_addr)
 {
-    // Step 1: Check if address is within this process's allocated memory
-    if (!isAddressValid(virtualAddr))
+    if (!isAddressValid(virtual_addr))
     {
-        markAsError(virtualAddr); // Invalid access → kill process
+        markAsError(virtual_addr);
         return 0;
     }
 
-    // Step 2: Break address into page number and offset within page
-    int page = getVirtualPageNumber(virtualAddr); // e.g., 0x500 → page 2 (if 256-byte pages)
-    int offset = getOffset(virtualAddr);          // e.g., 0x500 → offset 0
+    int page = getVirtualPageNumber(virtual_addr);
+    int offset = getOffset(virtual_addr);
 
-    // Step 3: Check if the required page is currently in physical memory
-    if (!isPageValid(page))
+    if (!memory_manager->isPageInMemory(name, page))
     {
-        // Page is not in RAM → trigger a page fault
-        triggerPageFault(page);
+        memory_manager->loadPage(name, page);
 
-        // After page fault handling, check again
-        // (In real OS, instruction restarts automatically)
-        if (!isPageValid(page))
+        if (!memory_manager->isPageInMemory(name, page))
         {
-            // Still not loaded? Something went wrong → crash
-            markAsError(virtualAddr);
+            markAsError(virtual_addr);
             return 0;
         }
     }
 
-    // Step 4: Simulate reading a 16-bit value from memory
-    // In real system: access physical frame + offset
-    // Here: return dummy data based on address (for demo)
-    return static_cast<uint16_t>(virtualAddr ^ 0xABCD); // Dummy value
+    int frame = memory_manager->getFrameNumber(name, page);
+    uint32_t physical_addr = frame * page_size + offset;
+
+    // Simulated value; real OS would fetch from RAM
+    return static_cast<uint16_t>(physical_addr ^ 0xABCD);
 }
 
 // --- WRITE to virtual memory ---
-void Process::writeMemory(uint16_t virtualAddr, uint16_t value)
+void Process::writeMemory(uint16_t virtual_addr, uint16_t value)
 {
-    // Step 1: Validate memory bounds
-    if (!isAddressValid(virtualAddr))
+    if (!isAddressValid(virtual_addr))
     {
-        markAsError(virtualAddr); // Out of bounds → crash
+        markAsError(virtual_addr);
         return;
     }
 
-    // Step 2: Get page number
-    int page = getVirtualPageNumber(virtualAddr);
-    int offset = getOffset(virtualAddr);
+    int page = getVirtualPageNumber(virtual_addr);
+    int offset = getOffset(virtual_addr);
 
-    // Step 3: Ensure page is in memory
-    if (!isPageValid(page))
+    if (!memory_manager->isPageInMemory(name, page))
     {
-        triggerPageFault(page);
-        if (!isPageValid(page))
+        memory_manager->loadPage(name, page);
+
+        if (!memory_manager->isPageInMemory(name, page))
         {
-            markAsError(virtualAddr);
+            markAsError(virtual_addr);
             return;
         }
     }
 
-    // Step 4: Mark page as DIRTY because we're modifying it
-    // This means when this page is evicted, it must be saved to backing store
-    setPageDirty(page);
+    memory_manager->markPageDirty(name, page);
 
-    // Step 5: Simulate write operation
-    // In full emulator: write 'value' to physical frame + offset
-    // Here: just log it
+    int frame = memory_manager->getFrameNumber(name, page);
+    uint32_t physical_addr = frame * page_size + offset;
+
+    // Simulate write
     std::ostringstream oss;
-    oss << "Wrote 0x" << std::hex << value << " to virtual address 0x" << virtualAddr;
-    logExecution(current_core, oss.str());
+    oss << "Wrote 0x" << std::hex << value
+        << " to physical addr 0x" << physical_addr
+        << " (virtual: 0x" << virtual_addr << ")";
+    logExecution(core_id, oss.str());
 }
+
+
 
 // --- Get variable value from symbol table ---
 uint16_t Process::getVar(const std::string &name)
@@ -192,8 +188,8 @@ uint16_t Process::getVar(const std::string &name)
         }
     }
 
-    auto it = variables.find(name);
-    if (it != variables.end())
+    auto it = symbol_table.find(name);
+    if (it != symbol_table.end())
     {
         // Accessing a variable requires the symbol table page (Page 0)
         // If it's not in memory, load it via page fault
@@ -210,14 +206,14 @@ uint16_t Process::getVar(const std::string &name)
 bool Process::declareVar(const std::string &name, uint16_t value)
 {
     // MO2 Requirement: Max 32 variables (64 bytes total, 2 bytes each)
-    if (variables.size() >= 32)
+    if (symbol_table.size() >= 32)
     {
         // Limit reached → ignore new declarations
         return false;
     }
 
     // Store variable
-    variables[name] = value;
+    symbol_table[name] = value;
 
     // Symbol table is stored in Page 0 → mark it dirty
     setPageDirty(0);

@@ -1,36 +1,48 @@
-#ifndef MEMORY_MANAGER_H
-#define MEMORY_MANAGER_H
+#pragma once
 
-#include <vector>
 #include <string>
+#include <unordered_map>
+#include <deque>
+#include <vector>
+#include <set>
+#include <cstdint>
 
-const int MAX_MEMORY = 65536; // 64 KB example
-
-struct MemoryBlock
-{
-    size_t start;
-    size_t end;
-    bool allocated;
-    std::string process_id;
-
-    size_t size() const
-    {
-        return end - start + 1;
-    }
+struct FrameInfo {
+    std::string process_name;
+    int page_number;
+    bool dirty;
 };
 
-class MemoryManager
-{
+class MemoryManager {
 public:
-    MemoryManager(size_t max_mem = 1000);
-    int allocate(size_t size, std::string process_id);
-    void deallocate(const std::string &process_id);
-    double getExternalFragmentation();
-    std::string printMemoryLayout();
+    MemoryManager(size_t total_memory_kb, size_t page_size_bytes);
+
+    int allocate(size_t bytes_required, const std::string& process_name);
+    void deallocate(const std::string& process_name);
+
+    bool isPageInMemory(const std::string& process_name, int page_number) const;
+    int getFrameNumber(const std::string& process_name, int page_number) const;
+
+    void loadPage(const std::string& process_name, int page_number);
+    void markPageDirty(const std::string& process_name, int page_number);
+
+    std::string printMemoryLayout() const;
+    size_t getExternalFragmentation() const;
 
 private:
-    std::vector<MemoryBlock> memory_blocks_;
-    void defragment();
-};
+    void evictPageIfNeeded();
+    void evictOldestPage();
+    int findFreeFrame() const;
 
-#endif // MEMORY_MANAGER_H
+    size_t total_frames;
+    size_t page_size;
+
+    std::vector<bool> frame_used;
+    std::vector<FrameInfo> frame_table;
+
+    std::unordered_map<std::string, std::set<int>> process_pages;
+    std::unordered_map<std::string, std::vector<int>> process_page_table;
+
+    std::deque<std::pair<std::string, int>> fifo_queue;
+    std::unordered_map<std::string, std::set<int>> backing_store;
+};

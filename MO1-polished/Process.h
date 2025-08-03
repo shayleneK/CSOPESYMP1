@@ -7,6 +7,7 @@
 #include <memory>
 #include <chrono>
 #include <cstdint>
+#include "MemoryManager.h"
 
 // Forward declaration
 class Command;
@@ -56,8 +57,10 @@ public:
     uint16_t getErrorAddress() const { return invalid_address; }
     std::string getErrorTime() const;
 
+    void setMemoryManager(MemoryManager* mm) { memory_manager = mm; }
+
     // Symbol table info
-    size_t getSymbolTableUsage() const { return variables.size() * 2; }
+    size_t getSymbolTableUsage() const { return symbol_table.size() * 2; }
 
     // Page table access
     int getPageTableSize() const { return numPages; }
@@ -75,6 +78,7 @@ private:
     int getOffset(uint32_t addr) const;
     bool isAddressValid(uint16_t addr) const;
     void triggerPageFault(int virtualPage);
+    MemoryManager *memory_manager = nullptr;
 
     // Process identity
     std::string name;
@@ -99,7 +103,7 @@ private:
     // Memory
     size_t memorySize;                         // total memory allocated (power of 2, ≥64)
     int numPages;                              // memorySize / memPerFrame
-    std::map<std::string, uint16_t> variables; // symbol table (max 32 vars)
+    std::map<std::string, uint16_t> symbol_table; // symbol table (max 32 vars)
     std::vector<std::shared_ptr<Command>> commands;
 
     // Page table: virtual page → frame metadata
@@ -107,6 +111,8 @@ private:
 
     // Logs
     std::vector<std::string> logs;
+
+    
 };
 
 #endif // PROCESS_H

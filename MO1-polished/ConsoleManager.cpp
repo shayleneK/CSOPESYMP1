@@ -260,8 +260,11 @@ void ConsoleManager::processInput()
         int min_ins = cfg.getInt("min-ins", 1000);
         int max_ins = cfg.getInt("max-ins", 2000);
         int delay_per_exec = cfg.getInt("delay-per-exec", 100);
+
         int max_overall_mem = cfg.getInt("max-overall-mem", 100000);
         int mem_per_frame = cfg.getInt("mem-per-frame", 1000);
+        int min_mem_per_proc = cfg.getInt("min-mem-per-proc", 1000);
+        int max_mem_per_proc = cfg.getInt("max-mem-per-proc", 1000);
         mem_per_proc = cfg.getInt("mem-per-proc", 1000);
         std::cout << "[DEBUG] mem_per_proc loaded from config: " << mem_per_proc << "\n";
 
