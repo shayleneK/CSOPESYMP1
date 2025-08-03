@@ -8,34 +8,29 @@
 #include <ctime>
 #include <stdexcept>
 
-// --- EXTERNAL GLOBALS ---
-// These are defined elsewhere (e.g., in main or config loader)
-// They come from config.txt after "initialize" command
-extern size_t memPerFrame;                   // Frame/page size in bytes (e.g., 256)
-extern class MemoryManager *g_MemoryManager; // Global memory manager for page faults
-
 // --- CONSTRUCTOR: Initialize a new process ---
-Process::Process(const std::string &name, size_t memSize, int pid)
-    : name(name), pid(pid), memorySize(memSize)
+Process::Process(const std::string &name, size_t memSize, int pid, size_t frameSize, MemoryManager *memMgr)
+    : name(name),
+      pid(pid),
+      memorySize(memSize),
+      frameSize(frameSize), // store frame/page size
+      memoryManager(memMgr) // store memory manager pointer
 {
     // Validate memory allocation per MO2 spec:
-    // - Must be at least 64 bytes
-    // - Must be a power of two (e.g., 64, 128, 256...)
     if (memSize < 64)
     {
         throw std::invalid_argument("invalid memory allocation"); // Requirement: min 64 bytes
     }
     if ((memSize & (memSize - 1)) != 0)
-    {                                                             // Fast bit check for power of 2
+    {
         throw std::invalid_argument("invalid memory allocation"); // Not power of 2 → invalid
     }
 
     // Compute how many virtual pages this process needs
-    numPages = memorySize / memPerFrame; // e.g., 1024 bytes / 256 = 4 pages
+    numPages = memorySize / frameSize; // e.g., 1024 bytes / 256 = 4 pages
 
     // Resize page table to hold one entry per virtual page
-    // Each entry starts as invalid (not in physical memory), clean (not modified)
-    pageTable.resize(numPages); // Uses FrameEntry default values: isValid=false, isDirty=false
+    pageTable.resize(numPages); // default FrameEntry: isValid=false, isDirty=false
 }
 
 // --- Add a command (e.g., DECLARE, PRINT, WRITE) to this process ---
@@ -217,15 +212,15 @@ bool Process::declareVar(const std::string &name, uint32_t value)
 }
 
 // --- HELPER: Get virtual page number from address ---
-// int Process::getVirtualPageNumber(uint16_t addr) const
-// {
-//     return addr / memPerFrame; // Integer division gives page #
-// }
+int Process::getVirtualPageNumber(uint32_t addr) const
+{
+    return addr / frameSize; // Integer division gives page #
+}
 
 // --- HELPER: Get offset within a page ---
 int Process::getOffset(uint32_t addr) const
 {
-    return addr % memPerFrame; // Remainder gives offset
+    return addr % frameSize; // Remainder gives offset
 }
 
 // --- HELPER: Is this virtual address valid? ---
@@ -255,26 +250,19 @@ void Process::setPageDirty(int page)
 // --- Trigger a page fault (when accessing invalid page) ---
 void Process::triggerPageFault(int virtualPage)
 {
-    // Safety check
     if (virtualPage < 0 || virtualPage >= numPages)
         return;
 
-    // Notify the OS-level MemoryManager to handle the fault
-    // This is where:
-    // - A free frame is found
-    // - Or a victim page is evicted (using FIFO/LRU)
-    // - The needed page is loaded from backing store (or zero-filled)
-    if (g_MemoryManager)
+    if (memoryManager)
     {
-        // g_MemoryManager->handlePageFault(this, virtualPage);
+        memoryManager->loadPage(name, virtualPage); // use the process name
     }
     else
     {
-        // No memory manager → cannot resolve fault
         std::ostringstream oss;
         oss << "Page fault failed: no memory manager (page " << virtualPage << ")";
         logExecution(current_core, oss.str());
-        markAsError(0); // Generic error
+        markAsError(0);
     }
 }
 

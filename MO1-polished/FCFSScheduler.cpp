@@ -156,9 +156,15 @@ void FCFSScheduler::generate_new_process()
     oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
     std::string name = oss.str();
 
-    size_t mem_required = 16 << (rand() % 9); // Random memory size
+    size_t random_mem = ConsoleManager::getInstance()->getRandomMemSize();
 
-    auto process = ProcessFactory::generate_dummy_process(name, mem_required, min_instructions, max_instructions);
+    auto process = ConsoleManager::getInstance()
+                       ->getProcessFactory()
+                       ->generate_dummy_process(
+                           name,
+                           random_mem, // <-- random value instead of fixed
+                           min_instructions,
+                           max_instructions);
     process->addCommand(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
 
     add_process(process);

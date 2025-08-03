@@ -24,7 +24,7 @@ class Process
 {
 public:
     // Constructor
-    Process(const std::string &name, size_t memSize, int pid);
+    Process(const std::string &name, size_t memSize, int pid, size_t frameSize, MemoryManager *memMgr);
 
     // Core execution
     void execute(int coreId);
@@ -102,9 +102,11 @@ private:
 
     // Memory
     size_t memorySize;                            // total memory allocated (power of 2, ≥64)
-    int numPages;                                 // memorySize / memPerFrame
+    int numPages;                                 // memorySize / frameSize
     std::map<std::string, uint32_t> symbol_table; // symbol table (max 32 vars)
     std::vector<std::shared_ptr<Command>> commands;
+    size_t frameSize;             //  size of each frame
+    MemoryManager *memoryManager; // pointer to the memory manager
 
     // Page table: virtual page → frame metadata
     std::vector<FrameEntry> pageTable;

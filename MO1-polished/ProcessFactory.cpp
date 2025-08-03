@@ -14,7 +14,7 @@ std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
     int min_ins,
     int max_ins)
 {
-    auto process = std::make_shared<Process>(name, mem_required, global_pid_counter++);
+    auto process = std::make_shared<Process>(name, mem_required, global_pid_counter++, frameSize, memoryManager);
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -126,7 +126,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
     size_t mem_required,
     const std::string &instructions_str)
 {
-    auto process = std::make_shared<Process>(name, mem_required, global_pid_counter++);
+    auto process = std::make_shared<Process>(name, mem_required, global_pid_counter++, frameSize, memoryManager);
 
     std::istringstream iss(instructions_str);
     std::string token;

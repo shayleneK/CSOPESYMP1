@@ -42,6 +42,35 @@ ConsoleManager *ConsoleManager::getInstance()
     return instance;
 }
 
+void ConsoleManager::initialize(const ConfigManager &cfg)
+{
+    int num_cpu = cfg.getInt("num-cpu", 2);
+    std::string scheduler_type = cfg.getString("scheduler", "rr");
+    int quantum = cfg.getInt("quantum-cycles", 5);
+    int batch_freq = cfg.getInt("batch-process-freq", 1);
+    int min_ins = cfg.getInt("min-ins", 1000);
+    int max_ins = cfg.getInt("max-ins", 2000);
+    int delay_per_exec = cfg.getInt("delay-per-exec", 100);
+    int max_overall_mem = cfg.getInt("max-overall-mem", 100000);
+    int mem_per_frame = cfg.getInt("mem-per-frame", 1000);
+    min_mem_per_proc = cfg.getInt("min-mem-per-proc", 512);
+    max_mem_per_proc = cfg.getInt("max-mem-per-proc", 2048);
+
+    // Create MemoryManager
+    memoryManager = std::make_unique<MemoryManager>(max_overall_mem, mem_per_frame);
+
+    // Create ProcessFactory
+    processFactory = std::make_unique<ProcessFactory>(mem_per_frame, memoryManager.get());
+
+    // Create Scheduler
+    if (scheduler_type == "rr")
+        scheduler = std::make_unique<RRScheduler>(num_cpu, quantum, min_ins, max_ins, delay_per_exec, mem_per_proc, *memoryManager);
+    else
+        scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins);
+
+    scheduler->set_batch_frequency(batch_freq);
+}
+
 void ConsoleManager::initializeConsoles()
 {
     for (auto &[type, console] : consoleTable)
@@ -239,10 +268,9 @@ void ConsoleManager::processInput()
     }
     else if (command == "initialize")
     {
-
         if (scheduler_initialized)
         {
-            std::cout << "[ERROR] Already initialized. \n";
+            std::cout << "[ERROR] Already initialized.\n";
             return;
         }
 
@@ -253,29 +281,7 @@ void ConsoleManager::processInput()
             return;
         }
 
-        int num_cpu = cfg.getInt("num-cpu", 2);
-        std::string scheduler_type = cfg.getString("scheduler", "rr");
-        int quantum = cfg.getInt("quantum-cycles", 5);
-        int batch_freq = cfg.getInt("batch-process-freq", 1);
-        int min_ins = cfg.getInt("min-ins", 1000);
-        int max_ins = cfg.getInt("max-ins", 2000);
-        int delay_per_exec = cfg.getInt("delay-per-exec", 100);
-
-        int max_overall_mem = cfg.getInt("max-overall-mem", 100000);
-        int mem_per_frame = cfg.getInt("mem-per-frame", 1000);
-        int min_mem_per_proc = cfg.getInt("min-mem-per-proc", 1000);
-        int max_mem_per_proc = cfg.getInt("max-mem-per-proc", 1000);
-        mem_per_proc = cfg.getInt("mem-per-proc", 1000);
-        std::cout << "[DEBUG] mem_per_proc loaded from config: " << mem_per_proc << "\n";
-
-        MemoryManager memory_manager_ = MemoryManager(max_overall_mem, mem_per_frame);
-        if (scheduler_type == "rr")
-            scheduler = std::make_unique<RRScheduler>(num_cpu, quantum, min_ins, max_ins, delay_per_exec, mem_per_proc, memory_manager_);
-        else
-            scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins);
-
-        scheduler->set_batch_frequency(batch_freq);
-
+        ConsoleManager::getInstance()->initialize(cfg);
         startCpuLoop();
         scheduler_initialized = true;
     }
@@ -298,8 +304,13 @@ void ConsoleManager::processInput()
 
         createConsole("screen", name);
 
-        size_t mem_required = mem_per_proc;
-        auto proc = ProcessFactory::generate_dummy_process(name, mem_required, scheduler->get_min_instructions(), scheduler->get_max_instructions());
+        size_t random_mem = getRandomMemSize();
+        auto proc = ConsoleManager::getInstance()
+                        ->getProcessFactory()
+                        ->generate_dummy_process(name, random_mem,
+                                                 scheduler->get_min_instructions(),
+                                                 scheduler->get_max_instructions());
+
         proc->addCommand(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
         scheduler->add_process(proc);
 
@@ -481,7 +492,13 @@ void ConsoleManager::processInput()
         }
 
         createConsole("screen", name);
-        auto proc = ProcessFactory::generate_custom_process(name, mem_size, instructions_str);
+        size_t random_mem = getRandomMemSize();
+        auto proc = ConsoleManager::getInstance()
+                        ->getProcessFactory()
+                        ->generate_dummy_process(name, random_mem,
+                                                 scheduler->get_min_instructions(),
+                                                 scheduler->get_max_instructions());
+
         scheduler->add_process(proc);
         auto screen = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);
         if (screen)
@@ -598,4 +615,12 @@ void ConsoleManager::render_finished_processes(const std::vector<std::shared_ptr
         out << " - " << p->getName()
             << " (" << std::put_time(std::localtime(&finish), "%Y-%m-%d %H:%M:%S") << ")\n";
     }
+}
+
+size_t ConsoleManager::getRandomMemSize() const
+{
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<size_t> dist(min_mem_per_proc, max_mem_per_proc);
+    return dist(gen);
 }

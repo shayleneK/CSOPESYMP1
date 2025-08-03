@@ -59,17 +59,24 @@ void RRScheduler::start()
 void RRScheduler::generate_new_process()
 {
     std::ostringstream oss;
-    std::cout << "[RR] Creating process with mem_per_proc = " << mem_per_proc << "\n";
 
     oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
     std::string name = oss.str();
 
-    size_t mem_required = mem_per_proc;
+    size_t random_mem = ConsoleManager::getInstance()->getRandomMemSize();
+    std::cout << "[RR] Creating process with mem_per_proc = " << random_mem << "\n";
 
-    auto process = ProcessFactory::generate_dummy_process(name, mem_required, min_instructions, max_instructions);
+    auto process = ConsoleManager::getInstance()
+                       ->getProcessFactory()
+                       ->generate_dummy_process(
+                           name,
+                           random_mem, // <-- random value instead of fixed
+                           min_instructions,
+                           max_instructions);
+
     process->addCommand(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
 
-    int start_address = memory_manager_.allocate(mem_required, process->getName());
+    int start_address = memory_manager_.allocate(random_mem, process->getName());
 
     if (start_address != -1)
     {
@@ -87,7 +94,7 @@ void RRScheduler::generate_new_process()
         }
 
         std::cout << "[RR] Process " << name << " allocated at ["
-                  << start_address << "-" << start_address + mem_required - 1 << "]" << std::endl;
+                  << start_address << "-" << start_address + random_mem - 1 << "]" << std::endl;
     }
     else
     {

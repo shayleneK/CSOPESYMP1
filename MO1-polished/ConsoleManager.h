@@ -8,11 +8,14 @@
 #include <map>
 #include <vector>
 #include <atomic>
+#include <random>
 
 #include "Scheduler.h"
 #include "FCFSScheduler.h"
 #include "RRScheduler.h"
 #include "MarqueeConsole.h"
+#include "ProcessFactory.h"
+#include "ConfigManager.h"
 
 // Console types
 enum ConsoleType
@@ -53,16 +56,22 @@ private:
     std::atomic<uint64_t> total_cycles{0};
     std::atomic<uint64_t> busy_cycles{0};
 
+    std::unique_ptr<ProcessFactory> processFactory;
+    std::unique_ptr<MemoryManager> memoryManager; // <-- Add this
+
     int mem_per_proc = 1000;
+    int min_mem_per_proc = 0;
+    int max_mem_per_proc = 0;
 
 public:
     static ConsoleManager *getInstance();
+    void initialize(const ConfigManager &cfg);
+    ProcessFactory *getProcessFactory() { return processFactory.get(); }
     void drawConsole();
     void processInput();
 
     void switchConsole(ConsoleType type);
     void setRunning(bool running);
-    void initialize();                                  // <- Add this
     void addConsole(std::shared_ptr<AConsole> console); // <- Add this
     void process();
 
@@ -89,6 +98,8 @@ public:
     double getCpuUtilization() const;
 
     bool start_flag = false;
+
+    size_t getRandomMemSize() const;
 };
 
 #endif // CONSOLEMANAGER_H
