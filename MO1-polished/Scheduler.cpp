@@ -5,11 +5,8 @@
 #include <iostream>
 #include <functional>
 
-Scheduler::Scheduler(int num_cores, int min_ins, int max_ins, int mem_per_proc)
-    : core_available(num_cores, true),
-      min_instructions(min_ins),
-      max_instructions(max_ins),
-      mem_per_proc(mem_per_proc)
+Scheduler::Scheduler(int num_cores)
+    : core_available(num_cores, true)
 {
     for (int i = 0; i < num_cores; ++i)
     {

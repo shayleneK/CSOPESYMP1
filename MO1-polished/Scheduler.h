@@ -15,7 +15,7 @@
 class Scheduler
 {
 public:
-    Scheduler(int num_cores, int min_instructions, int max_instructions, int mem_per_proc);
+    Scheduler(int num_cores);
     virtual ~Scheduler();
 
     virtual void run_core(int core_id) = 0;

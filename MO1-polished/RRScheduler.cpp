@@ -15,13 +15,24 @@
 #include <cstdint>
 #include <algorithm>
 
-RRScheduler::RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins,
-                         int delay_per_exec, int mem_per_proc, MemoryManager &mem_mgr)
-    : Scheduler(num_cores, min_ins, max_ins, mem_per_proc),
+RRScheduler::RRScheduler(int num_cores,
+                         int quantum_ms,
+                         int min_ins,
+                         int max_ins,
+                         int delay,
+                         MemoryManager &memory_manager)
+    : Scheduler(num_cores),
       time_quantum(quantum_ms),
-      memory_manager_(mem_mgr)
+      min_instructions(min_ins),
+      max_instructions(max_ins),
+      delay_per_exec(delay),
+      memory_manager_(memory_manager)
 {
     process_memory_map_.clear();
+
+    std::cout << "[RR] Debug: Total Memory = " << memory_manager_.getTotalMemoryKB()
+              << " KB, Page Size = " << memory_manager_.getPageSize()
+              << " bytes\n";
 }
 
 RRScheduler::~RRScheduler()
@@ -59,24 +70,62 @@ void RRScheduler::start()
 void RRScheduler::generate_new_process()
 {
     std::ostringstream oss;
-
     oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
     std::string name = oss.str();
+
+    std::cout << "[RR] Starting Process Generation\n";
 
     size_t random_mem = ConsoleManager::getInstance()->getRandomMemSize();
     std::cout << "[RR] Creating process with mem_per_proc = " << random_mem << "\n";
 
+    size_t page_size_kb = memory_manager_.getPageSize();
+
+    std::cout << "[RR] Page size = " << page_size_kb << " KB\n";
+    // --- Safety checks ---
+    if (random_mem < page_size_kb)
+    {
+        std::cout << "[RR] Requested " << random_mem << " KB is below one page ("
+                  << page_size_kb << " KB). Clamping.\n";
+        random_mem = page_size_kb;
+    }
+    if (random_mem % page_size_kb != 0)
+    {
+        size_t aligned = ((random_mem + page_size_kb - 1) / page_size_kb) * page_size_kb;
+        std::cout << "[RR] Adjusting allocation size from " << random_mem
+                  << " KB to page-aligned " << aligned << " KB.\n";
+        random_mem = aligned;
+    }
+
+    size_t max_allocatable = memory_manager_.getTotalMemoryKB();
+    if (random_mem > max_allocatable)
+    {
+        std::cout << "[RR] Requested " << random_mem
+                  << " KB exceeds total memory (" << max_allocatable
+                  << " KB). Clamping.\n";
+        random_mem = max_allocatable;
+    }
+    // --- End Safety checks ---
+
     auto process = ConsoleManager::getInstance()
                        ->getProcessFactory()
-                       ->generate_dummy_process(
-                           name,
-                           random_mem, // <-- random value instead of fixed
-                           min_instructions,
-                           max_instructions);
+                       ->generate_dummy_process(name, random_mem, min_instructions, max_instructions);
 
-    process->addCommand(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
+    process->addCommand(std::make_shared<PrintCommand>(
+        "Process " + name + " has completed all its commands."));
 
-    int start_address = memory_manager_.allocate(random_mem, process->getName());
+    std::cout << "[RR] About to allocate\n";
+
+    int start_address = -1;
+    try
+    {
+        start_address = memory_manager_.allocate(random_mem, process->getName());
+    }
+    catch (const std::invalid_argument &e)
+    {
+        std::cout << "[RR] Failed to allocate memory for " << name
+                  << ": " << e.what() << "\n";
+        return; // Skip adding this process
+    }
 
     if (start_address != -1)
     {
@@ -85,20 +134,17 @@ void RRScheduler::generate_new_process()
         process_memory_map_.push_back(process->getName());
 
         ConsoleManager::getInstance()->createConsole("screen", name);
-
         auto screen = std::dynamic_pointer_cast<ScreenConsole>(
             ConsoleManager::getInstance()->getConsoleByName(name));
         if (screen)
-        {
             screen->attachProcess(process);
-        }
 
         std::cout << "[RR] Process " << name << " allocated at ["
-                  << start_address << "-" << start_address + random_mem - 1 << "]" << std::endl;
+                  << start_address << "-" << start_address + random_mem - 1 << "]\n";
     }
     else
     {
-        std::cout << "[RR] Process " << name << " could not be loaded into memory. Re-queued." << std::endl;
+        std::cout << "[RR] Process " << name << " could not be loaded into memory. Re-queued.\n";
     }
 }
 

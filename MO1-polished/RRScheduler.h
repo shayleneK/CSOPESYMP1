@@ -16,7 +16,13 @@
 class RRScheduler : public Scheduler
 {
 public:
-    RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins, int delay_per_exec, int mem_per_proc, MemoryManager &mem_mgr);
+    RRScheduler(int num_cores,
+                int quantum_ms,
+                int min_ins,
+                int max_ins,
+                int delay_per_exec,
+                MemoryManager &memory_manager);
+
     ~RRScheduler();
 
     void start();
@@ -38,16 +44,18 @@ private:
     void save_memory_snapshot(uint64_t cycle_number);
 
     int time_quantum;
+    int min_instructions;
+    int max_instructions;
+    int delay_per_exec;
+    size_t mem_per_proc; // <-- now properly stored
     std::atomic<bool> generating_processes{false};
     bool running = false;
 
     std::thread generator_thread;
     std::vector<std::thread> cpu_cores;
-
-    MemoryManager memory_manager_;
-
-    // Tracks process names currently occupying memory
     std::vector<std::string> process_memory_map_;
+
+    MemoryManager &memory_manager_;
 };
 
 #endif // RR_SCHEDULER_H

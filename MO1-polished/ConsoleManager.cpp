@@ -6,7 +6,6 @@
 #include "Process.h"
 #include "ProcessFactory.h"
 #include "ScreenConsole.h"
-#include "SchedulingConsole.h"
 #include "RRScheduler.h"
 #include "FCFSScheduler.h"
 #include "Scheduler.h"
@@ -64,7 +63,13 @@ void ConsoleManager::initialize(const ConfigManager &cfg)
 
     // Create Scheduler
     if (scheduler_type == "rr")
-        scheduler = std::make_unique<RRScheduler>(num_cpu, quantum, min_ins, max_ins, delay_per_exec, mem_per_proc, *memoryManager);
+        scheduler = std::make_unique<RRScheduler>(
+            num_cpu,
+            quantum,
+            min_ins,
+            max_ins,
+            delay_per_exec,
+            *memoryManager);
     else
         scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins);
 

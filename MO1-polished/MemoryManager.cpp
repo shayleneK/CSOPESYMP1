@@ -7,14 +7,26 @@
 MemoryManager::MemoryManager(size_t total_memory_kb, size_t page_size_bytes)
     : page_size(page_size_bytes)
 {
+    std::cout << "pages" << page_size << "\n"
+              << std::endl;
+
     total_frames = (total_memory_kb * 1024) / page_size;
     frame_used.resize(total_frames, false);
     frame_table.resize(total_frames);
 }
 
-int MemoryManager::allocate(size_t bytes_required, const std::string& process_name)
+int MemoryManager::allocate(size_t bytes_required, const std::string &process_name)
 {
     size_t pages_needed = (bytes_required + page_size - 1) / page_size;
+
+    // SAFETY: prevent allocating more pages than available
+    if (pages_needed > total_frames)
+    {
+        throw std::invalid_argument("invalid memory allocation: requested " +
+                                    std::to_string(bytes_required) +
+                                    " bytes, but only " +
+                                    std::to_string(total_frames * page_size) + " bytes available");
+    }
 
     process_page_table[process_name] = std::vector<int>(pages_needed, -1);
     backing_store[process_name] = {};
@@ -25,7 +37,7 @@ int MemoryManager::allocate(size_t bytes_required, const std::string& process_na
     return 0; // base virtual address
 }
 
-void MemoryManager::deallocate(const std::string& process_name)
+void MemoryManager::deallocate(const std::string &process_name)
 {
     for (int i = 0; i < static_cast<int>(total_frames); ++i)
     {
@@ -42,36 +54,40 @@ void MemoryManager::deallocate(const std::string& process_name)
 
     fifo_queue.erase(
         std::remove_if(fifo_queue.begin(), fifo_queue.end(),
-                       [&](auto& pair) { return pair.first == process_name; }),
+                       [&](auto &pair)
+                       { return pair.first == process_name; }),
         fifo_queue.end());
 }
 
-bool MemoryManager::isPageInMemory(const std::string& process_name, int page_number) const
+bool MemoryManager::isPageInMemory(const std::string &process_name, int page_number) const
 {
     auto it = process_page_table.find(process_name);
-    if (it == process_page_table.end()) return false;
+    if (it == process_page_table.end())
+        return false;
 
     return (page_number >= 0 &&
             page_number < static_cast<int>(it->second.size()) &&
             it->second[page_number] != -1);
 }
 
-int MemoryManager::getFrameNumber(const std::string& process_name, int page_number) const
+int MemoryManager::getFrameNumber(const std::string &process_name, int page_number) const
 {
-    if (!isPageInMemory(process_name, page_number)) return -1;
+    if (!isPageInMemory(process_name, page_number))
+        return -1;
     return process_page_table.at(process_name)[page_number];
 }
 
-void MemoryManager::markPageDirty(const std::string& process_name, int page_number)
+void MemoryManager::markPageDirty(const std::string &process_name, int page_number)
 {
     int frame = getFrameNumber(process_name, page_number);
     if (frame >= 0 && frame < static_cast<int>(frame_table.size()))
         frame_table[frame].dirty = true;
 }
 
-void MemoryManager::loadPage(const std::string& process_name, int page_number)
+void MemoryManager::loadPage(const std::string &process_name, int page_number)
 {
-    if (isPageInMemory(process_name, page_number)) return;
+    if (isPageInMemory(process_name, page_number))
+        return;
 
     evictPageIfNeeded();
 
@@ -83,10 +99,10 @@ void MemoryManager::loadPage(const std::string& process_name, int page_number)
     }
 
     frame_used[frame] = true;
-    frame_table[frame] = { process_name, page_number, false };
+    frame_table[frame] = {process_name, page_number, false};
     process_page_table[process_name][page_number] = frame;
     process_pages[process_name].insert(page_number);
-    fifo_queue.push_back({ process_name, page_number });
+    fifo_queue.push_back({process_name, page_number});
 
     std::cout << "[MM] Loaded page " << page_number << " of " << process_name
               << " into frame " << frame << "\n";
@@ -101,7 +117,8 @@ void MemoryManager::evictPageIfNeeded()
 
 void MemoryManager::evictOldestPage()
 {
-    if (fifo_queue.empty()) return;
+    if (fifo_queue.empty())
+        return;
 
     auto [proc, page] = fifo_queue.front();
     fifo_queue.pop_front();
@@ -143,7 +160,7 @@ std::string MemoryManager::printMemoryLayout() const
     {
         if (frame_used[i])
         {
-            const FrameInfo& fi = frame_table[i];
+            const FrameInfo &fi = frame_table[i];
             oss << "Frame " << i << ": " << fi.process_name << " (Page "
                 << fi.page_number << (fi.dirty ? ", Dirty" : "") << ")\n";
         }

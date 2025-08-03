@@ -10,11 +10,11 @@
 #include <iomanip>
 #include <sstream>
 
-FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins, int mem_per_proc)
-    : Scheduler(num_cores, min_ins, max_ins, mem_per_proc)
+FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins)
+    : Scheduler(num_cores), // <-- Pass to base
+      min_instructions(min_ins),
+      max_instructions(max_ins)
 {
-    // std::cout << "[FCFS DEBUG] Constructor received min_ins=" << min_ins
-    //         << ", max_ins=" << max_ins << std::endl;
 }
 
 FCFSScheduler::~FCFSScheduler()
