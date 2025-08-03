@@ -108,102 +108,97 @@ bool Process::canExecute() const
 }
 
 // --- READ from virtual memory ---
-uint16_t Process::readMemory(uint16_t virtual_addr)
+uint32_t Process::readMemory(uint32_t virtualAddr)
 {
-    if (!isAddressValid(virtual_addr))
+    // Step 1: Check if address is within this process's allocated memory
+    if (!isAddressValid(virtualAddr))
     {
-        markAsError(virtual_addr);
+        markAsError(virtualAddr); // Invalid access → kill process
         return 0;
     }
 
-    int page = getVirtualPageNumber(virtual_addr);
-    int offset = getOffset(virtual_addr);
+    // Step 2: Break address into page number and offset within page
+    int page = getVirtualPageNumber(virtualAddr); // e.g., 0x500 → page 2 (if 256-byte pages)
+    int offset = getOffset(virtualAddr);          // e.g., 0x500 → offset 0
 
-    if (!memory_manager->isPageInMemory(name, page))
+    // Step 3: Check if the required page is currently in physical memory
+    if (!isPageValid(page))
     {
-        memory_manager->loadPage(name, page);
+        // Page is not in RAM → trigger a page fault
+        triggerPageFault(page);
 
-        if (!memory_manager->isPageInMemory(name, page))
+        // After page fault handling, check again
+        // (In real OS, instruction restarts automatically)
+        if (!isPageValid(page))
         {
-            markAsError(virtual_addr);
+            // Still not loaded? Something went wrong → crash
+            markAsError(virtualAddr);
             return 0;
         }
     }
 
-    int frame = memory_manager->getFrameNumber(name, page);
-    uint32_t physical_addr = frame * page_size + offset;
-
-    // Simulated value; real OS would fetch from RAM
-    return static_cast<uint16_t>(physical_addr ^ 0xABCD);
+    // Step 4: Simulate reading a 16-bit value from memory
+    // In real system: access physical frame + offset
+    // Here: return dummy data based on address (for demo)
+    return static_cast<uint32_t>(virtualAddr ^ 0xABCD); // Dummy value
 }
 
 // --- WRITE to virtual memory ---
-void Process::writeMemory(uint16_t virtual_addr, uint16_t value)
+void Process::writeMemory(uint32_t virtualAddr, uint32_t value)
 {
-    if (!isAddressValid(virtual_addr))
+    // Step 1: Validate memory bounds
+    if (!isAddressValid(virtualAddr))
     {
-        markAsError(virtual_addr);
+        markAsError(virtualAddr); // Out of bounds → crash
         return;
     }
 
-    int page = getVirtualPageNumber(virtual_addr);
-    int offset = getOffset(virtual_addr);
+    // Step 2: Get page number
+    int page = getVirtualPageNumber(virtualAddr);
+    int offset = getOffset(virtualAddr);
 
-    if (!memory_manager->isPageInMemory(name, page))
+    // Step 3: Ensure page is in memory
+    if (!isPageValid(page))
     {
-        memory_manager->loadPage(name, page);
-
-        if (!memory_manager->isPageInMemory(name, page))
+        triggerPageFault(page);
+        if (!isPageValid(page))
         {
-            markAsError(virtual_addr);
+            markAsError(virtualAddr);
             return;
         }
     }
 
-    memory_manager->markPageDirty(name, page);
+    // Step 4: Mark page as DIRTY because we're modifying it
+    // This means when this page is evicted, it must be saved to backing store
+    setPageDirty(page);
 
-    int frame = memory_manager->getFrameNumber(name, page);
-    uint32_t physical_addr = frame * page_size + offset;
-
-    // Simulate write
+    // Step 5: Simulate write operation
+    // In full emulator: write 'value' to physical frame + offset
+    // Here: just log it
     std::ostringstream oss;
-    oss << "Wrote 0x" << std::hex << value
-        << " to physical addr 0x" << physical_addr
-        << " (virtual: 0x" << virtual_addr << ")";
-    logExecution(core_id, oss.str());
+    oss << "Wrote 0x" << std::hex << value << " to virtual address 0x" << virtualAddr;
+    logExecution(current_core, oss.str());
 }
 
-
-
 // --- Get variable value from symbol table ---
-uint16_t Process::getVar(const std::string &name)
+uint32_t Process::getVar(const std::string &name)
 {
-    // Accessing symbol table requires Page 0 to be in memory
+    // Only one check needed: is Page 0 (symbol table) valid?
     if (!isPageValid(0))
     {
-        triggerPageFault(0); // Page 0 = symbol table
+        triggerPageFault(0);
         if (!isPageValid(0))
         {
-            return 0; // If still not loaded, return 0
+            return 0;
         }
     }
 
     auto it = symbol_table.find(name);
-    if (it != symbol_table.end())
-    {
-        // Accessing a variable requires the symbol table page (Page 0)
-        // If it's not in memory, load it via page fault
-        if (!isPageValid(getSymbolTablePageNum()))
-        {
-            triggerPageFault(getSymbolTablePageNum());
-        }
-        return it->second;
-    }
-    return 0; // Undefined variable → return 0 (per spec)
+    return (it != symbol_table.end()) ? it->second : 0;
 }
 
 // --- Declare a new variable ---
-bool Process::declareVar(const std::string &name, uint16_t value)
+bool Process::declareVar(const std::string &name, uint32_t value)
 {
     // MO2 Requirement: Max 32 variables (64 bytes total, 2 bytes each)
     if (symbol_table.size() >= 32)
@@ -234,7 +229,7 @@ int Process::getOffset(uint32_t addr) const
 }
 
 // --- HELPER: Is this virtual address valid? ---
-bool Process::isAddressValid(uint16_t addr) const
+bool Process::isAddressValid(uint32_t addr) const
 {
     // Address must be less than total memory allocated to this process
     return addr < memorySize;
@@ -284,7 +279,7 @@ void Process::triggerPageFault(int virtualPage)
 }
 
 // --- Mark process as crashed due to invalid memory access ---
-void Process::markAsError(uint16_t addr)
+void Process::markAsError(uint32_t addr)
 {
     has_error = true;
     is_finished = true;

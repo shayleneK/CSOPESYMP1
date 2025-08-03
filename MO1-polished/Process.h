@@ -31,18 +31,18 @@ public:
     void addCommand(std::shared_ptr<Command> cmd);
 
     // Memory operations
-    uint16_t readMemory(uint16_t virtualAddr);
-    void writeMemory(uint16_t virtualAddr, uint16_t value);
+    uint32_t readMemory(uint32_t virtualAddr);
+    void writeMemory(uint32_t virtualAddr, uint32_t value);
 
     // Variable access (symbol table)
-    uint16_t getVar(const std::string &name);
-    bool declareVar(const std::string &name, uint16_t value);
+    uint32_t getVar(const std::string &name);
+    bool declareVar(const std::string &name, uint32_t value);
 
     // Lifecycle & state
     bool canExecute() const;
     bool isFinished() const { return is_finished; }
     bool hasStarted() const { return has_started; }
-    void markAsError(uint16_t addr); // for memory violation
+    void markAsError(uint32_t addr); // for memory violation
 
     // Getters
     std::string getName() const { return name; }
@@ -57,7 +57,7 @@ public:
     uint16_t getErrorAddress() const { return invalid_address; }
     std::string getErrorTime() const;
 
-    void setMemoryManager(MemoryManager* mm) { memory_manager = mm; }
+    void setMemoryManager(MemoryManager *mm) { memory_manager = mm; }
 
     // Symbol table info
     size_t getSymbolTableUsage() const { return symbol_table.size() * 2; }
@@ -76,7 +76,7 @@ private:
     // Helpers
     int getVirtualPageNumber(uint32_t addr) const;
     int getOffset(uint32_t addr) const;
-    bool isAddressValid(uint16_t addr) const;
+    bool isAddressValid(uint32_t addr) const;
     void triggerPageFault(int virtualPage);
     MemoryManager *memory_manager = nullptr;
 
@@ -101,9 +101,9 @@ private:
     static const int delay_per_exec = 1; // from config.txt
 
     // Memory
-    size_t memorySize;                         // total memory allocated (power of 2, ≥64)
-    int numPages;                              // memorySize / memPerFrame
-    std::map<std::string, uint16_t> symbol_table; // symbol table (max 32 vars)
+    size_t memorySize;                            // total memory allocated (power of 2, ≥64)
+    int numPages;                                 // memorySize / memPerFrame
+    std::map<std::string, uint32_t> symbol_table; // symbol table (max 32 vars)
     std::vector<std::shared_ptr<Command>> commands;
 
     // Page table: virtual page → frame metadata
@@ -111,8 +111,6 @@ private:
 
     // Logs
     std::vector<std::string> logs;
-
-    
 };
 
 #endif // PROCESS_H
