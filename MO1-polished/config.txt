@@ -5,7 +5,7 @@ batch-process-freq 1
 min-ins 50000
 max-ins 50000
 delay-per-exec 0
-max-overall-mem 1024         # 1 KB total memory
-mem-per-frame 128            # 256 B per frame = 4 frames total
-min-mem-per-proc 256             # 2 pages per process
+max-overall-mem 1024         
+mem-per-frame 128           
+min-mem-per-proc 256             
 max-mem-per-proc 256

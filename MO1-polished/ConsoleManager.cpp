@@ -55,6 +55,19 @@ void ConsoleManager::initialize(const ConfigManager &cfg)
     min_mem_per_proc = cfg.getInt("min-mem-per-proc", 512);
     max_mem_per_proc = cfg.getInt("max-mem-per-proc", 2048);
 
+    std::cout << "[Config] num-cpu: " << num_cpu << "\n"
+              << "[Config] scheduler: " << scheduler_type << "\n"
+              << "[Config] quantum-cycles: " << quantum << "\n"
+              << "[Config] batch-process-freq: " << batch_freq << "\n"
+              << "[Config] min-ins: " << min_ins << "\n"
+              << "[Config] max-ins: " << max_ins << "\n"
+              << "[Config] delay-per-exec: " << delay_per_exec << "\n"
+              << "[Config] max-overall-mem: " << max_overall_mem << "\n"
+              << "[Config] mem-per-frame: " << mem_per_frame << "\n"
+              << "[Config] min-mem-per-proc: " << min_mem_per_proc << "\n"
+              << "[Config] max-mem-per-proc: " << max_mem_per_proc << "\n";
+    std::cout << "----------------------------------------\n";
+
     // Create MemoryManager
     memoryManager = std::make_unique<MemoryManager>(max_overall_mem, mem_per_frame);
 
