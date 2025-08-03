@@ -268,7 +268,7 @@ void ConsoleManager::processInput()
         mem_per_proc = cfg.getInt("mem-per-proc", 1000);
         std::cout << "[DEBUG] mem_per_proc loaded from config: " << mem_per_proc << "\n";
 
-        MemoryManager memory_manager_ = MemoryManager(max_overall_mem);
+        MemoryManager memory_manager_ = MemoryManager(max_overall_mem, mem_per_frame);
         if (scheduler_type == "rr")
             scheduler = std::make_unique<RRScheduler>(num_cpu, quantum, min_ins, max_ins, delay_per_exec, mem_per_proc, memory_manager_);
         else

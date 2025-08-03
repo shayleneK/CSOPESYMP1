@@ -7,24 +7,26 @@
 #include <set>
 #include <cstdint>
 
-struct FrameInfo {
+struct FrameInfo
+{
     std::string process_name;
     int page_number;
     bool dirty;
 };
 
-class MemoryManager {
+class MemoryManager
+{
 public:
     MemoryManager(size_t total_memory_kb, size_t page_size_bytes);
 
-    int allocate(size_t bytes_required, const std::string& process_name);
-    void deallocate(const std::string& process_name);
+    int allocate(size_t bytes_required, const std::string &process_name);
+    void deallocate(const std::string &process_name);
 
-    bool isPageInMemory(const std::string& process_name, int page_number) const;
-    int getFrameNumber(const std::string& process_name, int page_number) const;
+    bool isPageInMemory(const std::string &process_name, int page_number) const;
+    int getFrameNumber(const std::string &process_name, int page_number) const;
 
-    void loadPage(const std::string& process_name, int page_number);
-    void markPageDirty(const std::string& process_name, int page_number);
+    void loadPage(const std::string &process_name, int page_number);
+    void markPageDirty(const std::string &process_name, int page_number);
 
     std::string printMemoryLayout() const;
     size_t getExternalFragmentation() const;
