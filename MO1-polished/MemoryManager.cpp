@@ -4,13 +4,13 @@
 #include <sstream>
 #include <algorithm>
 
-MemoryManager::MemoryManager(size_t total_memory_kb, size_t page_size_bytes)
+MemoryManager::MemoryManager(size_t total_memory, size_t page_size_bytes)
     : page_size(page_size_bytes)
 {
     std::cout << "pages" << page_size << "\n"
               << std::endl;
 
-    total_frames = (total_memory_kb * 1024) / page_size;
+    total_frames = (total_memory) / page_size;
     frame_used.resize(total_frames, false);
     frame_table.resize(total_frames);
 }
@@ -175,5 +175,5 @@ std::string MemoryManager::printMemoryLayout() const
 size_t MemoryManager::getExternalFragmentation() const
 {
     size_t free_frames = std::count(frame_used.begin(), frame_used.end(), false);
-    return (free_frames * page_size) / 1024;
+    return (free_frames * page_size);
 }

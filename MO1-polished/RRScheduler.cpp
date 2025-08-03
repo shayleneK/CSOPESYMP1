@@ -30,8 +30,8 @@ RRScheduler::RRScheduler(int num_cores,
 {
     process_memory_map_.clear();
 
-    std::cout << "[RR] Debug: Total Memory = " << memory_manager_.getTotalMemoryKB()
-              << " KB, Page Size = " << memory_manager_.getPageSize()
+    std::cout << "[RR] Debug: Total Memory = " << memory_manager_.getTotalMemory()
+              << " B, Page Size = " << memory_manager_.getPageSize()
               << " bytes\n";
 }
 
@@ -78,30 +78,30 @@ void RRScheduler::generate_new_process()
     size_t random_mem = ConsoleManager::getInstance()->getRandomMemSize();
     std::cout << "[RR] Creating process with mem_per_proc = " << random_mem << "\n";
 
-    size_t page_size_kb = memory_manager_.getPageSize();
+    size_t page_size = memory_manager_.getPageSize();
 
-    std::cout << "[RR] Page size = " << page_size_kb << " KB\n";
+    std::cout << "[RR] Page size = " << page_size << " B\n";
     // --- Safety checks ---
-    if (random_mem < page_size_kb)
+    if (random_mem < page_size)
     {
-        std::cout << "[RR] Requested " << random_mem << " KB is below one page ("
-                  << page_size_kb << " KB). Clamping.\n";
-        random_mem = page_size_kb;
+        std::cout << "[RR] Requested " << random_mem << " B is below one page ("
+                  << page_size << " B). Clamping.\n";
+        random_mem = page_size;
     }
-    if (random_mem % page_size_kb != 0)
+    if (random_mem % page_size != 0)
     {
-        size_t aligned = ((random_mem + page_size_kb - 1) / page_size_kb) * page_size_kb;
+        size_t aligned = ((random_mem + page_size - 1) / page_size) * page_size;
         std::cout << "[RR] Adjusting allocation size from " << random_mem
-                  << " KB to page-aligned " << aligned << " KB.\n";
+                  << " B to page-aligned " << aligned << " B.\n";
         random_mem = aligned;
     }
 
-    size_t max_allocatable = memory_manager_.getTotalMemoryKB();
+    size_t max_allocatable = memory_manager_.getTotalMemory();
     if (random_mem > max_allocatable)
     {
         std::cout << "[RR] Requested " << random_mem
-                  << " KB exceeds total memory (" << max_allocatable
-                  << " KB). Clamping.\n";
+                  << " B exceeds total memory (" << max_allocatable
+                  << " B). Clamping.\n";
         random_mem = max_allocatable;
     }
     // --- End Safety checks ---
@@ -326,7 +326,7 @@ void RRScheduler::save_memory_snapshot(uint64_t batch_number)
     file << "Number of processes in memory: " << process_memory_map_.size() << "\n";
 
     // Step 5: Write the total external fragmentation
-    file << "Total external fragmentation in KB: " << memory_manager_.getExternalFragmentation() << "\n";
+    file << "Total external fragmentation in B: " << memory_manager_.getExternalFragmentation() << "\n";
 
     // Step 6: Write the memory layout
     file << memory_manager_.printMemoryLayout() << "\n";

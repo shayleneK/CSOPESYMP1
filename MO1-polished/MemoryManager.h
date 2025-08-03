@@ -17,7 +17,7 @@ struct FrameInfo
 class MemoryManager
 {
 public:
-    MemoryManager(size_t total_memory_kb, size_t page_size_bytes);
+    MemoryManager(size_t total_memory, size_t page_size);
 
     int allocate(size_t bytes_required, const std::string &process_name);
     void deallocate(const std::string &process_name);
@@ -31,7 +31,7 @@ public:
     std::string printMemoryLayout() const;
     size_t getExternalFragmentation() const;
 
-    size_t getTotalMemoryKB() const { return (total_frames * page_size) / 1024; }
+    size_t getTotalMemory() const { return (total_frames * page_size); }
     size_t getPageSize() const { return page_size; }
 
 private:
