@@ -6,13 +6,15 @@
 #include <sstream>
 #include <iostream>
 
+static int global_pid_counter = 0;
+
 std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
     const std::string &name,
     size_t mem_required,
     int min_ins,
     int max_ins)
 {
-    auto process = std::make_shared<Process>(name, mem_required);
+    auto process = std::make_shared<Process>(name, mem_required, global_pid_counter++);
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -33,7 +35,7 @@ std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
             std::string message = (msg_type(gen) == 0)
                                       ? "Hello world from " + name + "!"
                                       : "\"Value from: \" + " + vars[gen() % vars.size()];
-            process->add_command(std::make_shared<PrintCommand>(message));
+            process->addCommand(std::make_shared<PrintCommand>(message));
             break;
         }
         case 1:
@@ -48,9 +50,9 @@ std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
             std::uniform_int_distribution<uint16_t> val_dist(1, 500);
             uint16_t val1 = val_dist(gen), val2 = val_dist(gen);
             if (op == 1)
-                process->add_command(std::make_shared<AddCommand>(target, op1, op2, op1_is_var, op2_is_var, val1, val2));
+                process->addCommand(std::make_shared<AddCommand>(target, op1, op2, op1_is_var, op2_is_var, val1, val2));
             else
-                process->add_command(std::make_shared<SubtractCommand>(target, op1, op2, op1_is_var, op2_is_var, val1, val2));
+                process->addCommand(std::make_shared<SubtractCommand>(target, op1, op2, op1_is_var, op2_is_var, val1, val2));
             break;
         }
         case 3:
@@ -59,7 +61,7 @@ std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
             std::string var = vars[gen() % vars.size()];
             std::uniform_int_distribution<uint16_t> val_dist(0, 1000);
             uint16_t value = val_dist(gen);
-            process->add_command(std::make_shared<DeclareCommand>(var, value));
+            process->addCommand(std::make_shared<DeclareCommand>(var, value));
             break;
         }
         case 4:
@@ -99,18 +101,18 @@ std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
                     break;
                 }
             }
-            process->add_command(std::make_shared<ForCommand>(nested_cmds, repeats));
+            process->addCommand(std::make_shared<ForCommand>(nested_cmds, repeats));
             break;
         }
         case 5:
         {
             std::uniform_int_distribution<uint8_t> sleep_ticks(10, 100);
             uint8_t ticks = sleep_ticks(gen);
-            process->add_command(std::make_shared<SleepCommand>(ticks));
+            process->addCommand(std::make_shared<SleepCommand>(ticks));
             break;
         }
         default:
-            process->add_command(std::make_shared<PrintCommand>("\"Unknown operation fallback from " + name + "\""));
+            process->addCommand(std::make_shared<PrintCommand>("\"Unknown operation fallback from " + name + "\""));
             break;
         }
     }
@@ -124,7 +126,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
     size_t mem_required,
     const std::string &instructions_str)
 {
-    auto process = std::make_shared<Process>(name, mem_required); // mem size passed
+    auto process = std::make_shared<Process>(name, mem_required, global_pid_counter++);
 
     std::istringstream iss(instructions_str);
     std::string token;
@@ -141,7 +143,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                 uint16_t val;
                 if (line >> var >> val)
                 {
-                    process->add_command(std::make_shared<DeclareCommand>(var, val));
+                    process->addCommand(std::make_shared<DeclareCommand>(var, val));
                 }
             }
             else if (cmd == "ADD")
@@ -157,7 +159,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                     val1 = op1_is_var ? 0 : std::stoi(op1);
                     val2 = op2_is_var ? 0 : std::stoi(op2);
 
-                    process->add_command(std::make_shared<AddCommand>(target, op1, op2, op1_is_var, op2_is_var, val1, val2));
+                    process->addCommand(std::make_shared<AddCommand>(target, op1, op2, op1_is_var, op2_is_var, val1, val2));
                 }
             }
             else if (cmd == "SUBTRACT")
@@ -173,14 +175,14 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                     val1 = op1_is_var ? 0 : std::stoi(op1);
                     val2 = op2_is_var ? 0 : std::stoi(op2);
 
-                    process->add_command(std::make_shared<SubtractCommand>(target, op1, op2, op1_is_var, op2_is_var, val1, val2));
+                    process->addCommand(std::make_shared<SubtractCommand>(target, op1, op2, op1_is_var, op2_is_var, val1, val2));
                 }
             }
             else if (cmd == "PRINT")
             {
                 std::string msg;
                 std::getline(line >> std::ws, msg); // Read full message
-                process->add_command(std::make_shared<PrintCommand>(msg));
+                process->addCommand(std::make_shared<PrintCommand>(msg));
             }
             else if (cmd == "READ")
             {
@@ -189,7 +191,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                 if (line >> var_name >> addr_str)
                 {
                     uint16_t address = std::stoul(addr_str, nullptr, 16); // hex
-                    process->add_command(std::make_shared<ReadCommand>(var_name, address));
+                    process->addCommand(std::make_shared<ReadCommand>(var_name, address));
                 }
             }
             else if (cmd == "WRITE")
@@ -199,7 +201,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                 {
                     uint16_t address = std::stoul(addr_str, nullptr, 16); // hex
                     uint16_t value = std::stoi(val_str);
-                    process->add_command(std::make_shared<WriteCommand>(address, value));
+                    process->addCommand(std::make_shared<WriteCommand>(address, value));
                 }
             }
             else if (cmd == "SLEEP")
@@ -207,7 +209,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                 uint8_t ticks;
                 if (line >> ticks)
                 {
-                    process->add_command(std::make_shared<SleepCommand>(ticks));
+                    process->addCommand(std::make_shared<SleepCommand>(ticks));
                 }
             }
             else

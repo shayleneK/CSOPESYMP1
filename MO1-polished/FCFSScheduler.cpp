@@ -100,7 +100,7 @@ void FCFSScheduler::run_core(int core_id)
                     break;
                 }
 
-                if (process->can_execute())
+                if (process->canExecute())
                 {
                     process->execute(core_id);
                 }
@@ -159,7 +159,7 @@ void FCFSScheduler::generate_new_process()
     size_t mem_required = 16 << (rand() % 9); // Random memory size
 
     auto process = ProcessFactory::generate_dummy_process(name, mem_required, min_instructions, max_instructions);
-    process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
+    process->addCommand(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
 
     add_process(process);
 

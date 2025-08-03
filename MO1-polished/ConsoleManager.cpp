@@ -272,7 +272,7 @@ void ConsoleManager::processInput()
             scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins);
 
         scheduler->set_batch_frequency(batch_freq);
-        
+
         startCpuLoop();
         scheduler_initialized = true;
     }
@@ -297,7 +297,7 @@ void ConsoleManager::processInput()
 
         size_t mem_required = mem_per_proc;
         auto proc = ProcessFactory::generate_dummy_process(name, mem_required, scheduler->get_min_instructions(), scheduler->get_max_instructions());
-        proc->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
+        proc->addCommand(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
         scheduler->add_process(proc);
 
         auto screen = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);
@@ -429,7 +429,7 @@ void ConsoleManager::processInput()
             std::cout << "Finish Time: " << std::put_time(std::localtime(&ft), "%Y-%m-%d %H:%M:%S") << "\n";
         }
 
-        std::cout << "Instructions Executed: " << proc->getCurrentCommandIndex() << " / " << proc->get_instruction_count() << "\n";
+        std::cout << "Instructions Executed: " << proc->getCurrentCommandIndex() << " / " << proc->getCurrentCommandIndex() << "\n";
 
         std::cout << "Logs:\n";
         for (const auto &log : proc->getLogs())
@@ -437,54 +437,54 @@ void ConsoleManager::processInput()
     }
     else if (command.rfind("screen -c ", 0) == 0)
     {
-    if (!scheduler)
-    {
-        std::cout << "[ERROR] Scheduler not initialized.\n";
-        return;
-    }
+        if (!scheduler)
+        {
+            std::cout << "[ERROR] Scheduler not initialized.\n";
+            return;
+        }
 
-    std::istringstream iss(command.substr(10));
-    std::string name;
-    size_t mem_size;
-    std::string instructions_str;
+        std::istringstream iss(command.substr(10));
+        std::string name;
+        size_t mem_size;
+        std::string instructions_str;
 
-    // read name and memory size
-    if (!(iss >> name >> mem_size))
-    {
-        std::cout << "[ERROR] Invalid syntax. Use: screen -c <name> <mem_size> \"<instructions>\"\n";
-        return;
-    }
+        // read name and memory size
+        if (!(iss >> name >> mem_size))
+        {
+            std::cout << "[ERROR] Invalid syntax. Use: screen -c <name> <mem_size> \"<instructions>\"\n";
+            return;
+        }
 
-    // read quoted instruction string
-    std::getline(iss >> std::ws, instructions_str, '"');
-    if (instructions_str.empty())
-    {
-        std::cout << "[ERROR] No instructions provided.\n";
-        return;
-    }
+        // read quoted instruction string
+        std::getline(iss >> std::ws, instructions_str, '"');
+        if (instructions_str.empty())
+        {
+            std::cout << "[ERROR] No instructions provided.\n";
+            return;
+        }
 
-    // val memory size
-    if (mem_size < 64)
-    {
-        std::cout << "[ERROR] Memory size must be at least 64 bytes.\n";
-        return;
-    }
+        // val memory size
+        if (mem_size < 64)
+        {
+            std::cout << "[ERROR] Memory size must be at least 64 bytes.\n";
+            return;
+        }
 
-    // check if process name already exists
-    if (hasConsole(name))
-    {
-        std::cout << "[ERROR] A screen with this name already exists.\n";
-        return;
-    }
+        // check if process name already exists
+        if (hasConsole(name))
+        {
+            std::cout << "[ERROR] A screen with this name already exists.\n";
+            return;
+        }
 
-    createConsole("screen", name);
-    auto proc = ProcessFactory::generate_custom_process(name, mem_size, instructions_str);
-    scheduler->add_process(proc);
-    auto screen = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);
-    if (screen)
-        screen->attachProcess(proc);
-    switchConsole(name);
-    std::cout << "[screen] Process \"" << name << "\" created with custom instructions.\n";
+        createConsole("screen", name);
+        auto proc = ProcessFactory::generate_custom_process(name, mem_size, instructions_str);
+        scheduler->add_process(proc);
+        auto screen = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);
+        if (screen)
+            screen->attachProcess(proc);
+        switchConsole(name);
+        std::cout << "[screen] Process \"" << name << "\" created with custom instructions.\n";
     }
     else
     {
@@ -552,7 +552,7 @@ void ConsoleManager::render_running_processes(const std::vector<std::shared_ptr<
             auto start = std::chrono::system_clock::to_time_t(p->getStartTime());
             oss << " (" << std::put_time(std::localtime(&start), "%Y-%m-%d %H:%M:%S") << ")";
         }
-        oss << "  " << p->getCurrentCommandIndex() << " / " << p->get_instruction_count();
+        oss << "  " << p->getCurrentCommandIndex() << " / " << p->getCurrentCommandIndex();
 
         try
         {

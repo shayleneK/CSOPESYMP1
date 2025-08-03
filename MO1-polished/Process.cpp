@@ -5,83 +5,316 @@
 #include <iomanip>
 #include <chrono>
 #include <ctime>
+#include <stdexcept>
 
-Process::Process(const std::string &name, size_t mem_required, int core_id)
-    : name(name), memory_required(mem_required), current_core(core_id) {}
+// --- EXTERNAL GLOBALS ---
+// These are defined elsewhere (e.g., in main or config loader)
+// They come from config.txt after "initialize" command
+extern size_t memPerFrame;                   // Frame/page size in bytes (e.g., 256)
+extern class MemoryManager *g_MemoryManager; // Global memory manager for page faults
 
-void Process::add_command(std::shared_ptr<Command> cmd)
+// --- CONSTRUCTOR: Initialize a new process ---
+Process::Process(const std::string &name, size_t memSize, int pid)
+    : name(name), pid(pid), memorySize(memSize)
 {
-    commands.push_back(cmd);
+    // Validate memory allocation per MO2 spec:
+    // - Must be at least 64 bytes
+    // - Must be a power of two (e.g., 64, 128, 256...)
+    if (memSize < 64)
+    {
+        throw std::invalid_argument("invalid memory allocation"); // Requirement: min 64 bytes
+    }
+    if ((memSize & (memSize - 1)) != 0)
+    {                                                             // Fast bit check for power of 2
+        throw std::invalid_argument("invalid memory allocation"); // Not power of 2 → invalid
+    }
+
+    // Compute how many virtual pages this process needs
+    numPages = memorySize / memPerFrame; // e.g., 1024 bytes / 256 = 4 pages
+
+    // Resize page table to hold one entry per virtual page
+    // Each entry starts as invalid (not in physical memory), clean (not modified)
+    pageTable.resize(numPages); // Uses FrameEntry default values: isValid=false, isDirty=false
 }
 
-void Process::execute(int core_id)
+// --- Add a command (e.g., DECLARE, PRINT, WRITE) to this process ---
+void Process::addCommand(std::shared_ptr<Command> cmd)
 {
-    if (is_finished)
+    // MO2 Requirement: A process can have 1 to 50 instructions
+    if (commands.size() < 50)
+    {
+        commands.push_back(cmd); // Add command to instruction list
+    }
+    // If more than 50, ignore — caller should validate before calling
+}
+
+// --- Execute one instruction of the process ---
+void Process::execute(int coreId)
+{
+    // If process is already finished or crashed, do nothing
+    if (is_finished || has_error)
         return;
 
-    current_core = core_id;
-    if (!ConsoleManager::getInstance()->isRunning()) // or custom global flag
-        return;
+    // Assign current CPU core for logging and execution context
+    current_core = coreId;
 
+    // Safety check: if global console is not running, stop
+    if (!ConsoleManager::getInstance()->isRunning())
+    {
+        return;
+    }
+
+    // Mark start time on first execution (simulate process start)
     if (!has_started)
     {
         has_started = true;
         start_time = std::chrono::system_clock::now();
     }
 
+    // Handle delay between instructions (from config.txt: delays-per-exec)
     if (delay_counter > 0)
     {
-        delay_counter--;
-        return;
+        delay_counter--; // Wait one cycle
+        return;          // Don't execute instruction yet
     }
 
+    // Check if all instructions are done
     if (current_command_index >= commands.size())
     {
         is_finished = true;
         finish_time = std::chrono::system_clock::now();
-        log_execution(core_id, "Process " + name + " has completed all its commands.");
+        logExecution(coreId, "Process completed all commands.");
         return;
     }
 
-    commands[current_command_index]->execute(this, core_id, name);
+    // --- Execute current instruction ---
+    // Example: PRINT, DECLARE, WRITE, etc.
+    // The Command object knows how to interact with this Process
+    commands[current_command_index]->execute(this, coreId, name);
+
+    // Move to next instruction
     current_command_index++;
-    delay_counter = delay_per_exec;
+
+    // Reset delay counter so next instruction waits
+    delay_counter = delay_per_exec; // From config.txt
 }
 
-uint16_t Process::get_var(const std::string &var_name)
+// --- Can this process execute now? ---
+bool Process::canExecute() const
 {
-    auto it = variables.find(var_name);
-    if (it == variables.end())
+    // Only if no delay is pending
+    return delay_counter == 0;
+}
+
+// --- READ from virtual memory ---
+uint16_t Process::readMemory(uint16_t virtualAddr)
+{
+    // Step 1: Check if address is within this process's allocated memory
+    if (!isAddressValid(virtualAddr))
     {
+        markAsError(virtualAddr); // Invalid access → kill process
         return 0;
     }
-    return it->second;
-}
 
-void Process::set_var(const std::string &var_name, uint16_t value)
-{
-    variables[var_name] = value;
-}
+    // Step 2: Break address into page number and offset within page
+    int page = getVirtualPageNumber(virtualAddr); // e.g., 0x500 → page 2 (if 256-byte pages)
+    int offset = getOffset(virtualAddr);          // e.g., 0x500 → offset 0
 
-bool Process::can_execute()
-{
-    if (delay_counter == 0)
+    // Step 3: Check if the required page is currently in physical memory
+    if (!isPageValid(page))
     {
-        return true;
+        // Page is not in RAM → trigger a page fault
+        triggerPageFault(page);
+
+        // After page fault handling, check again
+        // (In real OS, instruction restarts automatically)
+        if (!isPageValid(page))
+        {
+            // Still not loaded? Something went wrong → crash
+            markAsError(virtualAddr);
+            return 0;
+        }
+    }
+
+    // Step 4: Simulate reading a 16-bit value from memory
+    // In real system: access physical frame + offset
+    // Here: return dummy data based on address (for demo)
+    return static_cast<uint16_t>(virtualAddr ^ 0xABCD); // Dummy value
+}
+
+// --- WRITE to virtual memory ---
+void Process::writeMemory(uint16_t virtualAddr, uint16_t value)
+{
+    // Step 1: Validate memory bounds
+    if (!isAddressValid(virtualAddr))
+    {
+        markAsError(virtualAddr); // Out of bounds → crash
+        return;
+    }
+
+    // Step 2: Get page number
+    int page = getVirtualPageNumber(virtualAddr);
+    int offset = getOffset(virtualAddr);
+
+    // Step 3: Ensure page is in memory
+    if (!isPageValid(page))
+    {
+        triggerPageFault(page);
+        if (!isPageValid(page))
+        {
+            markAsError(virtualAddr);
+            return;
+        }
+    }
+
+    // Step 4: Mark page as DIRTY because we're modifying it
+    // This means when this page is evicted, it must be saved to backing store
+    setPageDirty(page);
+
+    // Step 5: Simulate write operation
+    // In full emulator: write 'value' to physical frame + offset
+    // Here: just log it
+    std::ostringstream oss;
+    oss << "Wrote 0x" << std::hex << value << " to virtual address 0x" << virtualAddr;
+    logExecution(current_core, oss.str());
+}
+
+// --- Get variable value from symbol table ---
+uint16_t Process::getVar(const std::string &name)
+{
+    // Accessing symbol table requires Page 0 to be in memory
+    if (!isPageValid(0))
+    {
+        triggerPageFault(0); // Page 0 = symbol table
+        if (!isPageValid(0))
+        {
+            return 0; // If still not loaded, return 0
+        }
+    }
+
+    auto it = variables.find(name);
+    if (it != variables.end())
+    {
+        // Accessing a variable requires the symbol table page (Page 0)
+        // If it's not in memory, load it via page fault
+        if (!isPageValid(getSymbolTablePageNum()))
+        {
+            triggerPageFault(getSymbolTablePageNum());
+        }
+        return it->second;
+    }
+    return 0; // Undefined variable → return 0 (per spec)
+}
+
+// --- Declare a new variable ---
+bool Process::declareVar(const std::string &name, uint16_t value)
+{
+    // MO2 Requirement: Max 32 variables (64 bytes total, 2 bytes each)
+    if (variables.size() >= 32)
+    {
+        // Limit reached → ignore new declarations
+        return false;
+    }
+
+    // Store variable
+    variables[name] = value;
+
+    // Symbol table is stored in Page 0 → mark it dirty
+    setPageDirty(0);
+
+    return true;
+}
+
+// --- HELPER: Get virtual page number from address ---
+// int Process::getVirtualPageNumber(uint16_t addr) const
+// {
+//     return addr / memPerFrame; // Integer division gives page #
+// }
+
+// --- HELPER: Get offset within a page ---
+int Process::getOffset(uint32_t addr) const
+{
+    return addr % memPerFrame; // Remainder gives offset
+}
+
+// --- HELPER: Is this virtual address valid? ---
+bool Process::isAddressValid(uint16_t addr) const
+{
+    // Address must be less than total memory allocated to this process
+    return addr < memorySize;
+}
+
+// --- HELPER: Is a given virtual page currently in physical memory? ---
+bool Process::isPageValid(int page) const
+{
+    if (page < 0 || page >= numPages)
+        return false;
+    return pageTable[page].isValid;
+}
+
+// --- HELPER: Mark a page as modified (dirty) ---
+void Process::setPageDirty(int page)
+{
+    if (page >= 0 && page < numPages)
+    {
+        pageTable[page].isDirty = true;
+    }
+}
+
+// --- Trigger a page fault (when accessing invalid page) ---
+void Process::triggerPageFault(int virtualPage)
+{
+    // Safety check
+    if (virtualPage < 0 || virtualPage >= numPages)
+        return;
+
+    // Notify the OS-level MemoryManager to handle the fault
+    // This is where:
+    // - A free frame is found
+    // - Or a victim page is evicted (using FIFO/LRU)
+    // - The needed page is loaded from backing store (or zero-filled)
+    if (g_MemoryManager)
+    {
+        // g_MemoryManager->handlePageFault(this, virtualPage);
     }
     else
     {
-        delay_counter--;
-        return false;
+        // No memory manager → cannot resolve fault
+        std::ostringstream oss;
+        oss << "Page fault failed: no memory manager (page " << virtualPage << ")";
+        logExecution(current_core, oss.str());
+        markAsError(0); // Generic error
     }
 }
 
-size_t Process::get_instruction_count() const
+// --- Mark process as crashed due to invalid memory access ---
+void Process::markAsError(uint16_t addr)
 {
-    return commands.size();
+    has_error = true;
+    is_finished = true;
+    invalid_address = addr;
+    finish_time = std::chrono::system_clock::now();
+
+    // Log the violation
+    std::ostringstream oss;
+    oss << "Memory access violation at 0x" << std::hex << addr;
+    logExecution(current_core, oss.str());
 }
 
-void Process::log_execution(int core_id, const std::string &message)
+// --- Get formatted error time (HH:MM:SS) ---
+std::string Process::getErrorTime() const
+{
+    if (!has_error)
+        return "";
+    auto now_c = std::chrono::system_clock::to_time_t(finish_time);
+    std::tm tm = *std::localtime(&now_c);
+    char buf[10];
+    strftime(buf, sizeof(buf), "%H:%M:%S", &tm);
+    return std::string(buf); // e.g., "14:22:30"
+}
+
+// --- Log an event with timestamp and core ID ---
+void Process::logExecution(int coreId, const std::string &message)
 {
     auto now = std::chrono::system_clock::now();
     std::time_t now_c = std::chrono::system_clock::to_time_t(now);
@@ -91,75 +324,7 @@ void Process::log_execution(int core_id, const std::string &message)
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", &tm);
 
     std::ostringstream oss;
-    oss << "(" << timestamp << ") Core:" << core_id << " - " << message;
+    oss << "(" << timestamp << ") Core:" << coreId << " - " << message;
 
     logs.push_back(oss.str());
 }
-
-void Process::loadToMemory(size_t start_addr)
-{
-    if (!is_in_memory)
-    {
-        start_address = start_addr;
-        end_address = start_address + memory_required - 1;
-        is_in_memory = true;
-        log_execution(current_core, "Loaded into memory");
-    }
-}
-
-void Process::releaseFromMemory()
-{
-    if (is_in_memory)
-    {
-        is_in_memory = false;
-        log_execution(current_core, "Released from memory");
-    }
-}
-
-uint16_t Process::read_memory(uint16_t address)
-{
-    std::ostringstream oss;
-
-    // simulate memory access
-    if (address < start_address || address > end_address)
-    {
-        // mem access violation
-        is_finished = true;
-        finish_time = std::chrono::system_clock::now();
-        oss << "Memory access violation at 0x" << std::hex << address << std::dec;
-        log_execution(current_core, oss.str());
-    }
-    // return dummy value or variable (TEMPORARY)
-    return 0;
-}
-
-void Process::write_memory(uint16_t address, uint16_t value)
-{
-    if (address < start_address || address > end_address)
-    {
-        is_finished = true;
-        finish_time = std::chrono::system_clock::now();
-        std::ostringstream oss;
-        oss << "Memory access violation at 0x" << std::hex << address << std::dec;
-        log_execution(current_core, oss.str());
-        return;
-    }
-
-    // simulate writing (TEMPORARY)
-}
-
-// Memory getters
-size_t Process::getMemoryRequired() const { return memory_required; }
-size_t Process::getStartAddress() const { return start_address; }
-size_t Process::getEndAddress() const { return end_address; }
-bool Process::isInMemory() const { return is_in_memory; }
-
-// --- Getters ---
-std::string Process::getName() const { return name; }
-bool Process::isFinished() const { return is_finished; }
-bool Process::hasStarted() const { return has_started; }
-int Process::getCurrentCore() const { return current_core; }
-int Process::getCurrentCommandIndex() const { return current_command_index; }
-std::chrono::system_clock::time_point Process::getStartTime() const { return start_time; }
-std::chrono::system_clock::time_point Process::getFinishTime() const { return finish_time; }
-const std::vector<std::string> &Process::getLogs() const { return logs; }

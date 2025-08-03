@@ -1,3 +1,4 @@
+// Command.cpp
 #include "Command.h"
 #include "Process.h"
 #include <algorithm>
@@ -6,31 +7,30 @@
 #include <sstream>
 #include <chrono>
 #include <ctime>
-#include <iostream>
 #include <iomanip>
 
-Process *current_process = nullptr;
-
+// --- PrintCommand ---
 PrintCommand::PrintCommand(const std::string &msg) : message(msg) {}
 
-void PrintCommand::execute(Process *proc, int core_id, const std::string &process_name)
+void PrintCommand::execute(Process *proc, int coreId, const std::string &processName)
 {
     std::string output;
 
     // Handle case: "prefix" + var
-    size_t plus_pos = message.find('+');
-    if (plus_pos != std::string::npos)
+    size_t plusPos = message.find('+');
+    if (plusPos != std::string::npos)
     {
-        std::string prefix = message.substr(0, plus_pos);
-        std::string var_name = message.substr(plus_pos + 1);
+        std::string prefix = message.substr(0, plusPos);
+        std::string varName = message.substr(plusPos + 1);
 
         // Clean quotes and whitespace
-        prefix.erase(remove_if(prefix.begin(), prefix.end(), [](char c)
-                               { return c == '"' || isspace(c); }),
+        prefix.erase(std::remove_if(prefix.begin(), prefix.end(),
+                                    [](char c)
+                                    { return c == '"' || std::isspace(c); }),
                      prefix.end());
-        var_name.erase(remove_if(var_name.begin(), var_name.end(), ::isspace), var_name.end());
+        varName.erase(std::remove_if(varName.begin(), varName.end(), ::isspace), varName.end());
 
-        uint16_t val = proc->get_var(var_name);
+        uint16_t val = proc->getVar(varName);
         output = prefix + std::to_string(val);
     }
     else
@@ -42,107 +42,119 @@ void PrintCommand::execute(Process *proc, int core_id, const std::string &proces
             output = message;
     }
 
-    // Add Log Entry
+    // Get timestamp
     auto now = std::chrono::system_clock::now();
-    std::time_t time_now = std::chrono::system_clock::to_time_t(now);
+    std::time_t timeNow = std::chrono::system_clock::to_time_t(now);
 
-    std::ostringstream log_entry;
-    log_entry << "(" << std::put_time(std::localtime(&time_now), "%Y-%m-%d %H:%M:%S") << ") "
-              << "Core:" << core_id << " - PRINT(\"" << output << "\")";
+    std::ostringstream logEntry;
+#ifdef _WIN32
+    std::tm localTime;
+    localtime_s(&localTime, &timeNow);
+    logEntry << "(" << std::put_time(&localTime, "%Y-%m-%d %H:%M:%S") << ") ";
+#else
+    logEntry << "(" << std::put_time(std::localtime(&timeNow), "%Y-%m-%d %H:%M:%S") << ") ";
+#endif
+    logEntry << "Core:" << coreId << " - PRINT(\"" << output << "\")";
 
-    proc->logs.push_back(log_entry.str());
+    std::cout << logEntry.str() << std::endl;
+    proc->logExecution(coreId, "PRINT(\"" + output + "\")");
 }
 
-SleepCommand::SleepCommand(int duration) : duration_ms(duration) {}
+// --- SleepCommand ---
+SleepCommand::SleepCommand(int duration) : durationMs(duration) {}
 
-void SleepCommand::execute(Process *proc, int core_id, const std::string &process_name)
+void SleepCommand::execute(Process *proc, int coreId, const std::string &processName)
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(duration_ms));
+    std::this_thread::sleep_for(std::chrono::milliseconds(durationMs));
+    proc->logExecution(coreId, "SLEEP(" + std::to_string(durationMs) + "ms)");
 }
 
+// --- DeclareCommand ---
 DeclareCommand::DeclareCommand(const std::string &var, uint16_t val)
-    : var_name(var), value(val) {}
+    : varName(var), value(val) {}
 
-void DeclareCommand::execute(Process *proc, int core_id, const std::string &process_name)
+void DeclareCommand::execute(Process *proc, int coreId, const std::string &processName)
 {
-    proc->set_var(var_name, value);
+    bool success = proc->declareVar(varName, value);
+    if (!success)
+    {
+        std::ostringstream oss;
+        oss << "Failed to declare '" << varName << "': symbol table full (32 variables max)";
+        proc->logExecution(coreId, oss.str());
+    }
+    else
+    {
+        proc->logExecution(coreId, "DECLARE " + varName + " = " + std::to_string(value));
+    }
 }
 
+// --- AddCommand ---
 AddCommand::AddCommand(const std::string &tgt, const std::string &o1, const std::string &o2,
-                       bool o1_var, bool o2_var, uint16_t v1, uint16_t v2)
-    : target(tgt), op1(o1), op2(o2), op1_is_var(o1_var), op2_is_var(o2_var),
+                       bool o1Var, bool o2Var, uint16_t v1, uint16_t v2)
+    : target(tgt), op1(o1), op2(o2), op1IsVar(o1Var), op2IsVar(o2Var),
       val1(v1), val2(v2) {}
 
-void AddCommand::execute(Process *proc, int core_id, const std::string &process_name)
+void AddCommand::execute(Process *proc, int coreId, const std::string &processName)
 {
-    uint16_t a = op1_is_var ? proc->get_var(op1) : val1;
-    uint16_t b = op2_is_var ? proc->get_var(op2) : val2;
+    uint16_t a = op1IsVar ? proc->getVar(op1) : val1;
+    uint16_t b = op2IsVar ? proc->getVar(op2) : val2;
     uint32_t result = a + b;
     if (result > 65535)
         result = 65535;
-    proc->set_var(target, static_cast<uint16_t>(result));
+    proc->declareVar(target, static_cast<uint16_t>(result));
+    proc->logExecution(coreId, "ADD " + target + " = " + std::to_string(a) + " + " + std::to_string(b));
 }
 
+// --- SubtractCommand ---
 SubtractCommand::SubtractCommand(const std::string &tgt, const std::string &o1, const std::string &o2,
-                                 bool o1_var, bool o2_var, uint16_t v1, uint16_t v2)
-    : target(tgt), op1(o1), op2(o2), op1_is_var(o1_var), op2_is_var(o2_var),
+                                 bool o1Var, bool o2Var, uint16_t v1, uint16_t v2)
+    : target(tgt), op1(o1), op2(o2), op1IsVar(o1Var), op2IsVar(o2Var),
       val1(v1), val2(v2) {}
 
-void SubtractCommand::execute(Process *proc, int core_id, const std::string &process_name)
+void SubtractCommand::execute(Process *proc, int coreId, const std::string &processName)
 {
-    int32_t a = op1_is_var ? proc->get_var(op1) : val1;
-    int32_t b = op2_is_var ? proc->get_var(op2) : val2;
+    int32_t a = op1IsVar ? proc->getVar(op1) : val1;
+    int32_t b = op2IsVar ? proc->getVar(op2) : val2;
     int32_t result = a - b;
     if (result < 0)
         result = 0;
-    proc->set_var(target, static_cast<uint16_t>(result));
+    proc->declareVar(target, static_cast<uint16_t>(result));
+    proc->logExecution(coreId, "SUB " + target + " = " + std::to_string(a) + " - " + std::to_string(b));
 }
 
+// --- ForCommand ---
 ForCommand::ForCommand(const std::vector<std::shared_ptr<Command>> &cmds, int reps)
     : instructions(cmds), repeat(reps) {}
 
-void ForCommand::execute(Process *proc, int core_id, const std::string &process_name)
+void ForCommand::execute(Process *proc, int coreId, const std::string &processName)
 {
     for (int i = 0; i < repeat; ++i)
     {
-        for (auto &cmd : instructions)
+        for (const auto &cmd : instructions)
         {
-            cmd->execute(proc, core_id, process_name);
+            cmd->execute(proc, coreId, processName);
         }
     }
+    proc->logExecution(coreId, "FOR x" + std::to_string(repeat));
 }
-// ReadCommand
-ReadCommand::ReadCommand(const std::string &var, uint16_t addr)
-    : var_name(var), address(addr) {}
 
-void ReadCommand::execute(Process *proc, int core_id, const std::string &process_name)
+// --- ReadCommand ---
+ReadCommand::ReadCommand(const std::string &var, uint32_t addr)
+    : varName(var), address(addr) {}
+
+void ReadCommand::execute(Process *proc, int coreId, const std::string &processName)
 {
-    if (!proc->isInMemory()) {
-        std::ostringstream oss;
-        oss << "[ERROR] Process " << process_name << " attempted to read outside allocated memory at 0x" 
-            << std::hex << address << std::dec;
-        proc->log_execution(core_id, oss.str());
-        proc->setFinished(true);
-        return;
-    }
-
-    uint16_t value = proc->read_memory(address);
-    proc->set_var(var_name, value);
+    uint16_t value = proc->readMemory(address);
+    proc->declareVar(varName, value);
+    proc->logExecution(coreId, "READ " + varName + " <- MEM[" + std::to_string(address) + "]");
 }
 
-// WriteCommand
-WriteCommand::WriteCommand(uint16_t addr, uint16_t val)
+// --- WriteCommand ---
+WriteCommand::WriteCommand(uint32_t addr, uint16_t val)
     : address(addr), value(val) {}
-void WriteCommand::execute(Process *proc, int core_id, const std::string &process_name)
-{
-    if (!proc->isInMemory()) {
-        std::ostringstream oss;
-        oss << "[ERROR] Process " << process_name << " attempted to write outside allocated memory at 0x" 
-            << std::hex << address << std::dec;
-        proc->log_execution(core_id, oss.str());
-        proc->setFinished(true);
-        return;
-    }
 
-    proc->write_memory(address, value);
+void WriteCommand::execute(Process *proc, int coreId, const std::string &processName)
+{
+    proc->writeMemory(address, value);
+    proc->logExecution(coreId, "WRITE MEM[" + std::to_string(address) + "] = " + std::to_string(value));
 }

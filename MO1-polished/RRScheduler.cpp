@@ -67,15 +67,15 @@ void RRScheduler::generate_new_process()
     size_t mem_required = mem_per_proc;
 
     auto process = ProcessFactory::generate_dummy_process(name, mem_required, min_instructions, max_instructions);
-    process->add_command(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
+    process->addCommand(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
 
-    int start_address = memory_manager_.allocate(mem_required, process->name);
+    int start_address = memory_manager_.allocate(mem_required, process->getName());
 
     if (start_address != -1)
     {
-        process->loadToMemory(start_address);
+        process->readMemory(start_address);
         add_process(process);
-        process_memory_map_.push_back(process->name);
+        process_memory_map_.push_back(process->getName());
 
         ConsoleManager::getInstance()->createConsole("screen", name);
 
@@ -166,7 +166,7 @@ void RRScheduler::run_core(int core_id)
                 if (!running)
                     break;
 
-                if (process->can_execute())
+                if (process->canExecute())
                 {
                     process->execute(core_id);
                     cpu_ticks_exec++;
@@ -198,9 +198,9 @@ void RRScheduler::run_core(int core_id)
                     current_processes.erase(core_id);
                     process_to_core.erase(process);
 
-                    memory_manager_.deallocate(process->name);
+                    memory_manager_.deallocate(process->getName());
                     process_memory_map_.erase(
-                        std::remove(process_memory_map_.begin(), process_memory_map_.end(), process->name),
+                        std::remove(process_memory_map_.begin(), process_memory_map_.end(), process->getName()),
                         process_memory_map_.end());
 
                     std::cout << "[RR][Core " << core_id << "] Process " << process->getName()

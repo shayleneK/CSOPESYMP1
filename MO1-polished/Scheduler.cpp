@@ -30,19 +30,15 @@ void Scheduler::add_process(std::shared_ptr<Process> process)
     all_processes.push_back(process);
     queue_condition.notify_one();
 }
-/*
-void Scheduler::start_core_threads() // IMPORTANT: check where should u run
+
+void Scheduler::start_core_threads()
 {
     for (int i = 0; i < static_cast<int>(core_available.size()); ++i)
     {
-        cpu_cores.emplace_back(&Scheduler::run_core, this, i);
-    }
-}*/
-void Scheduler::start_core_threads() {
-    for (int i = 0; i < static_cast<int>(core_available.size()); ++i) {
         core_available[i] = true;
 
-        auto core = std::make_shared<CPUCore>(i, [this](int core_id) -> std::shared_ptr<Process> {
+        auto core = std::make_shared<CPUCore>(i, [this](int core_id) -> std::shared_ptr<Process>
+                                              {
             std::unique_lock<std::mutex> lock(queue_mutex);
 
             if (!ready_queue.empty()) {
@@ -60,14 +56,12 @@ void Scheduler::start_core_threads() {
             }
 
             core_available[core_id] = true;
-            return nullptr;
-        });
+            return nullptr; });
 
         cpu_core_objects.push_back(core);
         core->start();
     }
 }
-
 
 void Scheduler::shutdown()
 {
@@ -77,13 +71,15 @@ void Scheduler::shutdown()
 
     queue_condition.notify_all();
 
-    for (auto &core : cpu_core_objects) {
+    for (auto &core : cpu_core_objects)
+    {
         core->stop();
     }
 
-    for (auto &t : cpu_cores) {
+    for (auto &t : cpu_cores)
+    {
         if (t.joinable())
-            t.join(); 
+            t.join();
     }
 }
 /*
@@ -151,7 +147,7 @@ std::vector<std::shared_ptr<Process>> Scheduler::get_running_processes()
     std::vector<std::shared_ptr<Process>> running_procs;
     for (const auto &pair : current_processes)
     {
-        if (!pair.second->is_finished)
+        if (!pair.second->isFinished())
         {
             running_procs.push_back(pair.second);
         }
@@ -164,7 +160,7 @@ std::vector<std::shared_ptr<Process>> Scheduler::get_finished_processes()
     std::vector<std::shared_ptr<Process>> finished_procs;
     for (const auto &p : all_processes)
     {
-        if (p->is_finished)
+        if (p->isFinished())
         {
             finished_procs.push_back(p);
         }
@@ -200,10 +196,12 @@ void Scheduler::start_process_generator()
     std::cout << "[Scheduler] process gen()." << std::endl;
 }
 
-std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats() {
+std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats()
+{
     std::map<int, std::map<std::string, float>> stats;
 
-    for (size_t i = 0; i < cpu_core_objects.size(); ++i) {
+    for (size_t i = 0; i < cpu_core_objects.size(); ++i)
+    {
         auto &core = cpu_core_objects[i];
         float busy = static_cast<float>(core->get_busy_time_ms());
         float count = static_cast<float>(core->get_process_count());
