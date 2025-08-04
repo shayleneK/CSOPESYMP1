@@ -17,6 +17,7 @@ public:
     virtual void execute(Process *proc, int coreId, const std::string &processName) = 0;
 };
 
+/*
 // --- PrintCommand ---
 class PrintCommand : public Command
 {
@@ -26,6 +27,16 @@ private:
 public:
     explicit PrintCommand(const std::string &msg);
     void execute(Process *proc, int coreId, const std::string &processName) override;
+};
+*/
+class PrintCommand : public Command
+{
+public:
+    PrintCommand(const std::string &msg);
+    void execute(Process *proc, int coreId, const std::string &processName) override;
+
+private:
+    std::string message;
 };
 
 // --- SleepCommand ---

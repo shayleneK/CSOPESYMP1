@@ -26,6 +26,10 @@ public:
         const std::string &name,
         size_t mem_required,
         const std::string &instructions_str);
+    
+    static std::shared_ptr<Process> generate_background_process(
+        const std::string &name,
+        size_t mem_required);
 };
 
 #endif // PROCESS_FACTORY_H

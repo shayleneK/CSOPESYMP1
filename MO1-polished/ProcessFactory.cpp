@@ -1,6 +1,7 @@
 #include "ProcessFactory.h"
 #include "Process.h"
 #include "Command.h"
+#include "CommandParser.h"
 
 #include <random>
 #include <sstream>
@@ -122,7 +123,7 @@ std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
 }
 
 // Used by "screen -c" to parse and generate processes with user-defined instructions
-std::shared_ptr<Process> ProcessFactory::generate_custom_process(
+/*std::shared_ptr<Process> ProcessFactory::generate_custom_process(
     const std::string &name,
     size_t mem_required,
     const std::string &instructions_str)
@@ -250,6 +251,30 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
 
     return process;
 }
+*/
+std::shared_ptr<Process> ProcessFactory::generate_custom_process(
+    const std::string &name,
+    size_t mem_required,
+    const std::string &instructions_str)
+{
+    auto process = std::make_shared<Process>(name, mem_required, global_pid_counter++);
+    auto commands = CommandParser::parse_instructions(instructions_str);
+    for (const auto &cmd : commands)
+    {
+        process->addCommand(cmd);
+    }
+
+    return process;
+}
+
+std::shared_ptr<Process> ProcessFactory::generate_background_process(
+    const std::string &name,
+    size_t mem_required)
+{
+    return generate_dummy_process(name, mem_required, 100, 100);
+}
+//helper functions
+
 std::string trim(const std::string &str) {
     size_t first = str.find_first_not_of(" \t\n\r");
     if (first == std::string::npos) return "";

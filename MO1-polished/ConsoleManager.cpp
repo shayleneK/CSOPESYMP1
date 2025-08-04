@@ -272,7 +272,7 @@ void ConsoleManager::processInput()
         mem_per_proc = cfg.getInt("mem-per-proc", 1000);
         std::cout << "[DEBUG] mem_per_proc loaded from config: " << mem_per_proc << "\n";
 
-        memPerFrame = mem_per_frame;
+        ::memPerFrame = mem_per_frame;
         g_MemoryManager = new MemoryManager(max_overall_mem, mem_per_frame);
 
         MemoryManager memory_manager_ = MemoryManager(max_overall_mem, mem_per_frame);
@@ -282,6 +282,7 @@ void ConsoleManager::processInput()
             scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins);
 
         scheduler->set_batch_frequency(batch_freq);
+        scheduler->memoryManager = g_MemoryManager;  // or use set_memory_manager()
 
         startCpuLoop();
         scheduler_initialized = true;
@@ -502,7 +503,7 @@ void ConsoleManager::processInput()
 
     createConsole("screen", name);
     auto proc = ProcessFactory::generate_custom_process(name, mem_size, instructions_str);
-    proc->loadToMemory(static_cast<size_t>(start_address));  // ✅ Pass start_address
+    proc->loadToMemory(static_cast<size_t>(start_address));  
     scheduler->add_process(proc);
 
     auto screen = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);

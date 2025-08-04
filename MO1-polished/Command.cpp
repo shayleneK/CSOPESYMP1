@@ -10,6 +10,7 @@
 #include <iomanip>
 
 // --- PrintCommand ---
+/*
 PrintCommand::PrintCommand(const std::string &msg) : message(msg) {}
 
 void PrintCommand::execute(Process *proc, int coreId, const std::string &processName)
@@ -40,6 +41,82 @@ void PrintCommand::execute(Process *proc, int coreId, const std::string &process
             output = message.substr(1, message.size() - 2);
         else
             output = message;
+    }
+
+    // Get timestamp
+    auto now = std::chrono::system_clock::now();
+    std::time_t timeNow = std::chrono::system_clock::to_time_t(now);
+
+    std::ostringstream logEntry;
+#ifdef _WIN32
+    std::tm localTime;
+    localtime_s(&localTime, &timeNow);
+    logEntry << "(" << std::put_time(&localTime, "%Y-%m-%d %H:%M:%S") << ") ";
+#else
+    logEntry << "(" << std::put_time(std::localtime(&timeNow), "%Y-%m-%d %H:%M:%S") << ") ";
+#endif
+    logEntry << "Core:" << coreId << " - PRINT(\"" << output << "\")";
+
+    std::cout << logEntry.str() << std::endl;
+    proc->logExecution(coreId, "PRINT(\"" + output + "\")");
+}
+*/
+PrintCommand::PrintCommand(const std::string &msg) : message(msg)
+{}
+
+void PrintCommand::execute(Process *proc, int coreId, const std::string &processName)
+{
+    std::string output;
+
+    // Tokenize by '+' and process each part
+    std::istringstream iss(message);
+    std::string token;
+    std::vector<std::string> tokens;
+
+    // Split by '+' (manually, since std::getline with '+' as delimiter skips whitespace)
+    size_t start = 0;
+    size_t pos = message.find('+');
+
+    while (pos != std::string::npos)
+    {
+        tokens.push_back(message.substr(start, pos - start));
+        start = pos + 1;
+        pos = message.find('+', start);
+    }
+    tokens.push_back(message.substr(start)); // Last token
+
+    // Process each token
+    for (size_t i = 0; i < tokens.size(); ++i)
+    {
+        std::string t = tokens[i];
+        // Trim whitespace
+        t.erase(t.begin(), std::find_if(t.begin(), t.end(), [](int ch) { return !std::isspace(ch); }));
+        t.erase(std::find_if(t.rbegin(), t.rend(), [](int ch) { return !std::isspace(ch); }).base(), t.end());
+
+        if (t.empty()) continue;
+
+        // Check if it's a quoted string
+        if (t.front() == '"' && t.back() == '"')
+        {
+            t = t.substr(1, t.size() - 2); // Remove quotes
+            output += t;
+        }
+        else if (t.front() == '"' && t.length() > 1)
+        {
+            t = t.substr(1);
+            output += t;
+        }
+        else if (t.back() == '"' && t.length() > 1)
+        {
+            t = t.substr(0, t.size() - 1);
+            output += t;
+        }
+        else
+        {
+            // It's a variable
+            uint16_t val = proc->getVar(t);
+            output += std::to_string(val);
+        }
     }
 
     // Get timestamp
@@ -142,19 +219,58 @@ void ForCommand::execute(Process *proc, int coreId, const std::string &processNa
 ReadCommand::ReadCommand(const std::string &var, uint32_t addr)
     : varName(var), address(addr) {}
 
+    /*
 void ReadCommand::execute(Process *proc, int coreId, const std::string &processName)
 {
     uint16_t value = proc->readMemory(address);
     proc->declareVar(varName, value);
     proc->logExecution(coreId, "READ " + varName + " <- MEM[" + std::to_string(address) + "]");
 }
+    */
+void ReadCommand::execute(Process *proc, int coreId, const std::string &processName)
+{
+    if (address >= proc->getMemorySize())
+    {
+        proc->markAsError(address);
+        return;
+    }
+
+    uint16_t value = proc->readMemory(address);
+
+    bool success = proc->declareVar(varName, value);
+    if (!success)
+    {
+        proc->logExecution(coreId, "Failed to declare " + varName + " (symbol table full)");
+        return;
+    }
+
+    std::ostringstream oss;
+    oss << "READ " << varName << " <- MEM[0x" << std::hex << address << std::dec << "] = " << value;
+    proc->logExecution(coreId, oss.str());
+}
 
 // --- WriteCommand ---
 WriteCommand::WriteCommand(uint32_t addr, uint16_t val)
     : address(addr), value(val) {}
 
+/*
 void WriteCommand::execute(Process *proc, int coreId, const std::string &processName)
 {
     proc->writeMemory(address, value);
     proc->logExecution(coreId, "WRITE MEM[" + std::to_string(address) + "] = " + std::to_string(value));
+}
+*/
+void WriteCommand::execute(Process *proc, int coreId, const std::string &processName)
+{
+    if (address >= proc->getMemorySize())
+    {
+        proc->markAsError(address);
+        return;
+    }
+
+    proc->writeMemory(address, value);
+
+    std::ostringstream oss;
+    oss << "WRITE MEM[0x" << std::hex << address << std::dec << "] = " << value;
+    proc->logExecution(coreId, oss.str());
 }
