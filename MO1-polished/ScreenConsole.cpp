@@ -54,7 +54,7 @@ void ScreenConsole::draw() const
         }
 
         oss << "  " << attachedProcess->getCurrentCommandIndex()
-            << " / " << attachedProcess->getCurrentCommandIndex();
+            << " / " << attachedProcess->getTotalInstructions();
 
         std::cout << oss.str() << "\n";
     }
