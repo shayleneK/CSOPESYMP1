@@ -306,42 +306,14 @@ void ConsoleManager::processInput()
     }
     else if (command.rfind("screen -s ", 0) == 0)
     {
+
         if (!scheduler)
         {
             std::cout << "[ERROR] Scheduler not initialized.\n";
             return;
         }
 
-        std::istringstream iss(command.substr(10)); // after "screen -s "
-        std::string name;
-        std::string mem_str;
-
-        iss >> name >> mem_str;
-
-        if (name.empty() || mem_str.empty())
-        {
-            std::cout << "[ERROR] Usage: screen -s <process_name> <memory_size>\n";
-            return;
-        }
-
-        // Convert memory size to integer
-        size_t mem_size;
-        try
-        {
-            mem_size = std::stoul(mem_str);
-        }
-        catch (...)
-        {
-            std::cout << "[ERROR] Invalid memory size format.\n";
-            return;
-        }
-
-        // Validate memory size: power of 2, between 64 and 65536
-        if (mem_size < 64 || mem_size > 65536 || (mem_size & (mem_size - 1)) != 0)
-        {
-            std::cout << "[ERROR] Invalid memory allocation. Must be power of 2 between 64 and 65536.\n";
-            return;
-        }
+        std::string name = command.substr(10);
 
         if (hasConsole(name))
         {
@@ -354,9 +326,10 @@ void ConsoleManager::processInput()
         std::cout << "[INFO] min instructions: " << scheduler->get_min_instructions() << "\n"
                   << "[INFO] max instructions: " << scheduler->get_max_instructions() << "\n";
 
+        size_t random_mem = getRandomMemSize();
         auto proc = ConsoleManager::getInstance()
                         ->getProcessFactory()
-                        ->generate_dummy_process(name, mem_size,
+                        ->generate_dummy_process(name, random_mem,
                                                  scheduler->get_min_instructions(),
                                                  scheduler->get_max_instructions());
 
@@ -370,9 +343,9 @@ void ConsoleManager::processInput()
         if (screen)
             screen->attachProcess(proc);
 
-        std::cout << "[screen] Process \"" << name << "\" created and added with " << mem_size << " bytes.\n";
+        // switchConsole(name);
+        std::cout << "[screen] Process \"" << name << "\" created and added.\n";
     }
-
     else if (command.rfind("screen -c ", 0) == 0)
     {
         if (!scheduler)
