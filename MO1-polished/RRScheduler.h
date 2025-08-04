@@ -38,6 +38,9 @@ public:
     void notify_process_finished(int core_id, std::shared_ptr<Process> process, int duration_ms);
     int get_quantum() const;
 
+    int get_min_instructions() const override { return min_instructions; }
+    int get_max_instructions() const override { return max_instructions; }
+
 private:
     void generate_new_process();
     void run_core(int core_id);

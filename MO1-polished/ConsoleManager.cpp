@@ -87,6 +87,7 @@ void ConsoleManager::initialize(const ConfigManager &cfg)
         scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins);
 
     scheduler->set_batch_frequency(batch_freq);
+    scheduler->start_core_threads();
 }
 
 void ConsoleManager::initializeConsoles()
@@ -322,6 +323,9 @@ void ConsoleManager::processInput()
 
         createConsole("screen", name);
 
+        std::cout << "[INFO] min instructions: " << scheduler->get_min_instructions() << "\n"
+                  << "[INFO] max instructions: " << scheduler->get_max_instructions() << "\n";
+
         size_t random_mem = getRandomMemSize();
         auto proc = ConsoleManager::getInstance()
                         ->getProcessFactory()
@@ -336,7 +340,7 @@ void ConsoleManager::processInput()
         if (screen)
             screen->attachProcess(proc);
 
-        switchConsole(name);
+        // switchConsole(name);
         std::cout << "[screen] Process \"" << name << "\" created and added.\n";
     }
     else if (command.rfind("screen -c ", 0) == 0)
@@ -462,7 +466,6 @@ void ConsoleManager::processInput()
             return;
         }
         scheduler->start();
-        scheduler->start_core_threads();
         start_flag = true;
         std::cout << "[INFO] Scheduler started.\n";
     }

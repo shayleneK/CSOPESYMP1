@@ -33,9 +33,6 @@ public:
     virtual void start_process_generator();
     std::map<int, std::map<std::string, float>> get_cpu_stats();
 
-    int get_min_instructions() const { return min_instructions; }
-    int get_max_instructions() const { return max_instructions; }
-
     bool is_done();
     std::shared_ptr<Process> find_process_by_name(const std::string &name);
 
@@ -43,7 +40,8 @@ public:
     virtual void set_batch_frequency(int freq) { batch_process_freq = freq; }
 
     virtual bool is_scheduler_running() const = 0;
-
+    virtual int get_min_instructions() const = 0;
+    virtual int get_max_instructions() const = 0;
     virtual void stop_scheduler();
     std::vector<std::shared_ptr<CPUCore>> cpu_core_objects;
 
@@ -72,8 +70,7 @@ protected:
 
     // config
     std::vector<std::thread> cpu_cores;
-    int min_instructions;
-    int max_instructions;
+
     int mem_per_proc;
 
     std::atomic<uint64_t> cpu_cycles; // Shared CPU cycle counter

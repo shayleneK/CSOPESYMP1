@@ -18,6 +18,8 @@ public:
 
     void start_process_generator() override;
     void on_cpu_cycle(uint64_t cycle_number) override;
+    int get_min_instructions() const override { return min_instructions; }
+    int get_max_instructions() const override { return max_instructions; }
 
 protected:
     void run_core(int core_id) override;
