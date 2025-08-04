@@ -339,6 +339,58 @@ void ConsoleManager::processInput()
         switchConsole(name);
         std::cout << "[screen] Process \"" << name << "\" created and added.\n";
     }
+    else if (command.rfind("screen -c ", 0) == 0)
+    {
+        if (!scheduler)
+        {
+            std::cout << "[ERROR] Scheduler not initialized.\n";
+            return;
+        }
+
+        std::istringstream iss(command.substr(10));
+        std::string name;
+        std::string instructions_str;
+
+        // read process name
+        if (!(iss >> name))
+        {
+            std::cout << "[ERROR] Invalid syntax. Use: screen -c <name> \"<instructions>\"\n";
+            return;
+        }
+
+        // default mem size (use frameSize or min_mem_per_proc)
+        size_t mem_size = min_mem_per_proc; // or min_mem_per_proc if you prefer
+
+        // read quoted instructions
+        std::getline(iss >> std::ws, instructions_str);
+        if (instructions_str.empty() || instructions_str.front() != '"' || instructions_str.back() != '"')
+        {
+            std::cout << "[ERROR] No instructions provided (must be in quotes).\n";
+            return;
+        }
+        instructions_str = instructions_str.substr(1, instructions_str.size() - 2);
+
+        // check if process name already exists
+        if (hasConsole(name))
+        {
+            std::cout << "[ERROR] A screen with this name already exists.\n";
+            return;
+        }
+
+        createConsole("screen", name);
+        auto proc = ConsoleManager::getInstance()
+                        ->getProcessFactory()
+                        ->generate_custom_process(
+                            name,
+                            mem_size,
+                            instructions_str);
+        scheduler->add_process(proc);
+        auto screen = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);
+        if (screen)
+            screen->attachProcess(proc);
+        switchConsole(name);
+        std::cout << "[screen] Process \"" << name << "\" created with custom instructions.\n";
+    }
 
     else if (command.rfind("screen -r ", 0) == 0)
     {

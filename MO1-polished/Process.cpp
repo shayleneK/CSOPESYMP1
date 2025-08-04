@@ -100,7 +100,7 @@ void Process::execute(int coreId)
 bool Process::canExecute() const
 {
     // Only if no delay is pending
-    return delay_counter == 0;
+    return true;
 }
 
 // --- READ from virtual memory ---

@@ -117,6 +117,9 @@ std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
         }
     }
 
+    process->addCommand(
+        std::make_shared<PrintCommand>("\"Process " + name + " has completed all its commands.\""));
+
     return process;
 }
 
@@ -181,8 +184,38 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
             else if (cmd == "PRINT")
             {
                 std::string msg;
-                std::getline(line >> std::ws, msg); // Read full message
-                process->addCommand(std::make_shared<PrintCommand>(msg));
+                std::getline(line >> std::ws, msg); // full after PRINT
+
+                // Remove "PRINT(" and closing ")"
+                if (msg.front() == '(')
+                    msg.erase(0, 1);
+                if (!msg.empty() && msg.back() == ')')
+                    msg.pop_back();
+
+                // Split by '+'
+                std::vector<PrintSegment> segments;
+                std::istringstream parts(msg);
+                std::string token;
+                while (std::getline(parts, token, '+'))
+                {
+                    // Trim spaces
+                    token.erase(0, token.find_first_not_of(" \t"));
+                    token.erase(token.find_last_not_of(" \t") + 1);
+
+                    // If quoted => literal
+                    if (!token.empty() && token.front() == '"' && token.back() == '"')
+                    {
+                        token = token.substr(1, token.size() - 2);
+                        segments.push_back({false, token});
+                    }
+                    else
+                    {
+                        // Otherwise => variable
+                        segments.push_back({true, token});
+                    }
+                }
+
+                process->addCommand(std::make_shared<PrintCommand>(segments));
             }
             else if (cmd == "READ")
             {

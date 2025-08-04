@@ -1,10 +1,10 @@
-Timestamp: (08/04/2025 04:00:57AM)
-Number of processes in memory: 2
-Total external fragmentation in B: 512
-Frame 0: p00 (Page 0)
-Frame 1: p00 (Page 1)
-Frame 2: p01 (Page 0)
-Frame 3: p01 (Page 1)
+Timestamp: (08/04/2025 09:44:32PM)
+Number of processes in memory: 1
+Total external fragmentation in B: 768
+Frame 0: p01 (Page 0)
+Frame 1: p01 (Page 1)
+Frame 2: [Free]
+Frame 3: [Free]
 Frame 4: [Free]
 Frame 5: [Free]
 Frame 6: [Free]

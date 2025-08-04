@@ -18,13 +18,19 @@ public:
 };
 
 // --- PrintCommand ---
+struct PrintSegment
+{
+    bool isVar;
+    std::string value;
+};
+
 class PrintCommand : public Command
 {
-private:
-    std::string message;
+    std::vector<PrintSegment> segments;
 
 public:
-    explicit PrintCommand(const std::string &msg);
+    PrintCommand(const std::vector<PrintSegment> &segment);
+    PrintCommand(const std::string &msg);
     void execute(Process *proc, int coreId, const std::string &processName) override;
 };
 

@@ -125,7 +125,6 @@ void RRScheduler::generate_new_process()
         {
             process->triggerPageFault(i);
         }
-
     }
     catch (const std::invalid_argument &e)
     {
@@ -181,7 +180,6 @@ bool RRScheduler::is_scheduler_running() const
 {
     return generating_processes;
 }
-
 void RRScheduler::run_core(int core_id)
 {
     while (running)
@@ -242,21 +240,14 @@ void RRScheduler::run_core(int core_id)
                 core_process_count[core_id]++;
                 total_cpu_time = std::max(total_cpu_time, core_util_time[core_id]);
 
-                if (!process->isFinished())
-                {
-                    process_to_core.erase(process);
-                    ready_queue.push(process);
-                }
-
-                core_available[core_id] = true;
-            }
-
-            {
-                std::unique_lock<std::mutex> lock(running_mutex);
                 if (process->isFinished())
                 {
-                    current_processes.erase(core_id);
-                    process_to_core.erase(process);
+                    // CLEANUP once
+                    {
+                        std::unique_lock<std::mutex> rlock(running_mutex);
+                        current_processes.erase(core_id);
+                        process_to_core.erase(process);
+                    }
 
                     memory_manager_.deallocate(process->getName());
                     process_memory_map_.erase(
@@ -264,8 +255,15 @@ void RRScheduler::run_core(int core_id)
                         process_memory_map_.end());
 
                     std::cout << "[RR][Core " << core_id << "] Process " << process->getName()
-                              << " finished and memory released." << std::endl;
+                              << " finished and memory released.\n";
                 }
+                else
+                {
+                    process_to_core.erase(process);
+                    ready_queue.push(process);
+                }
+
+                core_available[core_id] = true;
             }
         }
     }

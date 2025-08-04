@@ -10,42 +10,34 @@
 #include <iomanip>
 
 // --- PrintCommand ---
-PrintCommand::PrintCommand(const std::string &msg) : message(msg) {}
+
+PrintCommand::PrintCommand(const std::vector<PrintSegment> &segments)
+    : segments(segments) {}
+
+PrintCommand::PrintCommand(const std::string &msg)
+{
+    segments.push_back({false, msg});
+}
 
 void PrintCommand::execute(Process *proc, int coreId, const std::string &processName)
 {
     std::string output;
 
-    // Handle case: "prefix" + var
-    size_t plusPos = message.find('+');
-    if (plusPos != std::string::npos)
+    for (const auto &seg : segments)
     {
-        std::string prefix = message.substr(0, plusPos);
-        std::string varName = message.substr(plusPos + 1);
-
-        // Clean quotes and whitespace
-        prefix.erase(std::remove_if(prefix.begin(), prefix.end(),
-                                    [](char c)
-                                    { return c == '"' || std::isspace(c); }),
-                     prefix.end());
-        varName.erase(std::remove_if(varName.begin(), varName.end(), ::isspace), varName.end());
-
-        uint16_t val = proc->getVar(varName);
-        output = prefix + std::to_string(val);
-    }
-    else
-    {
-        // Remove quotes if present
-        if (!message.empty() && message.front() == '"' && message.back() == '"')
-            output = message.substr(1, message.size() - 2);
+        if (seg.isVar)
+        {
+            output += std::to_string(proc->getVar(seg.value));
+        }
         else
-            output = message;
+        {
+            output += seg.value;
+        }
     }
 
-    // Get timestamp
+    // Log with timestamp
     auto now = std::chrono::system_clock::now();
     std::time_t timeNow = std::chrono::system_clock::to_time_t(now);
-
     std::ostringstream logEntry;
 #ifdef _WIN32
     std::tm localTime;
