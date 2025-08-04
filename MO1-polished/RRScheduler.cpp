@@ -46,7 +46,6 @@ void RRScheduler::start()
         return;
 
     generating_processes.store(true);
-    running = true;
 
     generator_thread = std::thread([this]()
                                    {
@@ -161,6 +160,8 @@ void RRScheduler::start_process_generator()
 
 void RRScheduler::start_core_threads()
 {
+    running = true;
+
     for (int i = 0; i < static_cast<int>(core_available.size()); ++i)
     {
         cpu_cores.emplace_back(&RRScheduler::run_core, this, i);
