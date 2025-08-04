@@ -81,7 +81,7 @@ std::vector<std::shared_ptr<Command>> CommandParser::parse_instructions(const st
                 if (line >> addr_str >> val_str) {
                     uint16_t address = std::stoul(addr_str, nullptr, 16); // hex
                     uint16_t value = std::stoul(val_str);
-                    commands.push_back(std::make_shared<WriteCommand>(address, value));
+                    commands.push_back(std::make_shared<WriteCommand>(address, value, false));
                 }
             }
             else if (cmd == "SLEEP") {

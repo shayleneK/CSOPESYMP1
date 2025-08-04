@@ -117,10 +117,15 @@ class WriteCommand : public Command
 private:
     uint32_t address;
     uint16_t value;
+    bool isVariable;
+    std::string varName;
 
 public:
-    WriteCommand(uint32_t addr, uint16_t val);
+    // New constructor
+    WriteCommand(uint32_t addr, uint16_t val, bool isVar, const std::string &var = "");
+
     void execute(Process *proc, int coreId, const std::string &processName) override;
 };
+
 
 #endif // COMMAND_H

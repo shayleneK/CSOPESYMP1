@@ -141,12 +141,22 @@ void ReadCommand::execute(Process *proc, int coreId, const std::string &processN
     proc->logExecution(coreId, "READ " + varName + " <- MEM[" + std::to_string(address) + "]");
 }
 
-// --- WriteCommand ---
-WriteCommand::WriteCommand(uint32_t addr, uint16_t val)
-    : address(addr), value(val) {}
+WriteCommand::WriteCommand(uint32_t addr, uint16_t val, bool isVar, const std::string &var)
+    : address(addr), value(val), isVariable(isVar), varName(var) {}
 
 void WriteCommand::execute(Process *proc, int coreId, const std::string &processName)
 {
-    proc->writeMemory(address, value);
-    proc->logExecution(coreId, "WRITE MEM[" + std::to_string(address) + "] = " + std::to_string(value));
+    uint16_t toWrite = value;
+    if (isVariable)
+    {
+        if (!proc->hasVar(varName))
+        {
+            std::cerr << "[" << processName << "] Error: Variable '" << varName << "' not declared.\n";
+            return;
+        }
+        toWrite = proc->getVar(varName);
+    }
+
+    proc->writeMemory(address, toWrite);
 }
+

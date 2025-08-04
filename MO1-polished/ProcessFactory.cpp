@@ -5,6 +5,7 @@
 #include <random>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 
 static int global_pid_counter = 0;
 
@@ -142,6 +143,8 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
         std::string cmd;
         if (line >> cmd)
         {
+            std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::toupper);
+
             if (cmd == "DECLARE")
             {
                 std::string var;
@@ -230,15 +233,35 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                 }
             }
             else if (cmd == "WRITE")
+{
+    std::string addr_str, val_str;
+    if (line >> addr_str >> val_str)
+    {
+        uint32_t address = std::stoul(addr_str, nullptr, 16); // parse as hex
+
+        // Check if val_str is a number or variable
+        bool is_var = !std::all_of(val_str.begin(), val_str.end(), ::isdigit);
+        uint16_t value = 0;
+
+        if (!is_var)
+        {
+            try
             {
-                std::string addr_str, val_str;
-                if (line >> addr_str >> val_str)
-                {
-                    uint16_t address = std::stoul(addr_str, nullptr, 16); // hex
-                    uint16_t value = std::stoi(val_str);
-                    process->addCommand(std::make_shared<WriteCommand>(address, value));
-                }
+                value = static_cast<uint16_t>(std::stoi(val_str));
             }
+            catch (...)
+            {
+                std::cerr << "[ERROR] Invalid WRITE value: " << val_str << "\n";
+                continue;
+            }
+        }
+
+        process->addCommand(std::make_shared<WriteCommand>(address, value, is_var, val_str));
+    }
+}
+
+
+
             else if (cmd == "SLEEP")
             {
                 uint8_t ticks;

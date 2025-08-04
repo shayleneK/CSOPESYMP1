@@ -171,6 +171,12 @@ void Process::writeMemory(uint32_t virtualAddr, uint32_t value)
     logExecution(current_core, oss.str());
 }
 
+bool Process::hasVar(const std::string &name) const
+{
+    return symbol_table.find(name) != symbol_table.end();
+}
+
+
 // --- Get variable value from symbol table ---
 uint32_t Process::getVar(const std::string &name)
 {

@@ -424,59 +424,116 @@ void ConsoleManager::processInput()
             std::cout << "[screen] Process \"" << name << "\" could not be loaded into memory.\n";
         }
     }
-
-    else if (command.rfind("screen -c ", 0) == 0)
+else if (command.rfind("screen -c ", 0) == 0)
+{
+    if (!scheduler)
     {
-        if (!scheduler)
+        std::cout << "[ERROR] Scheduler not initialized.\n";
+        return;
+    }
+
+    std::istringstream iss(command.substr(10));
+    std::string name;
+    std::string instructions_str;
+
+    // read process name
+    if (!(iss >> name))
+    {
+        std::cout << "[ERROR] Invalid syntax. Use: screen -c <name> \"<instructions>\"\n";
+        return;
+    }
+
+    // read quoted instructions
+    std::getline(iss >> std::ws, instructions_str);
+    if (instructions_str.empty() || instructions_str.front() != '"' || instructions_str.back() != '"')
+    {
+        std::cout << "[ERROR] No instructions provided (must be in quotes).\n";
+        return;
+    }
+    instructions_str = instructions_str.substr(1, instructions_str.size() - 2); // remove quotes
+
+    if (hasConsole(name))
+    {
+        std::cout << "[ERROR] A screen with this name already exists.\n";
+        return;
+    }
+
+    createConsole("screen", name);
+
+    std::cout << "[INFO] min instructions: " << scheduler->get_min_instructions() << "\n"
+              << "[INFO] max instructions: " << scheduler->get_max_instructions() << "\n";
+
+    auto& memory_manager = ConsoleManager::getInstance()->getMemoryManager();
+    size_t page_size = memory_manager.getPageSize();
+
+    // --- Use default memory size ---
+    size_t mem_size = min_mem_per_proc;
+
+    // --- Align and clamp memory like RR ---
+    if (mem_size < page_size)
+    {
+        std::cout << "[screen] Requested " << mem_size << " B is below one page (" << page_size << " B). Clamping.\n";
+        mem_size = page_size;
+    }
+    if (mem_size % page_size != 0)
+    {
+        size_t aligned = ((mem_size + page_size - 1) / page_size) * page_size;
+        std::cout << "[screen] Adjusting allocation size from " << mem_size << " B to page-aligned " << aligned << " B.\n";
+        mem_size = aligned;
+    }
+
+    size_t max_alloc = memory_manager.getTotalMemory();
+    if (mem_size > max_alloc)
+    {
+        std::cout << "[screen] Requested " << mem_size << " B exceeds total memory (" << max_alloc << " B). Clamping.\n";
+        mem_size = max_alloc;
+    }
+
+    // --- Create process with given instructions ---
+    auto proc = ConsoleManager::getInstance()
+                    ->getProcessFactory()
+                    ->generate_custom_process(name, mem_size, instructions_str);
+
+    proc->addCommand(std::make_shared<PrintCommand>(
+        "Process " + name + " has completed all its commands."));
+
+    int start_address = -1;
+    try
+    {
+        start_address = memory_manager.allocate(mem_size, proc->getName());
+
+        int num_pages = (mem_size + page_size - 1) / page_size;
+        for (int i = 0; i < num_pages; ++i)
         {
-            std::cout << "[ERROR] Scheduler not initialized.\n";
-            return;
+            proc->triggerPageFault(i);
         }
+    }
+    catch (const std::invalid_argument& e)
+    {
+        std::cout << "[ERROR] Failed to allocate memory for " << name << ": " << e.what() << "\n";
+        return;
+    }
 
-        std::istringstream iss(command.substr(10));
-        std::string name;
-        std::string instructions_str;
-
-        // read process name
-        if (!(iss >> name))
-        {
-            std::cout << "[ERROR] Invalid syntax. Use: screen -c <name> \"<instructions>\"\n";
-            return;
-        }
-
-        // default mem size (use frameSize or min_mem_per_proc)
-        size_t mem_size = min_mem_per_proc; // or min_mem_per_proc if you prefer
-
-        // read quoted instructions
-        std::getline(iss >> std::ws, instructions_str);
-        if (instructions_str.empty() || instructions_str.front() != '"' || instructions_str.back() != '"')
-        {
-            std::cout << "[ERROR] No instructions provided (must be in quotes).\n";
-            return;
-        }
-        instructions_str = instructions_str.substr(1, instructions_str.size() - 2);
-
-        // check if process name already exists
-        if (hasConsole(name))
-        {
-            std::cout << "[ERROR] A screen with this name already exists.\n";
-            return;
-        }
-
-        createConsole("screen", name);
-        auto proc = ConsoleManager::getInstance()
-                        ->getProcessFactory()
-                        ->generate_custom_process(
-                            name,
-                            mem_size,
-                            instructions_str);
+    if (start_address != -1)
+    {
+        proc->readMemory(start_address);
         scheduler->add_process(proc);
+
         auto screen = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);
         if (screen)
             screen->attachProcess(proc);
-        switchConsole(name);
-        std::cout << "[screen] Process \"" << name << "\" created with custom instructions.\n";
+
+        std::cout << "[screen] Process \"" << name << "\" allocated at ["
+                  << start_address << "-" << start_address + mem_size - 1
+                  << "] with " << mem_size << " bytes.\n";
     }
+    else
+    {
+        std::cout << "[screen] Process \"" << name << "\" could not be loaded into memory.\n";
+    }
+}
+
+    
 
     else if (command.rfind("screen -r ", 0) == 0)
     {
@@ -605,62 +662,114 @@ void ConsoleManager::processInput()
             std::cout << log << "\n";
     }
     else if (command.rfind("screen -c ", 0) == 0)
+{
+    if (!scheduler)
     {
-        if (!scheduler)
+        std::cout << "[ERROR] Scheduler not initialized.\n";
+        return;
+    }
+
+    std::istringstream iss(command.substr(10));
+    std::string name;
+    std::string instructions_str;
+
+    // read process name
+    if (!(iss >> name))
+    {
+        std::cout << "[ERROR] Invalid syntax. Use: screen -c <name> \"<instructions>\"\n";
+        return;
+    }
+
+    // read quoted instructions
+    std::getline(iss >> std::ws, instructions_str);
+    if (instructions_str.empty() || instructions_str.front() != '"' || instructions_str.back() != '"')
+    {
+        std::cout << "[ERROR] No instructions provided (must be in quotes).\n";
+        return;
+    }
+    instructions_str = instructions_str.substr(1, instructions_str.size() - 2); // remove quotes
+
+    if (hasConsole(name))
+    {
+        std::cout << "[ERROR] A screen with this name already exists.\n";
+        return;
+    }
+
+    createConsole("screen", name);
+
+    std::cout << "[INFO] min instructions: " << scheduler->get_min_instructions() << "\n"
+              << "[INFO] max instructions: " << scheduler->get_max_instructions() << "\n";
+
+    auto& memory_manager = ConsoleManager::getInstance()->getMemoryManager();
+    size_t page_size = memory_manager.getPageSize();
+
+    // --- Use default memory size ---
+    size_t mem_size = min_mem_per_proc;
+
+    // --- Align and clamp memory like RR ---
+    if (mem_size < page_size)
+    {
+        std::cout << "[screen] Requested " << mem_size << " B is below one page (" << page_size << " B). Clamping.\n";
+        mem_size = page_size;
+    }
+    if (mem_size % page_size != 0)
+    {
+        size_t aligned = ((mem_size + page_size - 1) / page_size) * page_size;
+        std::cout << "[screen] Adjusting allocation size from " << mem_size << " B to page-aligned " << aligned << " B.\n";
+        mem_size = aligned;
+    }
+
+    size_t max_alloc = memory_manager.getTotalMemory();
+    if (mem_size > max_alloc)
+    {
+        std::cout << "[screen] Requested " << mem_size << " B exceeds total memory (" << max_alloc << " B). Clamping.\n";
+        mem_size = max_alloc;
+    }
+
+    // --- Create process with given instructions ---
+    auto proc = ConsoleManager::getInstance()
+                    ->getProcessFactory()
+                    ->generate_custom_process(name, mem_size, instructions_str);
+
+    proc->addCommand(std::make_shared<PrintCommand>(
+        "Process " + name + " has completed all its commands."));
+
+    int start_address = -1;
+    try
+    {
+        start_address = memory_manager.allocate(mem_size, proc->getName());
+
+        int num_pages = (mem_size + page_size - 1) / page_size;
+        for (int i = 0; i < num_pages; ++i)
         {
-            std::cout << "[ERROR] Scheduler not initialized.\n";
-            return;
+            proc->triggerPageFault(i);
         }
+    }
+    catch (const std::invalid_argument& e)
+    {
+        std::cout << "[ERROR] Failed to allocate memory for " << name << ": " << e.what() << "\n";
+        return;
+    }
 
-        std::istringstream iss(command.substr(10));
-        std::string name;
-        size_t mem_size;
-        std::string instructions_str;
-
-        // read name and memory size
-        if (!(iss >> name >> mem_size))
-        {
-            std::cout << "[ERROR] Invalid syntax. Use: screen -c <name> <mem_size> \"<instructions>\"\n";
-            return;
-        }
-
-        // read quoted instruction string
-        std::getline(iss >> std::ws, instructions_str, '"');
-        if (instructions_str.empty())
-        {
-            std::cout << "[ERROR] No instructions provided.\n";
-            return;
-        }
-
-        // val memory size
-        if (mem_size < 64)
-        {
-            std::cout << "[ERROR] Memory size must be at least 64 bytes.\n";
-            return;
-        }
-
-        // check if process name already exists
-        if (hasConsole(name))
-        {
-            std::cout << "[ERROR] A screen with this name already exists.\n";
-            return;
-        }
-
-        createConsole("screen", name);
-        size_t random_mem = getRandomMemSize();
-        auto proc = ConsoleManager::getInstance()
-                        ->getProcessFactory()
-                        ->generate_dummy_process(name, random_mem,
-                                                 scheduler->get_min_instructions(),
-                                                 scheduler->get_max_instructions());
-
+    if (start_address != -1)
+    {
+        proc->readMemory(start_address);
         scheduler->add_process(proc);
+
         auto screen = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);
         if (screen)
             screen->attachProcess(proc);
-        switchConsole(name);
-        std::cout << "[screen] Process \"" << name << "\" created with custom instructions.\n";
+
+        std::cout << "[screen] Process \"" << name << "\" allocated at ["
+                  << start_address << "-" << start_address + mem_size - 1
+                  << "] with " << mem_size << " bytes.\n";
     }
+    else
+    {
+        std::cout << "[screen] Process \"" << name << "\" could not be loaded into memory.\n";
+    }
+}
+
     else
     {
         if (m_activeConsole)
