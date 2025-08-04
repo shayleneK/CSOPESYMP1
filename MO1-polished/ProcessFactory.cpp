@@ -2,6 +2,7 @@
 #include "Process.h"
 #include "Command.h"
 #include "CommandParser.h"
+#include "Utils.h"
 
 #include <random>
 #include <sstream>
@@ -263,7 +264,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
     {
         process->addCommand(cmd);
     }
-
+    std::cout << "[DEBUG] Parsed " << commands.size() << " commands for " << name << "\n";
     return process;
 }
 
@@ -272,25 +273,4 @@ std::shared_ptr<Process> ProcessFactory::generate_background_process(
     size_t mem_required)
 {
     return generate_dummy_process(name, mem_required, 100, 100);
-}
-//helper functions
-
-std::string trim(const std::string &str) {
-    size_t first = str.find_first_not_of(" \t\n\r");
-    if (first == std::string::npos) return "";
-    size_t last = str.find_last_not_of(" \t\n\r");
-    return str.substr(first, last - first + 1);
-}
-
-bool is_number(const std::string &s) {
-    return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
-}
-
-uint16_t parse_hex_address(const std::string& str) {
-    std::string s = trim(str);
-    if (s.rfind("0x", 0) == 0 || s.rfind("0X", 0) == 0) {
-        s = s.substr(2);
-    }
-    if (s.empty()) throw std::invalid_argument("Empty hex address");
-    return static_cast<uint16_t>(std::stoul(s, nullptr, 16));
 }
