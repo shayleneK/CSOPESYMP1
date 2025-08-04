@@ -132,19 +132,47 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
     size_t mem_required,
     const std::string &instructions_str)
 {
+    std::cout << "Generating process " << name << " with custom instructions" << std::endl;
     auto process = std::make_shared<Process>(name, mem_required, global_pid_counter++, frameSize, memoryManager);
 
-    std::istringstream iss(instructions_str);
+    // Step 1: Preprocess to remove newlines (convert them to spaces)
+    std::string cleaned = instructions_str;
+    std::replace(cleaned.begin(), cleaned.end(), '\n', ' ');
+    std::replace(cleaned.begin(), cleaned.end(), '\r', ' ');
+
+    // Step 2: Split by ';'
+    std::istringstream iss(cleaned);
     std::string token;
 
     while (std::getline(iss, token, ';'))
     {
+        // Trim leading/trailing whitespace
+        auto start = token.find_first_not_of(" \t\r\n");
+        if (start == std::string::npos)
+            continue; // empty
+        auto end = token.find_last_not_of(" \t\r\n");
+        token = token.substr(start, end - start + 1);
+
+        if (token.empty())
+            continue;
+
         std::istringstream line(token);
         std::string cmd;
-        if (line >> cmd)
-        {
-            std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::toupper);
 
+        // Extract the first word (instruction)
+        if (!(line >> cmd))
+            continue;
+
+        // Strip command at first non-alphabetic character
+        cmd.erase(std::find_if(cmd.begin(), cmd.end(), [](int c)
+                               { return !std::isalpha(c); }),
+                  cmd.end());
+
+        // Convert to uppercase
+        std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::toupper);
+
+        try
+        {
             if (cmd == "DECLARE")
             {
                 std::string var;
@@ -153,127 +181,165 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                 {
                     process->addCommand(std::make_shared<DeclareCommand>(var, val));
                 }
+                else
+                {
+                    std::cerr << "[ERROR] Invalid DECLARE syntax. Expected: DECLARE <var> <value>\n";
+                }
             }
             else if (cmd == "ADD")
             {
                 std::string target, op1, op2;
-                bool op1_is_var = false, op2_is_var = false;
-                uint16_t val1 = 0, val2 = 0;
-
                 if (line >> target >> op1 >> op2)
                 {
-                    op1_is_var = (op1.find_first_not_of("0123456789") != std::string::npos);
-                    op2_is_var = (op2.find_first_not_of("0123456789") != std::string::npos);
-                    val1 = op1_is_var ? 0 : std::stoi(op1);
-                    val2 = op2_is_var ? 0 : std::stoi(op2);
-
+                    bool op1_is_var = (op1.find_first_not_of("0123456789") != std::string::npos);
+                    bool op2_is_var = (op2.find_first_not_of("0123456789") != std::string::npos);
+                    uint16_t val1 = op1_is_var ? 0 : static_cast<uint16_t>(std::stoi(op1));
+                    uint16_t val2 = op2_is_var ? 0 : static_cast<uint16_t>(std::stoi(op2));
                     process->addCommand(std::make_shared<AddCommand>(target, op1, op2, op1_is_var, op2_is_var, val1, val2));
+                }
+                else
+                {
+                    std::cerr << "[ERROR] Invalid ADD syntax. Expected: ADD <target> <op1> <op2>\n";
                 }
             }
             else if (cmd == "SUBTRACT")
             {
                 std::string target, op1, op2;
-                bool op1_is_var = false, op2_is_var = false;
-                uint16_t val1 = 0, val2 = 0;
-
                 if (line >> target >> op1 >> op2)
                 {
-                    op1_is_var = (op1.find_first_not_of("0123456789") != std::string::npos);
-                    op2_is_var = (op2.find_first_not_of("0123456789") != std::string::npos);
-                    val1 = op1_is_var ? 0 : std::stoi(op1);
-                    val2 = op2_is_var ? 0 : std::stoi(op2);
-
+                    bool op1_is_var = (op1.find_first_not_of("0123456789") != std::string::npos);
+                    bool op2_is_var = (op2.find_first_not_of("0123456789") != std::string::npos);
+                    uint16_t val1 = op1_is_var ? 0 : static_cast<uint16_t>(std::stoi(op1));
+                    uint16_t val2 = op2_is_var ? 0 : static_cast<uint16_t>(std::stoi(op2));
                     process->addCommand(std::make_shared<SubtractCommand>(target, op1, op2, op1_is_var, op2_is_var, val1, val2));
+                }
+                else
+                {
+                    std::cerr << "[ERROR] Invalid SUBTRACT syntax. Expected: SUBTRACT <target> <op1> <op2>\n";
                 }
             }
             else if (cmd == "PRINT")
             {
-                std::string msg;
-                std::getline(line >> std::ws, msg); // full after PRINT
-
-                // Remove "PRINT(" and closing ")"
-                if (msg.front() == '(')
-                    msg.erase(0, 1);
-                if (!msg.empty() && msg.back() == ')')
-                    msg.pop_back();
-
-                // Split by '+'
-                std::vector<PrintSegment> segments;
-                std::istringstream parts(msg);
-                std::string token;
-                while (std::getline(parts, token, '+'))
+                std::string raw;
+                std::getline(line, raw);
+                raw.erase(0, raw.find_first_not_of(" \t"));
+                if (!raw.empty() && raw.front() == '(' && raw.back() == ')')
                 {
-                    // Trim spaces
-                    token.erase(0, token.find_first_not_of(" \t"));
-                    token.erase(token.find_last_not_of(" \t") + 1);
+                    raw = raw.substr(1, raw.size() - 2);
+                    raw.erase(0, raw.find_first_not_of(" \t"));
+                }
+                if (raw.empty())
+                {
+                    std::cerr << "[ERROR] PRINT requires an argument.\n";
+                    continue;
+                }
 
-                    // If quoted => literal
-                    if (!token.empty() && token.front() == '"' && token.back() == '"')
+                std::vector<PrintSegment> segments;
+                std::string current;
+                bool inQuotes = false;
+
+                for (char c : raw)
+                {
+                    if (c == '"')
                     {
-                        token = token.substr(1, token.size() - 2);
-                        segments.push_back({false, token});
+                        inQuotes = !inQuotes;
+                        current += c;
+                    }
+                    else if (c == '+' && !inQuotes)
+                    {
+                        if (!current.empty())
+                        {
+                            std::string segment = current;
+                            segment.erase(0, segment.find_first_not_of(" \t"));
+                            segment.erase(segment.find_last_not_of(" \t") + 1);
+                            if (segment.size() >= 2 && segment.front() == '"' && segment.back() == '"')
+                                segments.push_back({false, segment.substr(1, segment.size() - 2)});
+                            else if (!segment.empty())
+                                segments.push_back({true, segment});
+                        }
+                        current.clear();
                     }
                     else
                     {
-                        // Otherwise => variable
-                        segments.push_back({true, token});
+                        current += c;
                     }
                 }
 
-                process->addCommand(std::make_shared<PrintCommand>(segments));
+                if (!current.empty())
+                {
+                    std::string segment = current;
+                    segment.erase(0, segment.find_first_not_of(" \t"));
+                    segment.erase(segment.find_last_not_of(" \t") + 1);
+                    if (segment.size() >= 2 && segment.front() == '"' && segment.back() == '"')
+                        segments.push_back({false, segment.substr(1, segment.size() - 2)});
+                    else if (!segment.empty())
+                        segments.push_back({true, segment});
+                }
+
+                if (!segments.empty())
+                    process->addCommand(std::make_shared<PrintCommand>(segments));
+                else
+                    std::cerr << "[ERROR] No valid segments in PRINT statement.\n";
             }
             else if (cmd == "READ")
             {
-                std::string var_name;
-                std::string addr_str;
+                std::string var_name, addr_str;
                 if (line >> var_name >> addr_str)
                 {
-                    uint16_t address = std::stoul(addr_str, nullptr, 16); // hex
-                    process->addCommand(std::make_shared<ReadCommand>(var_name, address));
+                    try
+                    {
+                        uint16_t address = static_cast<uint16_t>(std::stoul(addr_str, nullptr, 16));
+                        process->addCommand(std::make_shared<ReadCommand>(var_name, address));
+                    }
+                    catch (...)
+                    {
+                        std::cerr << "[ERROR] Invalid address in READ: " << addr_str << "\n";
+                    }
+                }
+                else
+                {
+                    std::cerr << "[ERROR] Invalid READ syntax. Expected: READ <var> <hex_address>\n";
                 }
             }
             else if (cmd == "WRITE")
-{
-    std::string addr_str, val_str;
-    if (line >> addr_str >> val_str)
-    {
-        uint32_t address = std::stoul(addr_str, nullptr, 16); // parse as hex
-
-        // Check if val_str is a number or variable
-        bool is_var = !std::all_of(val_str.begin(), val_str.end(), ::isdigit);
-        uint16_t value = 0;
-
-        if (!is_var)
-        {
-            try
             {
-                value = static_cast<uint16_t>(std::stoi(val_str));
+                std::string addr_str, val_str;
+                if (line >> addr_str >> val_str)
+                {
+                    try
+                    {
+                        uint32_t address = std::stoul(addr_str, nullptr, 16);
+                        bool is_var = (val_str.find_first_not_of("0123456789") != std::string::npos);
+                        uint16_t value = is_var ? 0 : static_cast<uint16_t>(std::stoi(val_str));
+                        process->addCommand(std::make_shared<WriteCommand>(address, value, is_var, val_str));
+                    }
+                    catch (const std::exception &e)
+                    {
+                        std::cerr << "[ERROR] Invalid WRITE operand: " << e.what() << "\n";
+                        continue;
+                    }
+                }
+                else
+                {
+                    std::cerr << "[ERROR] Invalid WRITE syntax. Expected: WRITE <hex_address> <value_or_var>\n";
+                }
             }
-            catch (...)
-            {
-                std::cerr << "[ERROR] Invalid WRITE value: " << val_str << "\n";
-                continue;
-            }
-        }
-
-        process->addCommand(std::make_shared<WriteCommand>(address, value, is_var, val_str));
-    }
-}
-
-
-
             else if (cmd == "SLEEP")
             {
                 uint8_t ticks;
                 if (line >> ticks)
-                {
                     process->addCommand(std::make_shared<SleepCommand>(ticks));
-                }
+                else
+                    std::cerr << "[ERROR] Invalid SLEEP syntax. Expected: SLEEP <ticks>\n";
             }
             else
             {
                 std::cerr << "[ERROR] Unknown instruction: " << cmd << "\n";
             }
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "[ERROR] Exception parsing instruction '" << cmd << "': " << e.what() << "\n";
         }
     }
 
