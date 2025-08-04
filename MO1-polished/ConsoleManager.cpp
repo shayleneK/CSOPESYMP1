@@ -352,22 +352,77 @@ void ConsoleManager::processInput()
         createConsole("screen", name);
 
         std::cout << "[INFO] min instructions: " << scheduler->get_min_instructions() << "\n"
-                << "[INFO] max instructions: " << scheduler->get_max_instructions() << "\n";
+                  << "[INFO] max instructions: " << scheduler->get_max_instructions() << "\n";
 
+        // Use memory manager from ConsoleManager
+        auto &memory_manager = ConsoleManager::getInstance()->getMemoryManager();
+        size_t page_size = memory_manager.getPageSize();
+
+        // --- Align and clamp memory like RR ---
+        if (mem_size < page_size)
+        {
+            std::cout << "[screen] Requested " << mem_size << " B is below one page (" << page_size << " B). Clamping.\n";
+            mem_size = page_size;
+        }
+        if (mem_size % page_size != 0)
+        {
+            size_t aligned = ((mem_size + page_size - 1) / page_size) * page_size;
+            std::cout << "[screen] Adjusting allocation size from " << mem_size << " B to page-aligned " << aligned << " B.\n";
+            mem_size = aligned;
+        }
+
+        size_t max_alloc = memory_manager.getTotalMemory();
+        if (mem_size > max_alloc)
+        {
+            std::cout << "[screen] Requested " << mem_size << " B exceeds total memory (" << max_alloc << " B). Clamping.\n";
+            mem_size = max_alloc;
+        }
+
+        // --- Create process ---
         auto proc = ConsoleManager::getInstance()
                         ->getProcessFactory()
                         ->generate_dummy_process(name, mem_size,
-                                                scheduler->get_min_instructions(),
-                                                scheduler->get_max_instructions());
+                                                 scheduler->get_min_instructions(),
+                                                 scheduler->get_max_instructions());
 
-        proc->addCommand(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
-        scheduler->add_process(proc);
+        proc->addCommand(std::make_shared<PrintCommand>(
+            "Process " + name + " has completed all its commands."));
 
-        auto screen = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);
-        if (screen)
-            screen->attachProcess(proc);
+        // --- Allocate memory & trigger page faults ---
+        int start_address = -1;
+        try
+        {
+            start_address = memory_manager.allocate(mem_size, proc->getName());
 
-        std::cout << "[screen] Process \"" << name << "\" created and added with " << mem_size << " bytes.\n";
+            int num_pages = (mem_size + page_size - 1) / page_size;
+            for (int i = 0; i < num_pages; ++i)
+            {
+                proc->triggerPageFault(i);
+            }
+        }
+        catch (const std::invalid_argument &e)
+        {
+            std::cout << "[ERROR] Failed to allocate memory for " << name << ": " << e.what() << "\n";
+            return; // Stop here if allocation fails
+        }
+
+        if (start_address != -1)
+        {
+            proc->readMemory(start_address);
+            scheduler->add_process(proc);
+
+            auto screen = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);
+            if (screen)
+                screen->attachProcess(proc);
+
+            std::cout << "[screen] Process \"" << name << "\" allocated at ["
+                      << start_address << "-" << start_address + mem_size - 1
+                      << "] with " << mem_size << " bytes.\n";
+        }
+        else
+        {
+            std::cout << "[screen] Process \"" << name << "\" could not be loaded into memory.\n";
+        }
     }
 
     else if (command.rfind("screen -c ", 0) == 0)

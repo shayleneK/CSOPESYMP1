@@ -100,6 +100,8 @@ public:
     bool start_flag = false;
 
     size_t getRandomMemSize() const;
+    MemoryManager &getMemoryManager() { return *memoryManager; }
+    const MemoryManager &getMemoryManager() const { return *memoryManager; }
 };
 
 #endif // CONSOLEMANAGER_H
