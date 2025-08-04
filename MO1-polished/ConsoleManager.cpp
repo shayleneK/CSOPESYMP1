@@ -559,6 +559,7 @@ void ConsoleManager::processInput()
             return;
         }
         scheduler->stop_scheduler();
+        // start_flag = false;
         std::cout << "[INFO] Scheduler stopped.\n";
     }
     else if (command == "process-smi")

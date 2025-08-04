@@ -26,11 +26,10 @@ public:
     ~RRScheduler();
 
     void start();
-    void stop_scheduler();
+    // void stop_scheduler();
     bool is_scheduler_running() const;
 
     void start_core_threads();
-    void start_process_generator();
     void on_cpu_cycle(uint64_t cycle_number);
     std::vector<std::shared_ptr<Process>> get_running_processes();
     std::shared_ptr<Process> get_next_process(int core_id);
@@ -51,10 +50,10 @@ private:
     int max_instructions;
     int delay_per_exec;
     size_t mem_per_proc; // <-- now properly stored
-    std::atomic<bool> generating_processes{false};
+    // std::atomic<bool> generating_processes{false};
     bool running = false;
 
-    std::thread generator_thread;
+    // std::thread generator_thread;
     std::vector<std::thread> cpu_cores;
     std::vector<std::string> process_memory_map_;
 

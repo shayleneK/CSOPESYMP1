@@ -29,20 +29,6 @@ void FCFSScheduler::start()
     // std::cout << "[FCFS DEBUG] Scheduler started (CPU ticks will drive generation)\n";
 }
 
-void FCFSScheduler::start_process_generator()
-{
-    start();
-}
-
-void FCFSScheduler::stop_scheduler()
-{
-    generating_processes = false;
-    if (generator_thread.joinable())
-    {
-        generator_thread.join();
-    }
-}
-
 bool FCFSScheduler::is_scheduler_running() const
 {
     return generating_processes.load();

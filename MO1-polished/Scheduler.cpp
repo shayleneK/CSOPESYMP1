@@ -190,7 +190,12 @@ bool Scheduler::is_done()
 
 void Scheduler::start_process_generator()
 {
-    std::cout << "[Scheduler] process gen()." << std::endl;
+    {
+        std::lock_guard<std::mutex> lock(generator_mutex);
+        generating_processes = true;
+    }
+    generator_thread = std::thread([this]
+                                   { generatorLoop(); });
 }
 
 std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats()
@@ -215,10 +220,37 @@ std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats()
 
 void Scheduler::stop_scheduler()
 {
-    generating_processes = false;
-
-    if (generator_thread.joinable())
     {
-        generator_thread.join();
+        std::lock_guard<std::mutex> lock(generator_mutex);
+        generating_processes = false;
     }
+    generator_cv.notify_all(); // Wake up thread if sleeping
+    if (generator_thread.joinable())
+        generator_thread.join();
+}
+
+void Scheduler::generatorLoop()
+{
+    while (true)
+    {
+        std::unique_lock<std::mutex> lock(generator_mutex);
+        if (!generating_processes)
+            break;
+        generator_cv.wait_for(lock, std::chrono::seconds(1)); // Wake periodically or on stop
+        if (!generating_processes)
+            break;
+
+        lock.unlock(); // Unlock before generating
+        generate_new_process();
+    }
+}
+
+void Scheduler::start_scheduler()
+{
+    {
+        std::lock_guard<std::mutex> lock(generator_mutex);
+        generating_processes = true;
+    }
+    generator_thread = std::thread([this]
+                                   { this->generatorLoop(); });
 }

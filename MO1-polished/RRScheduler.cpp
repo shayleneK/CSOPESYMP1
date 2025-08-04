@@ -153,11 +153,6 @@ void RRScheduler::generate_new_process()
     }
 }
 
-void RRScheduler::start_process_generator()
-{
-    start();
-}
-
 void RRScheduler::start_core_threads()
 {
     running = true;
@@ -165,15 +160,6 @@ void RRScheduler::start_core_threads()
     for (int i = 0; i < static_cast<int>(core_available.size()); ++i)
     {
         cpu_cores.emplace_back(&RRScheduler::run_core, this, i);
-    }
-}
-
-void RRScheduler::stop_scheduler()
-{
-    generating_processes = false;
-    if (generator_thread.joinable())
-    {
-        generator_thread.join();
     }
 }
 

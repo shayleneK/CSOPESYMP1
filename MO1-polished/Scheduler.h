@@ -43,6 +43,7 @@ public:
     virtual int get_min_instructions() const = 0;
     virtual int get_max_instructions() const = 0;
     virtual void stop_scheduler();
+    virtual void start_scheduler();
     std::vector<std::shared_ptr<CPUCore>> cpu_core_objects;
 
 protected:
@@ -64,9 +65,15 @@ protected:
     std::mutex queue_mutex;
     std::condition_variable queue_condition;
 
+    std::condition_variable generator_cv;
+    std::mutex generator_mutex;
+
     std::thread generator_thread;
     std::atomic<bool> generating_processes{false};
     std::atomic<bool> global_shutdown{false};
+
+    virtual void generatorLoop();
+    virtual void generate_new_process() {};
 
     // config
     std::vector<std::thread> cpu_cores;
