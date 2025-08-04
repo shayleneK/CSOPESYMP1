@@ -126,7 +126,7 @@ std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
     return process;
 }
 
-// Used by "screen -c" to parse and generate processes with user-defined instructions
+// Used by "screen -c" to parse and generate processes with user-defined instructionsstd::shared_ptr<Process> ProcessFactory::generate_custom_process(
 std::shared_ptr<Process> ProcessFactory::generate_custom_process(
     const std::string &name,
     size_t mem_required,
@@ -135,38 +135,31 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
     std::cout << "Generating process " << name << " with custom instructions" << std::endl;
     auto process = std::make_shared<Process>(name, mem_required, global_pid_counter++, frameSize, memoryManager);
 
-    // Step 1: Preprocess to remove newlines (convert them to spaces)
+    // Preprocess: Replace newlines with spaces
     std::string cleaned = instructions_str;
     std::replace(cleaned.begin(), cleaned.end(), '\n', ' ');
     std::replace(cleaned.begin(), cleaned.end(), '\r', ' ');
 
-    // Step 2: Split by ';'
     std::istringstream iss(cleaned);
     std::string token;
 
     while (std::getline(iss, token, ';'))
     {
-        // Trim leading/trailing whitespace
+        // Trim whitespace
         auto start = token.find_first_not_of(" \t\r\n");
         if (start == std::string::npos)
-            continue; // empty
+            continue;
         auto end = token.find_last_not_of(" \t\r\n");
         token = token.substr(start, end - start + 1);
-
         if (token.empty())
             continue;
 
         std::istringstream line(token);
         std::string cmd;
 
-        // Extract the first word (instruction)
+        // Get first word (instruction)
         if (!(line >> cmd))
             continue;
-
-        // Strip command at first non-alphabetic character
-        cmd.erase(std::find_if(cmd.begin(), cmd.end(), [](int c)
-                               { return !std::isalpha(c); }),
-                  cmd.end());
 
         // Convert to uppercase
         std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::toupper);
@@ -178,13 +171,9 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                 std::string var;
                 uint16_t val;
                 if (line >> var >> val)
-                {
                     process->addCommand(std::make_shared<DeclareCommand>(var, val));
-                }
                 else
-                {
-                    std::cerr << "[ERROR] Invalid DECLARE syntax. Expected: DECLARE <var> <value>\n";
-                }
+                    std::cerr << "[ERROR] Invalid DECLARE syntax.\n";
             }
             else if (cmd == "ADD")
             {
@@ -198,9 +187,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                     process->addCommand(std::make_shared<AddCommand>(target, op1, op2, op1_is_var, op2_is_var, val1, val2));
                 }
                 else
-                {
-                    std::cerr << "[ERROR] Invalid ADD syntax. Expected: ADD <target> <op1> <op2>\n";
-                }
+                    std::cerr << "[ERROR] Invalid ADD syntax.\n";
             }
             else if (cmd == "SUBTRACT")
             {
@@ -214,20 +201,26 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                     process->addCommand(std::make_shared<SubtractCommand>(target, op1, op2, op1_is_var, op2_is_var, val1, val2));
                 }
                 else
-                {
-                    std::cerr << "[ERROR] Invalid SUBTRACT syntax. Expected: SUBTRACT <target> <op1> <op2>\n";
-                }
+                    std::cerr << "[ERROR] Invalid SUBTRACT syntax.\n";
             }
             else if (cmd == "PRINT")
             {
                 std::string raw;
                 std::getline(line, raw);
                 raw.erase(0, raw.find_first_not_of(" \t"));
+
+                // Unescape quotes
+                size_t pos = 0;
+                while ((pos = raw.find("\\\"", pos)) != std::string::npos)
+                    raw.replace(pos, 2, "\"");
+
+                // If wrapped in parentheses, strip them
                 if (!raw.empty() && raw.front() == '(' && raw.back() == ')')
                 {
                     raw = raw.substr(1, raw.size() - 2);
                     raw.erase(0, raw.find_first_not_of(" \t"));
                 }
+
                 if (raw.empty())
                 {
                     std::cerr << "[ERROR] PRINT requires an argument.\n";
@@ -252,6 +245,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                             std::string segment = current;
                             segment.erase(0, segment.find_first_not_of(" \t"));
                             segment.erase(segment.find_last_not_of(" \t") + 1);
+
                             if (segment.size() >= 2 && segment.front() == '"' && segment.back() == '"')
                                 segments.push_back({false, segment.substr(1, segment.size() - 2)});
                             else if (!segment.empty())
@@ -260,9 +254,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                         current.clear();
                     }
                     else
-                    {
                         current += c;
-                    }
                 }
 
                 if (!current.empty())
@@ -270,6 +262,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                     std::string segment = current;
                     segment.erase(0, segment.find_first_not_of(" \t"));
                     segment.erase(segment.find_last_not_of(" \t") + 1);
+
                     if (segment.size() >= 2 && segment.front() == '"' && segment.back() == '"')
                         segments.push_back({false, segment.substr(1, segment.size() - 2)});
                     else if (!segment.empty())
@@ -281,6 +274,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                 else
                     std::cerr << "[ERROR] No valid segments in PRINT statement.\n";
             }
+
             else if (cmd == "READ")
             {
                 std::string var_name, addr_str;
@@ -297,9 +291,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                     }
                 }
                 else
-                {
-                    std::cerr << "[ERROR] Invalid READ syntax. Expected: READ <var> <hex_address>\n";
-                }
+                    std::cerr << "[ERROR] Invalid READ syntax.\n";
             }
             else if (cmd == "WRITE")
             {
@@ -320,9 +312,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                     }
                 }
                 else
-                {
-                    std::cerr << "[ERROR] Invalid WRITE syntax. Expected: WRITE <hex_address> <value_or_var>\n";
-                }
+                    std::cerr << "[ERROR] Invalid WRITE syntax.\n";
             }
             else if (cmd == "SLEEP")
             {
@@ -330,7 +320,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                 if (line >> ticks)
                     process->addCommand(std::make_shared<SleepCommand>(ticks));
                 else
-                    std::cerr << "[ERROR] Invalid SLEEP syntax. Expected: SLEEP <ticks>\n";
+                    std::cerr << "[ERROR] Invalid SLEEP syntax.\n";
             }
             else
             {
