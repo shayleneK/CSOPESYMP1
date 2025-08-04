@@ -23,6 +23,13 @@ RRScheduler::RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins
       cpuCycleManager([this](uint64_t cycle) { this->on_cpu_cycle(cycle); }, 1000)
 {
     process_memory_map_.clear();
+    for (int i = 0; i < num_cores; ++i) {
+        core_quantum_remaining[i] = time_quantum;
+        core_current_process[i] = nullptr;
+    }
+    cpuCycleManager.set_callback([this](uint64_t cycle) {
+        this->on_cpu_cycle(cycle);
+    });
 }
 
 RRScheduler::~RRScheduler()
@@ -170,7 +177,7 @@ std::vector<std::shared_ptr<Process>> RRScheduler::get_running_processes()
     return result;
 }
 
-void RRScheduler::on_cpu_cycle(uint64_t cycle_number)
+void RRScheduler::on_cpu_cycle(uint64_t cycle)
 {
     // if (!generating_processes.load())
     //     return;

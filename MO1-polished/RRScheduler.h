@@ -13,6 +13,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <cstdint>
+#include <unordered_map>
 
 class RRScheduler : public Scheduler
 {
@@ -51,4 +52,6 @@ private:
 
     // Tracks process names currently occupying memory
     std::vector<std::string> process_memory_map_;
+    std::unordered_map<int, int> core_quantum_remaining; 
+    std::unordered_map<int, std::shared_ptr<Process>> core_current_process;
 };

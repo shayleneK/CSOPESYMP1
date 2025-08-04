@@ -1,5 +1,6 @@
 #include "ConsoleManager.h"
 #include "ConfigManager.h"
+#include "CPUCycleManager.h"
 #include "Command.h"
 #include "AConsole.h"
 #include "MainConsole.h"
@@ -206,10 +207,12 @@ void ConsoleManager::processInput()
             std::cout << "Exiting emulator.\n";
             try
             {
-                if (scheduler)
+                if (scheduler){
                     ConsoleManager::getInstance()->stopCpuLoop(); // STOP THIS FIRST
-                std::cerr << "CPU stopped " << "\n";
-
+                    CPUCycleManager::getInstance().stop();
+                } else {
+                    std::cerr << "CPU stopped " << "\n";
+                }
                 if (scheduler)
                     scheduler->shutdown(); // Then shut down scheduler logic
 
@@ -273,7 +276,8 @@ void ConsoleManager::processInput()
 
         scheduler->set_batch_frequency(batch_freq);
         
-        startCpuLoop();
+        //startCpuLoop();
+        CPUCycleManager::getInstance().start();
         scheduler_initialized = true;
     }
     else if (command.rfind("screen -s ", 0) == 0)

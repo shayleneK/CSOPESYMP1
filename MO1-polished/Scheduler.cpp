@@ -197,3 +197,13 @@ void Scheduler::stop_scheduler()
         generator_thread.join();
     }
 }
+
+Scheduler* Scheduler::getInstance()
+{
+    return instance_;
+}
+
+void Scheduler::setInstance(Scheduler* scheduler)
+{
+    instance_ = scheduler;
+}

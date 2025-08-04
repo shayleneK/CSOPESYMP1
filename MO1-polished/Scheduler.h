@@ -4,6 +4,7 @@
 #include "Process.h"
 #include "CPUCycleManager.h"
 #include "MemoryManager.h"
+#include "ConfigManager.h"
 #include <vector>
 #include <queue>
 #include <map>
@@ -47,6 +48,8 @@ public:
 
     virtual void stop_scheduler();
     //std::vector<std::shared_ptr<CPUCore>> cpu_core_objects;
+    static Scheduler* getInstance();
+    static void setInstance(Scheduler* scheduler);
 
 protected:
     std::vector<bool> core_available;
@@ -80,4 +83,5 @@ protected:
 
     std::atomic<uint64_t> cpu_cycles; // Shared CPU cycle counter
     int batch_process_freq;
+    static Scheduler* instance_;
 };
