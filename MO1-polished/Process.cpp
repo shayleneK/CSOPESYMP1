@@ -37,12 +37,7 @@ Process::Process(const std::string &name, size_t memSize, int pid, size_t frameS
 // --- Add a command (e.g., DECLARE, PRINT, WRITE) to this process ---
 void Process::addCommand(std::shared_ptr<Command> cmd)
 {
-    // MO2 Requirement: A process can have 1 to 50 instructions
-    if (commands.size() < 50)
-    {
-        commands.push_back(cmd); // Add command to instruction list
-    }
-    // If more than 50, ignore — caller should validate before calling
+    commands.push_back(cmd); // Add command to instruction list
 }
 
 // --- Execute one instruction of the process ---

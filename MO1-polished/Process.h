@@ -50,6 +50,8 @@ public:
     size_t getMemorySize() const { return memorySize; }
     int getCurrentCore() const { return current_core; }
     int getCurrentCommandIndex() const { return current_command_index; }
+    int getTotalInstructions() const { return static_cast<int>(commands.size()); }
+
     std::chrono::system_clock::time_point getStartTime() const { return start_time; }
     std::chrono::system_clock::time_point getFinishTime() const { return finish_time; }
     const std::vector<std::string> &getLogs() const { return logs; }

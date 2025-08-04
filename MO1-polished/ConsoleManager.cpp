@@ -642,7 +642,7 @@ void ConsoleManager::render_running_processes(const std::vector<std::shared_ptr<
             auto start = std::chrono::system_clock::to_time_t(p->getStartTime());
             oss << " (" << std::put_time(std::localtime(&start), "%Y-%m-%d %H:%M:%S") << ")";
         }
-        oss << "  " << p->getCurrentCommandIndex() << " / " << p->getCurrentCommandIndex();
+        oss << "  " << p->getCurrentCommandIndex() << " / " << p->getTotalInstructions();
 
         try
         {

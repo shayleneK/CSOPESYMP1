@@ -23,6 +23,8 @@ std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
 
     int instruction_count = ins_dist(gen);
 
+    std::cout << "Generating process " << name << " with " << instruction_count << " instructions" << std::endl;
+
     for (int i = 0; i < instruction_count; ++i)
     {
         int op = op_dist(gen);
