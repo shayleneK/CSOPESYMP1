@@ -352,15 +352,18 @@ void ConsoleManager::processInput()
         createConsole("screen", name);
 
         std::cout << "[INFO] min instructions: " << scheduler->get_min_instructions() << "\n"
-                << "[INFO] max instructions: " << scheduler->get_max_instructions() << "\n";
+                  << "[INFO] max instructions: " << scheduler->get_max_instructions() << "\n";
 
         auto proc = ConsoleManager::getInstance()
                         ->getProcessFactory()
                         ->generate_dummy_process(name, mem_size,
-                                                scheduler->get_min_instructions(),
-                                                scheduler->get_max_instructions());
+                                                 scheduler->get_min_instructions(),
+                                                 scheduler->get_max_instructions());
 
         proc->addCommand(std::make_shared<PrintCommand>("Process " + name + " has completed all its commands."));
+        std::cout << "Adding process " << name
+                  << " to the scheduler (" << typeid(*scheduler).name() << ").\n";
+
         scheduler->add_process(proc);
 
         auto screen = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);

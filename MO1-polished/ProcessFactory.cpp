@@ -122,6 +122,13 @@ std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
     process->addCommand(
         std::make_shared<PrintCommand>("\"Process " + name + " has completed all its commands.\""));
 
+    size_t page_size = memoryManager->getPageSize();
+    int num_pages = (mem_required + page_size - 1) / page_size;
+    for (int i = 0; i < num_pages; ++i)
+    {
+        process->triggerPageFault(i);
+    }
+
     return process;
 }
 
@@ -252,6 +259,13 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                 std::cerr << "[ERROR] Unknown instruction: " << cmd << "\n";
             }
         }
+    }
+
+    size_t page_size = memoryManager->getPageSize();
+    int num_pages = (mem_required + page_size - 1) / page_size;
+    for (int i = 0; i < num_pages; ++i)
+    {
+        process->triggerPageFault(i);
     }
 
     return process;

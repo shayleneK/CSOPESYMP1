@@ -120,7 +120,7 @@ void RRScheduler::generate_new_process()
     {
         start_address = memory_manager_.allocate(random_mem, process->getName());
 
-        int num_pages = (random_mem * 1024 + memory_manager_.getPageSize() - 1) / memory_manager_.getPageSize();
+        int num_pages = (random_mem + memory_manager_.getPageSize() - 1) / memory_manager_.getPageSize();
         for (int i = 0; i < num_pages; ++i)
         {
             process->triggerPageFault(i);
@@ -161,6 +161,7 @@ void RRScheduler::start_process_generator()
 
 void RRScheduler::start_core_threads()
 {
+    running = true;
     for (int i = 0; i < static_cast<int>(core_available.size()); ++i)
     {
         cpu_cores.emplace_back(&RRScheduler::run_core, this, i);

@@ -144,6 +144,7 @@ void FCFSScheduler::on_cpu_cycle(uint64_t cycle_number)
 
 void FCFSScheduler::start_core_threads()
 {
+    running = true;
     for (int i = 0; i < static_cast<int>(core_available.size()); ++i)
     {
         cpu_cores.emplace_back(&FCFSScheduler::run_core, this, i);
