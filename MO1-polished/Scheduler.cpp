@@ -1,10 +1,12 @@
 
 #include "Scheduler.h"
+#include "CPUCore.h"
 #include <chrono>
 #include <algorithm>
 #include <iostream>
 #include <functional>
 
+Scheduler *Scheduler::instance_ = nullptr;
 Scheduler::Scheduler(int num_cores)
     : core_available(num_cores, true)
 {
@@ -211,10 +213,10 @@ std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats()
         float count = static_cast<float>(core->get_process_count());
         float total = busy + 1; // prevent div-by-zero
 
-        stats[core_id]["util"] = (busy / total) * 100.0f;
-        stats[core_id]["busy_time_ms"] = busy;
-        stats[core_id]["process_count"] = count;
-        stats[core_id]["available"] = core_available[core_id] ? 1.0f : 0.0f;
+        stats[i]["util"] = (busy / total) * 100.0f;
+        stats[i]["busy_time_ms"] = busy;
+        stats[i]["process_count"] = count;
+        stats[i]["available"] = core->is_idle() ? 1.0f : 0.0f;
     }
 
     return stats;

@@ -5,6 +5,8 @@
 #include "CPUCycleManager.h"
 #include "MemoryManager.h"
 #include "ConfigManager.h"
+#include "CPUCore.h"
+
 #include <vector>
 #include <queue>
 #include <map>
@@ -61,7 +63,6 @@ protected:
     std::map<std::shared_ptr<Process>, int> process_to_core;
     std::mutex running_mutex;
     int next_pid = 0;
-    MemoryManager memory_manager_;
 
     std::map<int, int> core_process_count;
     std::map<int, int> core_util_time;

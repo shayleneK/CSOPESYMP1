@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Scheduler.h"
+#include "CPUCore.h"
 #include <thread>
 #include <atomic>
 #include <memory>
@@ -20,7 +21,6 @@ public:
     int get_min_instructions() const override { return min_instructions; }
     int get_max_instructions() const override { return max_instructions; }
     int get_num_cores() const override;
-
 
 protected:
     void run_core(int core_id) override;
