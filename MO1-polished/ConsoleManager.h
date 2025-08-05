@@ -102,6 +102,7 @@ public:
     size_t getRandomMemSize() const;
     MemoryManager &getMemoryManager() { return *memoryManager; }
     const MemoryManager &getMemoryManager() const { return *memoryManager; }
+    static MemoryManager* memory_manager_;
 };
 
 #endif // CONSOLEMANAGER_H

@@ -22,6 +22,7 @@
 #include <atomic>
 
 ConsoleManager *ConsoleManager::instance = nullptr;
+MemoryManager* ConsoleManager::memory_manager_ = nullptr;
 std::atomic<uint64_t> ConsoleManager::cpu_cycles(0);
 
 ConsoleManager::ConsoleManager()
@@ -423,6 +424,36 @@ void ConsoleManager::processInput()
         {
             std::cout << "[screen] Process \"" << name << "\" could not be loaded into memory.\n";
         }
+    }
+    else if (command == "vmstat")
+    {
+    if (!memoryManager)
+    {
+        std::cout << "[ERROR] Memory manager not initialized.\n";
+        return;
+    }
+    
+    //MemoryManager& mm = *ConsoleManager::memory_manager_;
+    auto& mm = getMemoryManager();
+    size_t total = mm.getTotalMemory();
+    size_t used = mm.getUsedMemory();
+    size_t free = mm.getFreeMemory();
+
+    // placeholder
+    int idle_ticks = 0;
+    int active_ticks = 0;
+    int total_ticks = 0;
+
+    std::cout << "----------------------------------------\n";
+    std::cout << "Total memory:     " << total << " B\n";
+    std::cout << "Used memory:      " << used << " B\n";
+    std::cout << "Free memory:      " << free << " B\n";
+    std::cout << "Idle cpu ticks:   " << idle_ticks << "\n";
+    std::cout << "Active cpu ticks: " << active_ticks << "\n";
+    std::cout << "Total cpu ticks:  " << total_ticks << "\n";
+    std::cout << "Num paged in:     " << mm.getPagesPagedIn() << "\n";
+    std::cout << "Num paged out:    " << mm.getPagesPagedOut() << "\n";
+    std::cout << "----------------------------------------\n";
     }
     else if (command.rfind("screen -c ", 0) == 0)
     {

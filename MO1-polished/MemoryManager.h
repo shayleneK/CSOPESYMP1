@@ -6,6 +6,7 @@
 #include <vector>
 #include <set>
 #include <cstdint>
+#include <algorithm>
 
 struct FrameInfo
 {
@@ -29,10 +30,14 @@ public:
     void markPageDirty(const std::string &process_name, int page_number);
 
     std::string printMemoryLayout() const;
-    size_t getExternalFragmentation() const;
-
     size_t getTotalMemory() const { return (total_frames * page_size); };
     size_t getPageSize() const { return page_size; };
+
+    size_t getUsedMemory() const { return std::count(frame_used.begin(), frame_used.end(), true) * page_size; }
+    size_t getFreeMemory() const { return std::count(frame_used.begin(), frame_used.end(), false) * page_size; }
+    size_t getPagesPagedIn() const;
+    size_t getPagesPagedOut() const;
+    size_t getExternalFragmentation() const;
 
     void write(uint32_t physicalAddr, uint16_t value);
     uint16_t read(uint32_t physicalAddr);
@@ -46,6 +51,9 @@ private:
 
     size_t total_frames;
     size_t page_size;
+
+    size_t pages_paged_in = 0;
+    size_t pages_paged_out = 0;
 
     std::vector<bool> frame_used;
     std::vector<FrameInfo> frame_table;

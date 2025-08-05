@@ -4,6 +4,7 @@
 #include <sstream>
 #include <algorithm>
 
+
 MemoryManager::MemoryManager(size_t total_memory, size_t page_size_bytes)
     : page_size(page_size_bytes)
 {
@@ -107,6 +108,8 @@ void MemoryManager::loadPage(const std::string &process_name, int page_number)
 
     std::cout << "[MM] Loaded page " << page_number << " of " << process_name
               << " into frame " << frame << "\n";
+
+    pages_paged_in++;
 }
 
 void MemoryManager::evictPageIfNeeded()
@@ -132,6 +135,7 @@ void MemoryManager::evictOldestPage()
             std::cout << "[MM] Writing dirty page " << page << " of " << proc
                       << " back to backing store\n";
             backing_store[proc].insert(page);
+            pages_paged_out++;
         }
 
         frame_used[frame] = false;
@@ -195,4 +199,14 @@ uint16_t MemoryManager::read(uint32_t physicalAddr)
         return memory[physicalAddr] | (memory[physicalAddr + 1] << 8);
     }
     return 0;
+}
+
+size_t MemoryManager::getPagesPagedIn() const 
+{ 
+    return pages_paged_in; 
+}
+
+size_t MemoryManager::getPagesPagedOut() const 
+{ 
+    return pages_paged_out; 
 }
