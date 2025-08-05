@@ -48,6 +48,7 @@ void MemoryManager::deallocate(const std::string &process_name)
         {
             frame_used[i] = false;
             frame_table[i] = {};
+            pages_paged_out++;
         }
     }
 
@@ -109,6 +110,8 @@ void MemoryManager::loadPage(const std::string &process_name, int page_number)
 
     std::cout << "[MM] Loaded page " << page_number << " of " << process_name
               << " into frame " << frame << "\n";
+
+    pages_paged_in++;
 }
 
 void MemoryManager::evictPageIfNeeded()
@@ -143,6 +146,8 @@ void MemoryManager::evictOldestPage()
 
         std::cout << "[MM] Evicted page " << page << " of " << proc
                   << " from frame " << frame << "\n";
+
+        pages_paged_out++;
     }
 }
 

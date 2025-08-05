@@ -599,6 +599,35 @@ void ConsoleManager::processInput()
         log_file << std::string(80, '=') << "\n\n";
         log_file.close();
     }
+    else if (command == "vmstat")
+    {
+        if (!memoryManager)
+        {
+            std::cout << "Memory Manager not initialized.\n";
+            return;
+        }
+
+        size_t totalMem = memoryManager->getTotalMemory();
+        size_t freeMem = memoryManager->getExternalFragmentation();
+        size_t usedMem = totalMem - freeMem;
+
+        // size_t idleCpuTicks = cpuManager->getIdleTicks();     // Replace with your actual function
+        // size_t activeCpuTicks = cpuManager->getActiveTicks(); // Replace with your actual function
+        // size_t totalCpuTicks = idleCpuTicks + activeCpuTicks;
+
+        size_t pagesPagedIn = memoryManager->getPagesPagedIn();   // Replace with your actual function
+        size_t pagesPagedOut = memoryManager->getPagesPagedOut(); // Replace with your actual function
+
+        std::cout << totalMem << " K total memory\n";
+        std::cout << usedMem << " K used memory\n";
+        std::cout << freeMem << " K free memory\n";
+        // std::cout << idleCpuTicks << " idle cpu ticks\n";
+        // std::cout << activeCpuTicks << " active cpu ticks\n";
+        // std::cout << totalCpuTicks << " total cpu ticks\n";
+        std::cout << pagesPagedIn << " pages paged in\n";
+        std::cout << pagesPagedOut << " pages paged out\n";
+    }
+
     else if (command == "marquee")
     {
         if (!scheduler)
