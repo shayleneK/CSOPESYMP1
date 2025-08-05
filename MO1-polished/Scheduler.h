@@ -42,11 +42,13 @@ public:
     virtual bool is_scheduler_running() const = 0;
     virtual int get_min_instructions() const = 0;
     virtual int get_max_instructions() const = 0;
+    virtual int get_num_cores() const = 0;
     virtual void stop_scheduler();
     virtual void start_scheduler();
     std::vector<std::shared_ptr<CPUCore>> cpu_core_objects;
 
 protected:
+    int num_cores;
     std::vector<bool> core_available;
     std::queue<std::shared_ptr<Process>> ready_queue;
     std::vector<std::shared_ptr<Process>> all_processes;

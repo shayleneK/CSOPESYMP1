@@ -3,6 +3,8 @@
 #include <iomanip>
 #include <sstream>
 #include <algorithm>
+#include <fstream>
+
 
 MemoryManager::MemoryManager(size_t total_memory, size_t page_size_bytes)
     : page_size(page_size_bytes)
@@ -30,10 +32,10 @@ int MemoryManager::allocate(size_t bytes_required, const std::string &process_na
     }
 
     process_page_table[process_name] = std::vector<int>(pages_needed, -1);
-    backing_store[process_name] = {};
+   // backing_store[process_name] = {};
 
     for (int i = 0; i < static_cast<int>(pages_needed); ++i)
-        backing_store[process_name].insert(i);
+    writeToBackingStore(process_name, i);
 
     return 0; // base virtual address
 }
@@ -51,7 +53,7 @@ void MemoryManager::deallocate(const std::string &process_name)
 
     process_pages.erase(process_name);
     process_page_table.erase(process_name);
-    backing_store.erase(process_name);
+    removeFromBackingStore(process_name);
 
     fifo_queue.erase(
         std::remove_if(fifo_queue.begin(), fifo_queue.end(),
@@ -130,8 +132,8 @@ void MemoryManager::evictOldestPage()
         if (frame_table[frame].dirty)
         {
             std::cout << "[MM] Writing dirty page " << page << " of " << proc
-                      << " back to backing store\n";
-            backing_store[proc].insert(page);
+                    << " back to backing store\n";
+            writeToBackingStore(proc, page);
         }
 
         frame_used[frame] = false;
@@ -195,4 +197,63 @@ uint16_t MemoryManager::read(uint32_t physicalAddr)
         return memory[physicalAddr] | (memory[physicalAddr + 1] << 8);
     }
     return 0;
+}
+
+void MemoryManager::writeToBackingStore(const std::string &process_name, int page_number)
+{
+    std::ofstream ofs("csopesy-backing-store.txt", std::ios::app);
+    if (ofs.is_open())
+    {
+        ofs << process_name << " " << page_number << "\n";
+    }
+}
+
+void MemoryManager::removeFromBackingStore(const std::string &process_name)
+{
+    std::ifstream ifs("csopesy-backing-store.txt");
+    std::ofstream ofs("temp-backing-store.txt");
+    std::string line;
+
+    if (!ifs.is_open() || !ofs.is_open())
+        return;
+
+    while (std::getline(ifs, line))
+    {
+        std::istringstream iss(line);
+        std::string pname;
+        int page;
+        if (iss >> pname >> page)
+        {
+            if (pname != process_name)
+            {
+                ofs << pname << " " << page << "\n";
+            }
+        }
+    }
+
+    ifs.close();
+    ofs.close();
+    std::remove("csopesy-backing-store.txt");
+    std::rename("temp-backing-store.txt", "csopesy-backing-store.txt");
+}
+
+std::set<int> MemoryManager::readProcessPagesFromBackingStore(const std::string &process_name)
+{
+    std::ifstream ifs("csopesy-backing-store.txt");
+    std::set<int> pages;
+    std::string pname;
+    int page;
+
+    if (!ifs.is_open())
+        return pages;
+
+    while (ifs >> pname >> page)
+    {
+        if (pname == process_name)
+        {
+            pages.insert(page);
+        }
+    }
+
+    return pages;
 }

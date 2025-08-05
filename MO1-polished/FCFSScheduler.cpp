@@ -13,10 +13,15 @@
 FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins)
     : Scheduler(num_cores), // <-- Pass to base
       min_instructions(min_ins),
-      max_instructions(max_ins)
+      max_instructions(max_ins),
+      num_cores(num_cores)
 {
 }
 
+int FCFSScheduler::get_num_cores() const
+{
+    return num_cores;
+}
 FCFSScheduler::~FCFSScheduler()
 {
     shutdown();

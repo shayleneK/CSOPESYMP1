@@ -36,9 +36,9 @@ public:
     void notify_process_started(int core_id, std::shared_ptr<Process> process);
     void notify_process_finished(int core_id, std::shared_ptr<Process> process, int duration_ms);
     int get_quantum() const;
-
     int get_min_instructions() const override { return min_instructions; }
     int get_max_instructions() const override { return max_instructions; }
+    int get_num_cores() const override;
 
 private:
     void generate_new_process();
@@ -56,6 +56,7 @@ private:
     // std::thread generator_thread;
     std::vector<std::thread> cpu_cores;
     std::vector<std::string> process_memory_map_;
+    int num_cores;
 
     MemoryManager &memory_manager_;
 };

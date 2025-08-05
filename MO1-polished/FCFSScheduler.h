@@ -19,6 +19,8 @@ public:
     void on_cpu_cycle(uint64_t cycle_number) override;
     int get_min_instructions() const override { return min_instructions; }
     int get_max_instructions() const override { return max_instructions; }
+    int get_num_cores() const override;
+
 
 protected:
     void run_core(int core_id) override;
@@ -31,4 +33,6 @@ private:
     int max_instructions;
     std::condition_variable cv;
     std::mutex cv_m;
+
+    int num_cores;
 };

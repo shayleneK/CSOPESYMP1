@@ -54,5 +54,9 @@ private:
     std::unordered_map<std::string, std::vector<int>> process_page_table;
 
     std::deque<std::pair<std::string, int>> fifo_queue;
-    std::unordered_map<std::string, std::set<int>> backing_store;
+   // std::unordered_map<std::string, std::set<int>> backing_store;
+
+    void writeToBackingStore(const std::string &process_name, int page_number);
+    void removeFromBackingStore(const std::string &process_name);
+    std::set<int> readProcessPagesFromBackingStore(const std::string &process_name);
 };

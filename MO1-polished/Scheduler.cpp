@@ -264,3 +264,8 @@ void Scheduler::start_scheduler()
     generator_thread = std::thread([this]
                                    { this->generatorLoop(); });
 }
+
+int Scheduler::get_num_cores() const
+{
+    return num_cores;
+}

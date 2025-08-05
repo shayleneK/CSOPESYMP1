@@ -816,7 +816,7 @@ void ConsoleManager::render_header(std::ostream &out)
     out << title << "\n";
     out << std::string(80, '-') << "\n\n";
 
-    int total_cores = stats.size();
+    int total_cores = scheduler->get_num_cores();
     int used = 0;
     int running_processes = scheduler->get_running_processes().size();
     float current_util = 0.0f;

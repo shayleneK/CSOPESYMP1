@@ -26,7 +26,8 @@ RRScheduler::RRScheduler(int num_cores,
       min_instructions(min_ins),
       max_instructions(max_ins),
       delay_per_exec(delay),
-      memory_manager_(memory_manager)
+      memory_manager_(memory_manager),
+      num_cores(num_cores)
 {
     process_memory_map_.clear();
 
@@ -35,6 +36,10 @@ RRScheduler::RRScheduler(int num_cores,
               << " bytes\n";
 }
 
+int RRScheduler::get_num_cores() const
+{
+    return num_cores;
+}
 RRScheduler::~RRScheduler()
 {
     shutdown();
@@ -154,7 +159,9 @@ void RRScheduler::generate_new_process()
 }
 
 void RRScheduler::start_core_threads()
-{
+{   
+    std::cout << "[DEBUG] start_core_threads called!\n";
+
     running = true;
 
     for (int i = 0; i < static_cast<int>(core_available.size()); ++i)
@@ -338,3 +345,4 @@ int RRScheduler::get_quantum() const
 {
     return time_quantum; // assuming you have a member `quantum` in RRScheduler
 }
+
