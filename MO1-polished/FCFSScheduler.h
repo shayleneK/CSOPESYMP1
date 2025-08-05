@@ -9,7 +9,7 @@
 class FCFSScheduler : public Scheduler
 {
 public:
-    FCFSScheduler(int num_cores, int min_ins, int max_ins);
+    FCFSScheduler(int num_cores, int min_ins, int max_ins, MemoryManager &memory_manager);
     ~FCFSScheduler();
 
     void start() override;
@@ -21,6 +21,10 @@ public:
     int get_min_instructions() const override { return min_instructions; }
     int get_max_instructions() const override { return max_instructions; }
     int get_num_cores() const override;
+    double getCpuUtilization() const override;
+
+    void notify_process_started(int core_id, std::shared_ptr<Process> process) override;
+    void notify_process_finished(int core_id, std::shared_ptr<Process> process, int duration_ms) override;
 
 protected:
     void run_core(int core_id) override;
@@ -35,4 +39,5 @@ private:
     std::mutex cv_m;
 
     int num_cores;
+    MemoryManager &memory_manager_;
 };

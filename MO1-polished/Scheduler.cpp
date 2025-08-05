@@ -10,6 +10,7 @@ Scheduler *Scheduler::instance_ = nullptr;
 Scheduler::Scheduler(int num_cores)
     : core_available(num_cores, true)
 {
+    instance_ = this;
     for (int i = 0; i < num_cores; ++i)
     {
         core_process_count[i] = 0;

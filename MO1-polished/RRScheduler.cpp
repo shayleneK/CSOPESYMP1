@@ -47,6 +47,17 @@ RRScheduler::RRScheduler(int num_cores,
                                  { this->on_cpu_cycle(cycle); });
 }
 
+double RRScheduler::getCpuUtilization() const
+{
+    int busy = 0;
+    for (size_t i = 0; i < core_available.size(); ++i)
+    {
+        if (!core_available[i])
+            busy++;
+    }
+    return (double)busy / num_cores * 100.0;
+}
+
 int RRScheduler::get_num_cores() const
 {
     return num_cores;
@@ -160,6 +171,28 @@ void RRScheduler::start_core_threads()
     {
         cpu_cores.emplace_back(&RRScheduler::run_core, this, i);
     }
+}
+
+void RRScheduler::notify_process_started(int core_id, std::shared_ptr<Process> process)
+{
+    std::lock_guard<std::mutex> lock(running_mutex);
+    current_processes[core_id] = process;
+    process_to_core[process] = core_id;
+}
+
+void RRScheduler::notify_process_finished(int core_id, std::shared_ptr<Process> process, int duration_ms)
+{
+    std::lock_guard<std::mutex> lock(running_mutex);
+    current_processes.erase(core_id);
+    process_to_core.erase(process);
+
+    memory_manager_.deallocate(process->getName());
+    process_memory_map_.erase(
+        std::remove(process_memory_map_.begin(), process_memory_map_.end(), process->getName()),
+        process_memory_map_.end());
+
+    std::cout << "[RR] Process " << process->getName() << " finished on core " << core_id
+              << " (duration: " << duration_ms << " ms)\n";
 }
 
 bool RRScheduler::is_scheduler_running() const
@@ -320,19 +353,6 @@ void RRScheduler::save_memory_snapshot(uint64_t batch_number)
     // Step 7: Close the file and log the success
     file.close();
     std::cout << "[RR] Saved memory snapshot to " << filename.str() << std::endl;
-}
-
-void RRScheduler::notify_process_started(int core_id, std::shared_ptr<Process> process)
-{
-    // You can add logging or bookkeeping here
-    std::cout << "[RR] Process " << process->getName() << " started on core " << core_id << "\n";
-}
-
-void RRScheduler::notify_process_finished(int core_id, std::shared_ptr<Process> process, int duration_ms)
-{
-    // Add any cleanup or logging you need
-    std::cout << "[RR] Process " << process->getName() << " finished on core " << core_id
-              << " (duration: " << duration_ms << " ms)\n";
 }
 
 int RRScheduler::get_quantum() const

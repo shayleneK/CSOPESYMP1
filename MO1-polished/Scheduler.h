@@ -22,6 +22,8 @@ public:
     Scheduler(int num_cores);
     virtual ~Scheduler();
 
+    virtual void notify_process_started(int core_id, std::shared_ptr<Process> process) {}
+    virtual void notify_process_finished(int core_id, std::shared_ptr<Process> process, int duration_ms) {}
     virtual void run_core(int core_id) = 0;
 
     virtual void start_core_threads();
@@ -46,6 +48,8 @@ public:
     virtual bool is_scheduler_running() const = 0;
     virtual int get_min_instructions() const = 0;
     virtual int get_max_instructions() const = 0;
+    virtual double getCpuUtilization() const = 0;
+
     virtual int get_num_cores() const = 0;
     virtual void stop_scheduler();
     virtual void start_scheduler();

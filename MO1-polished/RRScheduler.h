@@ -35,12 +35,15 @@ public:
     void on_cpu_cycle(uint64_t cycle_number);
     std::vector<std::shared_ptr<Process>> get_running_processes();
     std::shared_ptr<Process> get_next_process(int core_id);
-    void notify_process_started(int core_id, std::shared_ptr<Process> process);
-    void notify_process_finished(int core_id, std::shared_ptr<Process> process, int duration_ms);
+
     int get_quantum() const;
     int get_min_instructions() const override { return min_instructions; }
     int get_max_instructions() const override { return max_instructions; }
     int get_num_cores() const override;
+    double getCpuUtilization() const override;
+
+    void notify_process_started(int core_id, std::shared_ptr<Process> process) override;
+    void notify_process_finished(int core_id, std::shared_ptr<Process> process, int duration_ms) override;
 
 private:
     void generate_new_process();

@@ -1,4 +1,4 @@
-Timestamp: (08/05/2025 09:06:48PM)
+Timestamp: (08/05/2025 09:57:22PM)
 Number of processes in memory: 1
 Total external fragmentation in B: 31744
 Frame 0: p00 (Page 0)

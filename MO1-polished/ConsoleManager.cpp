@@ -85,7 +85,7 @@ void ConsoleManager::initialize(const ConfigManager &cfg)
             delay_per_exec,
             *memoryManager);
     else
-        scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins);
+        scheduler = std::make_unique<FCFSScheduler>(num_cpu, min_ins, max_ins, *memoryManager);
 
     scheduler->set_batch_frequency(batch_freq);
     scheduler->start_core_threads();
@@ -686,42 +686,31 @@ void ConsoleManager::processInput()
             std::cout << "[ERROR] Scheduler not initialized.\n";
             return;
         }
-        auto screen = std::dynamic_pointer_cast<ScreenConsole>(getActiveConsole());
-        if (!screen)
+
+        size_t usedMem = memoryManager->getUsedMemory();
+        size_t totalMem = memoryManager->getTotalMemory();
+        double memUtil = totalMem ? (static_cast<double>(usedMem) / totalMem) * 100.0 : 0;
+
+        double cpuUtil = getCpuUtilization(); // you'll need to implement or stub this
+
+        std::cout << "----------------------------------------------------------------------\n";
+        std::cout << "| PROCESS-SMI V01.00 Driver Version: 01.00 |\n";
+        std::cout << "----------------------------------------------------------------------\n\n";
+
+        std::cout << "CPU-Util: " << std::fixed << std::setprecision(0) << cpuUtil << "%\n";
+        std::cout << "Memory Usage: " << (usedMem / 1024) << "MiB / " << (totalMem / 1024) << "MiB\n";
+        std::cout << "Memory Util: " << std::fixed << std::setprecision(0) << memUtil << "%\n\n";
+
+        std::cout << "Running processes and memory usage:\n";
+        for (auto &proc : scheduler->get_running_processes())
         {
-            std::cout << "[ERROR] 'process-smi' must be used in a screen console.\n";
-            return;
+            std::cout << proc->getName() << "   "
+                      << (proc->getMemorySize() / 1024) << "MiB\n";
         }
 
-        auto proc = screen->getAttachedProcess();
-        if (!proc)
-        {
-            std::cout << "[ERROR] No process attached.\n";
-            return;
-        }
-
-        std::cout << "\n[Process Info]\n";
-        std::cout << "Name: " << proc->getName() << "\n";
-        std::cout << "Status: " << (proc->isFinished() ? "Finished" : "Running") << "\n";
-
-        if (proc->hasStarted())
-        {
-            auto st = std::chrono::system_clock::to_time_t(proc->getStartTime());
-            std::cout << "Start Time: " << std::put_time(std::localtime(&st), "%Y-%m-%d %H:%M:%S") << "\n";
-        }
-
-        if (proc->isFinished())
-        {
-            auto ft = std::chrono::system_clock::to_time_t(proc->getFinishTime());
-            std::cout << "Finish Time: " << std::put_time(std::localtime(&ft), "%Y-%m-%d %H:%M:%S") << "\n";
-        }
-
-        std::cout << "Instructions Executed: " << proc->getCurrentCommandIndex() << " / " << proc->getCurrentCommandIndex() << "\n";
-
-        std::cout << "Logs:\n";
-        for (const auto &log : proc->getLogs())
-            std::cout << log << "\n";
+        std::cout << "----------------------------------------------------------------------\n";
     }
+
     else if (command.rfind("screen -c ", 0) == 0)
     {
         if (!scheduler)

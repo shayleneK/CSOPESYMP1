@@ -313,3 +313,9 @@ std::set<int> MemoryManager::readProcessPagesFromBackingStore(const std::string 
 
     return pages;
 }
+
+size_t MemoryManager::getUsedMemory() const
+{
+    size_t usedFrames = std::count(frame_used.begin(), frame_used.end(), true);
+    return usedFrames * page_size; // in bytes
+}

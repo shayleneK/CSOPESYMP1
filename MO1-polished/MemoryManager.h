@@ -39,6 +39,7 @@ public:
     std::string printMemoryLayout() const;
     size_t getExternalFragmentation() const;
 
+    size_t getUsedMemory() const;
     size_t getTotalMemory() const { return (total_frames * page_size); };
     size_t getPageSize() const { return page_size; };
 

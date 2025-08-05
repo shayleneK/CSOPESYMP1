@@ -10,11 +10,13 @@
 #include <iomanip>
 #include <sstream>
 
-FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins)
+FCFSScheduler::FCFSScheduler(int num_cores, int min_ins, int max_ins, MemoryManager &memory_manager)
+
     : Scheduler(num_cores), // <-- Pass to base
       min_instructions(min_ins),
       max_instructions(max_ins),
-      num_cores(num_cores)
+      num_cores(num_cores),
+      memory_manager_(memory_manager)
 {
 }
 
@@ -178,4 +180,37 @@ void FCFSScheduler::generate_new_process()
 
     // std::cout << "[FCFS DEBUG] New process " << name << " created at tick "
     //     << ConsoleManager::getCpuCycles() << "\n";
+}
+
+void FCFSScheduler::notify_process_started(int core_id, std::shared_ptr<Process> process)
+{
+    std::lock_guard<std::mutex> lock(running_mutex);
+    current_processes[core_id] = process;
+    process_to_core[process] = core_id;
+}
+
+void FCFSScheduler::notify_process_finished(int core_id, std::shared_ptr<Process> process, int duration_ms)
+{
+    std::lock_guard<std::mutex> lock(running_mutex);
+    current_processes.erase(core_id);
+    process_to_core.erase(process);
+
+    memory_manager_.deallocate(process->getName());
+    /* process_memory_map_.erase(
+        std::remove(process_memory_map_.begin(), process_memory_map_.end(), process->getName()),
+        process_memory_map_.end()); */
+
+    std::cout << "[RR] Process " << process->getName() << " finished on core " << core_id
+              << " (duration: " << duration_ms << " ms)\n";
+}
+
+double FCFSScheduler::getCpuUtilization() const
+{
+    int busy = 0;
+    for (bool available : core_available)
+    {
+        if (!available)
+            busy++;
+    }
+    return (double)busy / num_cores * 100.0;
 }
