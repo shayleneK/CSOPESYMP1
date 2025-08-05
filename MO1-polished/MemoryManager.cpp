@@ -13,6 +13,7 @@ MemoryManager::MemoryManager(size_t total_memory, size_t page_size_bytes)
     total_frames = (total_memory) / page_size;
     frame_used.resize(total_frames, false);
     frame_table.resize(total_frames);
+    memory.resize(total_memory, 0);
 }
 
 int MemoryManager::allocate(size_t bytes_required, const std::string &process_name)
@@ -176,4 +177,22 @@ size_t MemoryManager::getExternalFragmentation() const
 {
     size_t free_frames = std::count(frame_used.begin(), frame_used.end(), false);
     return (free_frames * page_size);
+}
+
+void MemoryManager::write(uint32_t physicalAddr, uint16_t value)
+{
+    if (physicalAddr + 1 < memory.size())
+    {
+        memory[physicalAddr] = value & 0xFF;
+        memory[physicalAddr + 1] = (value >> 8) & 0xFF;
+    }
+}
+
+uint16_t MemoryManager::read(uint32_t physicalAddr)
+{
+    if (physicalAddr + 1 < memory.size())
+    {
+        return memory[physicalAddr] | (memory[physicalAddr + 1] << 8);
+    }
+    return 0;
 }

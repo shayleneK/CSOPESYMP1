@@ -31,13 +31,18 @@ public:
     std::string printMemoryLayout() const;
     size_t getExternalFragmentation() const;
 
-    size_t getTotalMemory() const { return (total_frames * page_size); }
-    size_t getPageSize() const { return page_size; }
+    size_t getTotalMemory() const { return (total_frames * page_size); };
+    size_t getPageSize() const { return page_size; };
+
+    void write(uint32_t physicalAddr, uint16_t value);
+    uint16_t read(uint32_t physicalAddr);
 
 private:
     void evictPageIfNeeded();
     void evictOldestPage();
     int findFreeFrame() const;
+
+    std::vector<uint8_t> memory;
 
     size_t total_frames;
     size_t page_size;

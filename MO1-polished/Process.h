@@ -35,6 +35,7 @@ public:
     void writeMemory(uint32_t virtualAddr, uint32_t value);
 
     // Variable access (symbol table)
+    bool hasVar(const std::string &name) const;
     uint32_t getVar(const std::string &name);
     bool declareVar(const std::string &name, uint32_t value);
 
@@ -77,6 +78,7 @@ public:
     void logExecution(int coreId, const std::string &message);
     void markPageValid(int page);
 
+    
 private:
     // Helpers
     int getVirtualPageNumber(uint32_t addr) const;
