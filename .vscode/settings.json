@@ -85,7 +85,8 @@
     "xtree": "cpp",
     "xutility": "cpp",
     "set": "cpp",
-    "regex": "cpp"
+    "regex": "cpp",
+    "unordered_set": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",

@@ -378,6 +378,8 @@ void ConsoleManager::processInput()
             mem_size = max_alloc;
         }
 
+        if (mem_size < 1024)
+            mem_size = 1024;
         // --- Create process ---
         auto proc = ConsoleManager::getInstance()
                         ->getProcessFactory()
@@ -390,9 +392,10 @@ void ConsoleManager::processInput()
 
         // --- Allocate memory & trigger page faults ---
         int start_address = -1;
+        AllocationResult alloc;
         try
         {
-            start_address = memory_manager.allocate(mem_size, proc->getName());
+            alloc = memory_manager.allocate(mem_size, proc->getName());
 
             int num_pages = (mem_size + page_size - 1) / page_size;
             for (int i = 0; i < num_pages; ++i)
@@ -406,9 +409,9 @@ void ConsoleManager::processInput()
             return; // Stop here if allocation fails
         }
 
-        if (start_address != -1)
+        if (alloc.start_address != static_cast<size_t>(-1))
         {
-            proc->readMemory(start_address);
+            proc->readMemory(alloc.start_address);
             scheduler->add_process(proc);
 
             auto screen = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);
@@ -416,8 +419,8 @@ void ConsoleManager::processInput()
                 screen->attachProcess(proc);
 
             std::cout << "[screen] Process \"" << name << "\" allocated at ["
-                      << start_address << "-" << start_address + mem_size - 1
-                      << "] with " << mem_size << " bytes.\n";
+                      << alloc.start_address << "-" << alloc.start_address + alloc.size - 1
+                      << "] with " << alloc.size << " bytes.\n";
         }
         else
         {
@@ -489,6 +492,9 @@ void ConsoleManager::processInput()
             mem_size = max_alloc;
         }
 
+        if (mem_size < 1024)
+            mem_size = 1024;
+
         // --- Create process with given instructions ---
         auto proc = ConsoleManager::getInstance()
                         ->getProcessFactory()
@@ -498,9 +504,10 @@ void ConsoleManager::processInput()
             "Process " + name + " has completed all its commands."));
 
         int start_address = -1;
+        AllocationResult alloc;
         try
         {
-            start_address = memory_manager.allocate(mem_size, proc->getName());
+            alloc = memory_manager.allocate(mem_size, proc->getName());
 
             int num_pages = (mem_size + page_size - 1) / page_size;
             for (int i = 0; i < num_pages; ++i)
@@ -514,9 +521,9 @@ void ConsoleManager::processInput()
             return;
         }
 
-        if (start_address != -1)
+        if (alloc.start_address != static_cast<size_t>(-1))
         {
-            proc->readMemory(start_address);
+            proc->readMemory(alloc.start_address);
             scheduler->add_process(proc);
 
             auto screen = std::dynamic_pointer_cast<ScreenConsole>(m_consoleTable[name]);
@@ -524,8 +531,8 @@ void ConsoleManager::processInput()
                 screen->attachProcess(proc);
 
             std::cout << "[screen] Process \"" << name << "\" allocated at ["
-                      << start_address << "-" << start_address + mem_size - 1
-                      << "] with " << mem_size << " bytes.\n";
+                      << alloc.start_address << "-" << alloc.start_address + alloc.size - 1
+                      << "] with " << alloc.size << " bytes.\n";
         }
         else
         {
@@ -782,9 +789,11 @@ void ConsoleManager::processInput()
             "Process " + name + " has completed all its commands."));
 
         int start_address = -1;
+        AllocationResult alloc;
+
         try
         {
-            start_address = memory_manager.allocate(mem_size, proc->getName());
+            alloc = memory_manager.allocate(mem_size, proc->getName());
 
             int num_pages = (mem_size + page_size - 1) / page_size;
             for (int i = 0; i < num_pages; ++i)

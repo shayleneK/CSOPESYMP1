@@ -79,52 +79,33 @@ void RRScheduler::generate_new_process()
 
     std::cout << "[RR] Starting Process Generation\n";
 
-    size_t random_mem = ConsoleManager::getInstance()->getRandomMemSize();
-    std::cout << "[RR] Creating process with mem_per_proc = " << random_mem << "\n";
-
+    size_t requested_mem = ConsoleManager::getInstance()->getRandomMemSize();
     size_t page_size = memory_manager_.getPageSize();
 
-    std::cout << "[RR] Page size = " << page_size << " B\n";
-    // --- Safety checks ---
-    if (random_mem < page_size)
-    {
-        std::cout << "[RR] Requested " << random_mem << " B is below one page ("
-                  << page_size << " B). Clamping.\n";
-        random_mem = page_size;
-    }
-    if (random_mem % page_size != 0)
-    {
-        size_t aligned = ((random_mem + page_size - 1) / page_size) * page_size;
-        std::cout << "[RR] Adjusting allocation size from " << random_mem
-                  << " B to page-aligned " << aligned << " B.\n";
-        random_mem = aligned;
-    }
+    // Force at least 1 KB
+    if (requested_mem < 1024)
+        requested_mem = 1024;
 
-    size_t max_allocatable = memory_manager_.getTotalMemory();
-    if (random_mem > max_allocatable)
-    {
-        std::cout << "[RR] Requested " << random_mem
-                  << " B exceeds total memory (" << max_allocatable
-                  << " B). Clamping.\n";
-        random_mem = max_allocatable;
-    }
-    // --- End Safety checks ---
+    // Align to page size
+    requested_mem = ((requested_mem + page_size - 1) / page_size) * page_size;
+
+    std::cout << "[RR] Requested memory for process " << name << ": " << requested_mem << " B\n";
 
     auto process = ConsoleManager::getInstance()
                        ->getProcessFactory()
-                       ->generate_dummy_process(name, random_mem, min_instructions, max_instructions);
+                       ->generate_dummy_process(name, requested_mem, min_instructions, max_instructions);
 
     process->addCommand(std::make_shared<PrintCommand>(
         "Process " + name + " has completed all its commands."));
 
-    std::cout << "[RR] About to allocate\n";
-
-    int start_address = -1;
+    AllocationResult alloc;
     try
     {
-        start_address = memory_manager_.allocate(random_mem, process->getName());
+        std::cout << "Allocating2222 " << requested_mem << " bytes for process " << name << std::endl;
+        alloc = memory_manager_.allocate(requested_mem, process->getName());
+        std::cout << "[RR] Allocated " << alloc.size << " B at address " << alloc.start_address << "\n";
 
-        int num_pages = (random_mem * 1024 + memory_manager_.getPageSize() - 1) / memory_manager_.getPageSize();
+        int num_pages = alloc.size / memory_manager_.getPageSize();
         for (int i = 0; i < num_pages; ++i)
         {
             process->triggerPageFault(i);
@@ -134,12 +115,12 @@ void RRScheduler::generate_new_process()
     {
         std::cout << "[RR] Failed to allocate memory for " << name
                   << ": " << e.what() << "\n";
-        return; // Skip adding this process
+        return;
     }
 
-    if (start_address != -1)
+    if (alloc.start_address != -1)
     {
-        process->readMemory(start_address);
+        process->readMemory(alloc.start_address);
         add_process(process);
         process_memory_map_.push_back(process->getName());
 
@@ -150,7 +131,7 @@ void RRScheduler::generate_new_process()
             screen->attachProcess(process);
 
         std::cout << "[RR] Process " << name << " allocated at ["
-                  << start_address << "-" << start_address + random_mem - 1 << "]\n";
+                  << alloc.start_address << "-" << alloc.start_address + alloc.size - 1 << "]\n";
     }
     else
     {
@@ -159,7 +140,7 @@ void RRScheduler::generate_new_process()
 }
 
 void RRScheduler::start_core_threads()
-{   
+{
     std::cout << "[DEBUG] start_core_threads called!\n";
 
     running = true;
@@ -345,4 +326,3 @@ int RRScheduler::get_quantum() const
 {
     return time_quantum; // assuming you have a member `quantum` in RRScheduler
 }
-

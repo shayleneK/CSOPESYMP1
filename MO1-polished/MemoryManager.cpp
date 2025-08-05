@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <fstream>
 
-
 MemoryManager::MemoryManager(size_t total_memory, size_t page_size_bytes)
     : page_size(page_size_bytes)
 {
@@ -18,26 +17,100 @@ MemoryManager::MemoryManager(size_t total_memory, size_t page_size_bytes)
     memory.resize(total_memory, 0);
 }
 
-int MemoryManager::allocate(size_t bytes_required, const std::string &process_name)
-{
-    size_t pages_needed = (bytes_required + page_size - 1) / page_size;
+// int MemoryManager::allocate(size_t bytes_required, const std::string &process_name)
+// {
+//     // Ensure at least one page
+//     if (bytes_required < page_size)
+//     {
+//         bytes_required = page_size;
+//     }
 
-    // SAFETY: prevent allocating more pages than available
-    if (pages_needed > total_frames)
+//     // Align to page boundary
+//     bytes_required = ((bytes_required + page_size - 1) / page_size) * page_size;
+
+//     size_t pages_needed = bytes_required / page_size;
+
+//     // Safety: prevent allocating more pages than available
+//     if (pages_needed > total_frames)
+//     {
+//         throw std::invalid_argument(
+//             "invalid memory allocation: requested " +
+//             std::to_string(bytes_required) +
+//             " bytes, but only " +
+//             std::to_string(total_frames * page_size) +
+//             " bytes available");
+//     }
+
+//     // Create page table
+//     process_page_table[process_name] = std::vector<int>(pages_needed, -1);
+//     for (int i = 0; i < static_cast<int>(pages_needed); ++i)
+//     {
+//         writeToBackingStore(process_name, i);
+//     }
+
+//     return 0; // base virtual address
+// }
+
+// In MemoryManager.cpp
+#include "MemoryManager.h"
+#include <stdexcept>
+#include <iostream>
+
+AllocationResult MemoryManager::allocate(size_t requested, const std::string &process_name)
+{
+    std::cout << "Allocating " << requested << " bytes for process " << process_name << std::endl;
+    if (requested < page_size)
+        requested = page_size;
+
+    // Align to page size
+    size_t aligned_size = ((requested + page_size - 1) / page_size) * page_size;
+    size_t num_pages_needed = aligned_size / page_size;
+
+    if (num_pages_needed > total_frames)
     {
-        throw std::invalid_argument("invalid memory allocation: requested " +
-                                    std::to_string(bytes_required) +
-                                    " bytes, but only " +
-                                    std::to_string(total_frames * page_size) + " bytes available");
+        aligned_size = total_frames * page_size;
+        num_pages_needed = total_frames;
     }
 
-    process_page_table[process_name] = std::vector<int>(pages_needed, -1);
-   // backing_store[process_name] = {};
+    if (num_pages_needed == 0)
+    {
+        throw std::invalid_argument("Requested size too small to allocate a frame.");
+    }
 
-    for (int i = 0; i < static_cast<int>(pages_needed); ++i)
-    writeToBackingStore(process_name, i);
+    // Track allocated frame indices
+    std::vector<int> allocated_frames;
+    int start_address = -1;
 
-    return 0; // base virtual address
+    for (size_t i = 0; i < num_pages_needed; ++i)
+    {
+        int frame = findFreeFrame();
+        if (frame == -1)
+        {
+            // Rollback partial allocation
+            for (int f : allocated_frames)
+            {
+                frame_used[f] = false;
+                frame_table[f] = FrameInfo{};
+            }
+            throw std::invalid_argument("Not enough contiguous frames for allocation.");
+        }
+
+        // Mark frame as used
+        frame_used[frame] = true;
+        frame_table[frame] = {process_name, static_cast<int>(i), false};
+        allocated_frames.push_back(frame);
+        process_pages[process_name].insert(frame);
+        fifo_queue.push_back({process_name, static_cast<int>(i)});
+
+        if (i == 0)
+        {
+            start_address = frame * page_size;
+        }
+    }
+
+    process_page_table[process_name] = allocated_frames;
+
+    return {start_address, aligned_size};
 }
 
 void MemoryManager::deallocate(const std::string &process_name)
@@ -135,7 +208,7 @@ void MemoryManager::evictOldestPage()
         if (frame_table[frame].dirty)
         {
             std::cout << "[MM] Writing dirty page " << page << " of " << proc
-                    << " back to backing store\n";
+                      << " back to backing store\n";
             writeToBackingStore(proc, page);
         }
 

@@ -14,12 +14,20 @@ struct FrameInfo
     bool dirty;
 };
 
+struct AllocationResult
+{
+    int start_address;
+    size_t size; // actual allocated size (aligned & clamped)
+};
+
 class MemoryManager
 {
 public:
     MemoryManager(size_t total_memory, size_t page_size);
 
-    int allocate(size_t bytes_required, const std::string &process_name);
+    AllocationResult allocate(size_t requested, const std::string &process_name);
+
+    // int allocate(size_t bytes_required, const std::string &process_name);
     void deallocate(const std::string &process_name);
 
     bool isPageInMemory(const std::string &process_name, int page_number) const;
@@ -57,7 +65,7 @@ private:
     std::unordered_map<std::string, std::vector<int>> process_page_table;
 
     std::deque<std::pair<std::string, int>> fifo_queue;
-   // std::unordered_map<std::string, std::set<int>> backing_store;
+    // std::unordered_map<std::string, std::set<int>> backing_store;
 
     void writeToBackingStore(const std::string &process_name, int page_number);
     void removeFromBackingStore(const std::string &process_name);
