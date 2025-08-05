@@ -98,57 +98,50 @@ bool Process::canExecute() const
     return true;
 }
 
-// --- READ from virtual memory ---
 uint32_t Process::readMemory(uint32_t virtualAddr)
 {
-    // Step 1: Check if address is within this process's allocated memory
     if (!isAddressValid(virtualAddr))
     {
-        markAsError(virtualAddr); // Invalid access → kill process
+        markAsError(virtualAddr);
         return 0;
     }
 
-    // Step 2: Break address into page number and offset within page
-    int page = getVirtualPageNumber(virtualAddr); // e.g., 0x500 → page 2 (if 256-byte pages)
-    int offset = getOffset(virtualAddr);          // e.g., 0x500 → offset 0
+    int page = getVirtualPageNumber(virtualAddr);
+    int offset = getOffset(virtualAddr);
 
-    // Step 3: Check if the required page is currently in physical memory
     if (!isPageValid(page))
     {
-        // Page is not in RAM → trigger a page fault
         triggerPageFault(page);
-
-        // After page fault handling, check again
-        // (In real OS, instruction restarts automatically)
         if (!isPageValid(page))
         {
-            // Still not loaded? Something went wrong → crash
             markAsError(virtualAddr);
             return 0;
         }
     }
 
-    // Step 4: Simulate reading a 16-bit value from memory
-    // In real system: access physical frame + offset
-    // Here: return dummy data based on address (for demo)
-    return static_cast<uint32_t>(virtualAddr ^ 0xABCD); // Dummy value
+    int frame = pageTable[page].frameNumber;
+    uint32_t physicalAddr = frame * frameSize + offset;
+
+    uint16_t value = memoryManager->read(physicalAddr); // <-- actually read
+
+    std::ostringstream oss;
+    std::cout << "Read 0x" << std::hex << value
+              << " from VA 0x" << virtualAddr
+              << " (PA 0x" << physicalAddr << ")" << '\n';
+    return value;
 }
 
-// --- WRITE to virtual memory ---
 void Process::writeMemory(uint32_t virtualAddr, uint32_t value)
 {
-    // Step 1: Validate memory bounds
     if (!isAddressValid(virtualAddr))
     {
-        markAsError(virtualAddr); // Out of bounds → crash
+        markAsError(virtualAddr);
         return;
     }
 
-    // Step 2: Get page number
     int page = getVirtualPageNumber(virtualAddr);
     int offset = getOffset(virtualAddr);
 
-    // Step 3: Ensure page is in memory
     if (!isPageValid(page))
     {
         triggerPageFault(page);
@@ -159,16 +152,17 @@ void Process::writeMemory(uint32_t virtualAddr, uint32_t value)
         }
     }
 
-    // Step 4: Mark page as DIRTY because we're modifying it
-    // This means when this page is evicted, it must be saved to backing store
+    int frame = pageTable[page].frameNumber;
+    uint32_t physicalAddr = frame * frameSize + offset;
+
+    memoryManager->write(physicalAddr, static_cast<uint32_t>(value)); // <-- actually store
+
     setPageDirty(page);
 
-    // Step 5: Simulate write operation
-    // In full emulator: write 'value' to physical frame + offset
-    // Here: just log it
     std::ostringstream oss;
-    oss << "Wrote 0x" << std::hex << value << " to virtual address 0x" << virtualAddr;
-    logExecution(current_core, oss.str());
+    std::cout << "Wrote 0x" << std::hex << value
+              << " to VA 0x" << virtualAddr
+              << " (PA 0x" << physicalAddr << ")" << "\n";
 }
 
 bool Process::hasVar(const std::string &name) const
@@ -260,9 +254,12 @@ void Process::triggerPageFault(int virtualPage)
     {
         std::cout << "[" << name << "] Page fault: accessing invalid page " << virtualPage << "\n";
 
-        memoryManager->loadPage(name, virtualPage); // use the process name
+        memoryManager->loadPage(name, virtualPage);
 
-        pageTable[virtualPage].isValid = true; // Mark this page as loaded into memory
+        // **Set the frame number in our local page table**
+        int frame = memoryManager->getFrameNumber(name, virtualPage);
+        pageTable[virtualPage].frameNumber = frame;
+        pageTable[virtualPage].isValid = true;
     }
     else
     {
@@ -283,8 +280,7 @@ void Process::markAsError(uint32_t addr)
 
     // Log the violation
     std::ostringstream oss;
-    oss << "Memory access violation at 0x" << std::hex << addr;
-    logExecution(current_core, oss.str());
+    std::cout << "Memory access violation at 0x" << std::hex << addr;
 }
 
 // --- Get formatted error time (HH:MM:SS) ---
