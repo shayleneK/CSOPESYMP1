@@ -1,12 +1,12 @@
 
 #include "Scheduler.h"
-#include "CPUCore.h"
+#include "CPUCycleManager.h"
 #include <chrono>
 #include <algorithm>
 #include <iostream>
 #include <functional>
 
-Scheduler *Scheduler::instance_ = nullptr;
+Scheduler* Scheduler::instance_ = nullptr;
 Scheduler::Scheduler(int num_cores)
     : core_available(num_cores, true)
 {
@@ -30,39 +30,6 @@ void Scheduler::add_process(std::shared_ptr<Process> process)
     queue_condition.notify_one();
 }
 
-void Scheduler::start_core_threads()
-{
-    int num_cores = static_cast<int>(core_available.size());
-    for (int i = 0; i < num_cores; ++i)
-    {
-        core_available[i] = true;
-
-        auto core = std::make_shared<CPUCore>(i, [this](int core_id) -> std::shared_ptr<Process>
-                                              {
-            std::unique_lock<std::mutex> lock(queue_mutex);
-
-            if (!ready_queue.empty()) {
-                auto process = ready_queue.front();
-                ready_queue.pop();
-                core_available[core_id] = false;
-
-                {
-                    std::lock_guard<std::mutex> lock2(running_mutex);
-                    current_processes[core_id] = process;
-                    process_to_core[process] = core_id;
-                }
-
-                return process;
-            }
-
-            core_available[core_id] = true;
-            return nullptr; });
-
-        cpu_core_objects.push_back(core);
-        core->start();
-    }
-}
-
 void Scheduler::shutdown()
 {
     global_shutdown = true;
@@ -71,74 +38,45 @@ void Scheduler::shutdown()
 
     queue_condition.notify_all();
 
-    for (auto &core : cpu_core_objects)
-    {
-        core->stop();
-    }
-
-    for (auto &t : cpu_cores)
-    {
-        if (t.joinable())
-            t.join();
-    }
+    CPUCycleManager::getInstance().stop();
 }
-/*
-void Scheduler::run_core(int core_id)
-{
-    while (running)
-    {
-        std::shared_ptr<Process> process;
 
-        {
-            std::unique_lock<std::mutex> lock(queue_mutex);
-            queue_condition.wait(lock, [this]
-                                 { return !running || !ready_queue.empty(); });
+void Scheduler::on_cpu_cycle(uint64_t cycle) {
+    std::unique_lock<std::mutex> lock(queue_mutex);
 
-            if (!running)
-                break;
+    if (!ready_queue.empty()) {
+        // Pick next process to run
+        auto process = ready_queue.front();
+        ready_queue.pop();
 
-            if (!ready_queue.empty())
-            {
-                process = ready_queue.front();
-                ready_queue.pop();
-                core_available[core_id] = false;
-            }
-            else
-            {
-                continue;
-            }
+        // Run it
+        process->execute(0);  // 0 as dummy core_id, since cores are abstracted
+
+        if (!process->isFinished()) {
+            ready_queue.push(process);  // Re-enqueue if not done
+        } else {
+            std::lock_guard<std::mutex> lock2(running_mutex);
+            current_processes.erase(0);
         }
 
-        if (process)
         {
-            {
-                std::unique_lock<std::mutex> lock(running_mutex);
-                current_processes[core_id] = process;
-            }
-            auto start_time = std::chrono::high_resolution_clock::now();
-            process->execute(core_id);
-            auto end_time = std::chrono::high_resolution_clock::now();
-
-            int duration_ms = static_cast<int>(
-                std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count());
-
-            core_util_time[core_id] += duration_ms;
-            core_process_count[core_id]++;
-            total_cpu_time = std::max(total_cpu_time, core_util_time[core_id]);
-
-            core_available[core_id] = true;
-            if (process->is_finished)
-            {
-                current_processes.erase(core_id);
-            }
+            std::lock_guard<std::mutex> lock2(running_mutex);
+            current_processes[0] = process;
         }
+    } else {
+        std::lock_guard<std::mutex> lock2(running_mutex);
+        current_processes.erase(0);
     }
 }
-*/
+
+void start_core_threads(){
+    CPUCycleManager::getInstance().start();
+}
+
 void Scheduler::start()
 {
     running = true;
-    start_core_threads();
+    CPUCycleManager::getInstance().start();
     start_process_generator();
 }
 

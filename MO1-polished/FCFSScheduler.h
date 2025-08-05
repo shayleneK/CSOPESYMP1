@@ -15,7 +15,7 @@ public:
     void start() override;
     // void stop_scheduler() override;
     bool is_scheduler_running() const override;
-    void start_core_threads() override;
+    void start_core_threads();
 
     void on_cpu_cycle(uint64_t cycle_number) override;
     int get_min_instructions() const override { return min_instructions; }
