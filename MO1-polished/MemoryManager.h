@@ -37,6 +37,9 @@ public:
     void write(uint32_t physicalAddr, uint16_t value);
     uint16_t read(uint32_t physicalAddr);
 
+    size_t getPagesPagedIn() const { return pages_paged_in; }
+    size_t getPagesPagedOut() const { return pages_paged_out; }
+
 private:
     void evictPageIfNeeded();
     void evictOldestPage();
@@ -55,4 +58,8 @@ private:
 
     std::deque<std::pair<std::string, int>> fifo_queue;
     std::unordered_map<std::string, std::set<int>> backing_store;
+
+    // Page stats
+    size_t pages_paged_in = 0;
+    size_t pages_paged_out = 0;
 };
