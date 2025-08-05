@@ -39,7 +39,7 @@ private:
     void generate_new_process();
     void run_core(int core_id);
     void save_memory_snapshot(uint64_t cycle_number);
-    CPUCycleManager cpuCycleManager;
+    CPUCycleManager& cpuCycleManager;
 
     int time_quantum;
     std::atomic<bool> generating_processes{false};

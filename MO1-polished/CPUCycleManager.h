@@ -8,29 +8,36 @@
 class CPUCycleManager {
 public:
     using Callback = std::function<void(uint64_t)>;
-    CPUCycleManager(Callback callback, int interval_ms = 1000);
+
+    // Singleton accessor
     static CPUCycleManager& getInstance();
 
+    // Start and stop the CPU ticking loop
     void start();
     void stop();
-    uint64_t getCpuCycles() const;
-    double getUtilization() const;
+
+    // Set external callback to be called every tick
     void set_callback(Callback new_callback);
 
+    // Get CPU statistics
+    uint64_t getCpuCycles() const;
+    double getUtilization() const;
+
+    ~CPUCycleManager();
+
 private:
-    CPUCycleManager();
-    void cpuLoop();
-    void run();
+    CPUCycleManager();                          // Private constructor for singleton
+    CPUCycleManager(const CPUCycleManager&) = delete;
 
-    std::atomic<bool> running;
-    std::atomic<uint64_t> cpu_cycles;
-    std::atomic<uint64_t> total_cycles;
-    std::atomic<uint64_t> busy_cycles;
+    CPUCycleManager& operator=(const CPUCycleManager&) = delete;
 
-    std::thread cpu_thread;
-    Callback callback_;
-    int interval_ms_;
-    std::thread worker_;
+    void cpuLoop();                         // Internal ticking loop
+
     std::atomic<bool> running_;
-    uint64_t cycle_count_;
+    std::atomic<uint64_t> cpu_cycles_;
+    std::atomic<uint64_t> total_cycles_;
+    std::atomic<uint64_t> busy_cycles_;
+    Callback callback_;
+    std::thread cpu_thread_;
+    int interval_ms_;                       // Tick interval (default 1000ms)
 };

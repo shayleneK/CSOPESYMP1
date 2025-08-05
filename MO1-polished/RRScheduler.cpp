@@ -20,7 +20,7 @@ RRScheduler::RRScheduler(int num_cores, int quantum_ms, int min_ins, int max_ins
     : Scheduler(num_cores, min_ins, max_ins, mem_per_proc),
       time_quantum(quantum_ms),
       memory_manager_(mem_mgr),
-      cpuCycleManager([this](uint64_t cycle) { this->on_cpu_cycle(cycle); }, 1000)
+      cpuCycleManager(CPUCycleManager::getInstance())
 {
     process_memory_map_.clear();
     for (int i = 0; i < num_cores; ++i) {

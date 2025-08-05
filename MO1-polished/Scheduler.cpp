@@ -5,6 +5,8 @@
 #include <iostream>
 #include <functional>
 
+Scheduler* Scheduler::instance_ = nullptr;
+
 Scheduler::Scheduler(int num_cores, int min_ins, int max_ins, int mem_per_proc)
     : core_available(num_cores, true),
       min_instructions(min_ins),
