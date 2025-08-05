@@ -1,6 +1,6 @@
-Timestamp: (08/05/2025 07:51:23PM)
-Number of processes in memory: 2
-Total external fragmentation in B: 31744
+Timestamp: (08/05/2025 08:42:19PM)
+Number of processes in memory: 10
+Total external fragmentation in B: 22528
 Frame 0: p00 (Page 0)
 Frame 1: p00 (Page 1)
 Frame 2: p00 (Page 2)
@@ -33,294 +33,294 @@ Frame 28: p00 (Page 28)
 Frame 29: p00 (Page 29)
 Frame 30: p00 (Page 30)
 Frame 31: p00 (Page 31)
-Frame 32: [Free]
-Frame 33: [Free]
-Frame 34: [Free]
-Frame 35: [Free]
-Frame 36: [Free]
-Frame 37: [Free]
-Frame 38: [Free]
-Frame 39: [Free]
-Frame 40: [Free]
-Frame 41: [Free]
-Frame 42: [Free]
-Frame 43: [Free]
-Frame 44: [Free]
-Frame 45: [Free]
-Frame 46: [Free]
-Frame 47: [Free]
-Frame 48: [Free]
-Frame 49: [Free]
-Frame 50: [Free]
-Frame 51: [Free]
-Frame 52: [Free]
-Frame 53: [Free]
-Frame 54: [Free]
-Frame 55: [Free]
-Frame 56: [Free]
-Frame 57: [Free]
-Frame 58: [Free]
-Frame 59: [Free]
-Frame 60: [Free]
-Frame 61: [Free]
-Frame 62: [Free]
-Frame 63: [Free]
-Frame 64: [Free]
-Frame 65: [Free]
-Frame 66: [Free]
-Frame 67: [Free]
-Frame 68: [Free]
-Frame 69: [Free]
-Frame 70: [Free]
-Frame 71: [Free]
-Frame 72: [Free]
-Frame 73: [Free]
-Frame 74: [Free]
-Frame 75: [Free]
-Frame 76: [Free]
-Frame 77: [Free]
-Frame 78: [Free]
-Frame 79: [Free]
-Frame 80: [Free]
-Frame 81: [Free]
-Frame 82: [Free]
-Frame 83: [Free]
-Frame 84: [Free]
-Frame 85: [Free]
-Frame 86: [Free]
-Frame 87: [Free]
-Frame 88: [Free]
-Frame 89: [Free]
-Frame 90: [Free]
-Frame 91: [Free]
-Frame 92: [Free]
-Frame 93: [Free]
-Frame 94: [Free]
-Frame 95: [Free]
-Frame 96: [Free]
-Frame 97: [Free]
-Frame 98: [Free]
-Frame 99: [Free]
-Frame 100: [Free]
-Frame 101: [Free]
-Frame 102: [Free]
-Frame 103: [Free]
-Frame 104: [Free]
-Frame 105: [Free]
-Frame 106: [Free]
-Frame 107: [Free]
-Frame 108: [Free]
-Frame 109: [Free]
-Frame 110: [Free]
-Frame 111: [Free]
-Frame 112: [Free]
-Frame 113: [Free]
-Frame 114: [Free]
-Frame 115: [Free]
-Frame 116: [Free]
-Frame 117: [Free]
-Frame 118: [Free]
-Frame 119: [Free]
-Frame 120: [Free]
-Frame 121: [Free]
-Frame 122: [Free]
-Frame 123: [Free]
-Frame 124: [Free]
-Frame 125: [Free]
-Frame 126: [Free]
-Frame 127: [Free]
-Frame 128: [Free]
-Frame 129: [Free]
-Frame 130: [Free]
-Frame 131: [Free]
-Frame 132: [Free]
-Frame 133: [Free]
-Frame 134: [Free]
-Frame 135: [Free]
-Frame 136: [Free]
-Frame 137: [Free]
-Frame 138: [Free]
-Frame 139: [Free]
-Frame 140: [Free]
-Frame 141: [Free]
-Frame 142: [Free]
-Frame 143: [Free]
-Frame 144: [Free]
-Frame 145: [Free]
-Frame 146: [Free]
-Frame 147: [Free]
-Frame 148: [Free]
-Frame 149: [Free]
-Frame 150: [Free]
-Frame 151: [Free]
-Frame 152: [Free]
-Frame 153: [Free]
-Frame 154: [Free]
-Frame 155: [Free]
-Frame 156: [Free]
-Frame 157: [Free]
-Frame 158: [Free]
-Frame 159: [Free]
-Frame 160: [Free]
-Frame 161: [Free]
-Frame 162: [Free]
-Frame 163: [Free]
-Frame 164: [Free]
-Frame 165: [Free]
-Frame 166: [Free]
-Frame 167: [Free]
-Frame 168: [Free]
-Frame 169: [Free]
-Frame 170: [Free]
-Frame 171: [Free]
-Frame 172: [Free]
-Frame 173: [Free]
-Frame 174: [Free]
-Frame 175: [Free]
-Frame 176: [Free]
-Frame 177: [Free]
-Frame 178: [Free]
-Frame 179: [Free]
-Frame 180: [Free]
-Frame 181: [Free]
-Frame 182: [Free]
-Frame 183: [Free]
-Frame 184: [Free]
-Frame 185: [Free]
-Frame 186: [Free]
-Frame 187: [Free]
-Frame 188: [Free]
-Frame 189: [Free]
-Frame 190: [Free]
-Frame 191: [Free]
-Frame 192: [Free]
-Frame 193: [Free]
-Frame 194: [Free]
-Frame 195: [Free]
-Frame 196: [Free]
-Frame 197: [Free]
-Frame 198: [Free]
-Frame 199: [Free]
-Frame 200: [Free]
-Frame 201: [Free]
-Frame 202: [Free]
-Frame 203: [Free]
-Frame 204: [Free]
-Frame 205: [Free]
-Frame 206: [Free]
-Frame 207: [Free]
-Frame 208: [Free]
-Frame 209: [Free]
-Frame 210: [Free]
-Frame 211: [Free]
-Frame 212: [Free]
-Frame 213: [Free]
-Frame 214: [Free]
-Frame 215: [Free]
-Frame 216: [Free]
-Frame 217: [Free]
-Frame 218: [Free]
-Frame 219: [Free]
-Frame 220: [Free]
-Frame 221: [Free]
-Frame 222: [Free]
-Frame 223: [Free]
-Frame 224: [Free]
-Frame 225: [Free]
-Frame 226: [Free]
-Frame 227: [Free]
-Frame 228: [Free]
-Frame 229: [Free]
-Frame 230: [Free]
-Frame 231: [Free]
-Frame 232: [Free]
-Frame 233: [Free]
-Frame 234: [Free]
-Frame 235: [Free]
-Frame 236: [Free]
-Frame 237: [Free]
-Frame 238: [Free]
-Frame 239: [Free]
-Frame 240: [Free]
-Frame 241: [Free]
-Frame 242: [Free]
-Frame 243: [Free]
-Frame 244: [Free]
-Frame 245: [Free]
-Frame 246: [Free]
-Frame 247: [Free]
-Frame 248: [Free]
-Frame 249: [Free]
-Frame 250: [Free]
-Frame 251: [Free]
-Frame 252: [Free]
-Frame 253: [Free]
-Frame 254: [Free]
-Frame 255: [Free]
-Frame 256: [Free]
-Frame 257: [Free]
-Frame 258: [Free]
-Frame 259: [Free]
-Frame 260: [Free]
-Frame 261: [Free]
-Frame 262: [Free]
-Frame 263: [Free]
-Frame 264: [Free]
-Frame 265: [Free]
-Frame 266: [Free]
-Frame 267: [Free]
-Frame 268: [Free]
-Frame 269: [Free]
-Frame 270: [Free]
-Frame 271: [Free]
-Frame 272: [Free]
-Frame 273: [Free]
-Frame 274: [Free]
-Frame 275: [Free]
-Frame 276: [Free]
-Frame 277: [Free]
-Frame 278: [Free]
-Frame 279: [Free]
-Frame 280: [Free]
-Frame 281: [Free]
-Frame 282: [Free]
-Frame 283: [Free]
-Frame 284: [Free]
-Frame 285: [Free]
-Frame 286: [Free]
-Frame 287: [Free]
-Frame 288: [Free]
-Frame 289: [Free]
-Frame 290: [Free]
-Frame 291: [Free]
-Frame 292: [Free]
-Frame 293: [Free]
-Frame 294: [Free]
-Frame 295: [Free]
-Frame 296: [Free]
-Frame 297: [Free]
-Frame 298: [Free]
-Frame 299: [Free]
-Frame 300: [Free]
-Frame 301: [Free]
-Frame 302: [Free]
-Frame 303: [Free]
-Frame 304: [Free]
-Frame 305: [Free]
-Frame 306: [Free]
-Frame 307: [Free]
-Frame 308: [Free]
-Frame 309: [Free]
-Frame 310: [Free]
-Frame 311: [Free]
-Frame 312: [Free]
-Frame 313: [Free]
-Frame 314: [Free]
-Frame 315: [Free]
-Frame 316: [Free]
-Frame 317: [Free]
-Frame 318: [Free]
-Frame 319: [Free]
+Frame 32: p01 (Page 0)
+Frame 33: p01 (Page 1)
+Frame 34: p01 (Page 2)
+Frame 35: p01 (Page 3)
+Frame 36: p01 (Page 4)
+Frame 37: p01 (Page 5)
+Frame 38: p01 (Page 6)
+Frame 39: p01 (Page 7)
+Frame 40: p01 (Page 8)
+Frame 41: p01 (Page 9)
+Frame 42: p01 (Page 10)
+Frame 43: p01 (Page 11)
+Frame 44: p01 (Page 12)
+Frame 45: p01 (Page 13)
+Frame 46: p01 (Page 14)
+Frame 47: p01 (Page 15)
+Frame 48: p01 (Page 16)
+Frame 49: p01 (Page 17)
+Frame 50: p01 (Page 18)
+Frame 51: p01 (Page 19)
+Frame 52: p01 (Page 20)
+Frame 53: p01 (Page 21)
+Frame 54: p01 (Page 22)
+Frame 55: p01 (Page 23)
+Frame 56: p01 (Page 24)
+Frame 57: p01 (Page 25)
+Frame 58: p01 (Page 26)
+Frame 59: p01 (Page 27)
+Frame 60: p01 (Page 28)
+Frame 61: p01 (Page 29)
+Frame 62: p01 (Page 30)
+Frame 63: p01 (Page 31)
+Frame 64: p02 (Page 0)
+Frame 65: p02 (Page 1)
+Frame 66: p02 (Page 2)
+Frame 67: p02 (Page 3)
+Frame 68: p02 (Page 4)
+Frame 69: p02 (Page 5)
+Frame 70: p02 (Page 6)
+Frame 71: p02 (Page 7)
+Frame 72: p02 (Page 8)
+Frame 73: p02 (Page 9)
+Frame 74: p02 (Page 10)
+Frame 75: p02 (Page 11)
+Frame 76: p02 (Page 12)
+Frame 77: p02 (Page 13)
+Frame 78: p02 (Page 14)
+Frame 79: p02 (Page 15)
+Frame 80: p02 (Page 16)
+Frame 81: p02 (Page 17)
+Frame 82: p02 (Page 18)
+Frame 83: p02 (Page 19)
+Frame 84: p02 (Page 20)
+Frame 85: p02 (Page 21)
+Frame 86: p02 (Page 22)
+Frame 87: p02 (Page 23)
+Frame 88: p02 (Page 24)
+Frame 89: p02 (Page 25)
+Frame 90: p02 (Page 26)
+Frame 91: p02 (Page 27)
+Frame 92: p02 (Page 28)
+Frame 93: p02 (Page 29)
+Frame 94: p02 (Page 30)
+Frame 95: p02 (Page 31)
+Frame 96: p03 (Page 0)
+Frame 97: p03 (Page 1)
+Frame 98: p03 (Page 2)
+Frame 99: p03 (Page 3)
+Frame 100: p03 (Page 4)
+Frame 101: p03 (Page 5)
+Frame 102: p03 (Page 6)
+Frame 103: p03 (Page 7)
+Frame 104: p03 (Page 8)
+Frame 105: p03 (Page 9)
+Frame 106: p03 (Page 10)
+Frame 107: p03 (Page 11)
+Frame 108: p03 (Page 12)
+Frame 109: p03 (Page 13)
+Frame 110: p03 (Page 14)
+Frame 111: p03 (Page 15)
+Frame 112: p03 (Page 16)
+Frame 113: p03 (Page 17)
+Frame 114: p03 (Page 18)
+Frame 115: p03 (Page 19)
+Frame 116: p03 (Page 20)
+Frame 117: p03 (Page 21)
+Frame 118: p03 (Page 22)
+Frame 119: p03 (Page 23)
+Frame 120: p03 (Page 24)
+Frame 121: p03 (Page 25)
+Frame 122: p03 (Page 26)
+Frame 123: p03 (Page 27)
+Frame 124: p03 (Page 28)
+Frame 125: p03 (Page 29)
+Frame 126: p03 (Page 30)
+Frame 127: p03 (Page 31)
+Frame 128: p04 (Page 0)
+Frame 129: p04 (Page 1)
+Frame 130: p04 (Page 2)
+Frame 131: p04 (Page 3)
+Frame 132: p04 (Page 4)
+Frame 133: p04 (Page 5)
+Frame 134: p04 (Page 6)
+Frame 135: p04 (Page 7)
+Frame 136: p04 (Page 8)
+Frame 137: p04 (Page 9)
+Frame 138: p04 (Page 10)
+Frame 139: p04 (Page 11)
+Frame 140: p04 (Page 12)
+Frame 141: p04 (Page 13)
+Frame 142: p04 (Page 14)
+Frame 143: p04 (Page 15)
+Frame 144: p04 (Page 16)
+Frame 145: p04 (Page 17)
+Frame 146: p04 (Page 18)
+Frame 147: p04 (Page 19)
+Frame 148: p04 (Page 20)
+Frame 149: p04 (Page 21)
+Frame 150: p04 (Page 22)
+Frame 151: p04 (Page 23)
+Frame 152: p04 (Page 24)
+Frame 153: p04 (Page 25)
+Frame 154: p04 (Page 26)
+Frame 155: p04 (Page 27)
+Frame 156: p04 (Page 28)
+Frame 157: p04 (Page 29)
+Frame 158: p04 (Page 30)
+Frame 159: p04 (Page 31)
+Frame 160: p05 (Page 0)
+Frame 161: p05 (Page 1)
+Frame 162: p05 (Page 2)
+Frame 163: p05 (Page 3)
+Frame 164: p05 (Page 4)
+Frame 165: p05 (Page 5)
+Frame 166: p05 (Page 6)
+Frame 167: p05 (Page 7)
+Frame 168: p05 (Page 8)
+Frame 169: p05 (Page 9)
+Frame 170: p05 (Page 10)
+Frame 171: p05 (Page 11)
+Frame 172: p05 (Page 12)
+Frame 173: p05 (Page 13)
+Frame 174: p05 (Page 14)
+Frame 175: p05 (Page 15)
+Frame 176: p05 (Page 16)
+Frame 177: p05 (Page 17)
+Frame 178: p05 (Page 18)
+Frame 179: p05 (Page 19)
+Frame 180: p05 (Page 20)
+Frame 181: p05 (Page 21)
+Frame 182: p05 (Page 22)
+Frame 183: p05 (Page 23)
+Frame 184: p05 (Page 24)
+Frame 185: p05 (Page 25)
+Frame 186: p05 (Page 26)
+Frame 187: p05 (Page 27)
+Frame 188: p05 (Page 28)
+Frame 189: p05 (Page 29)
+Frame 190: p05 (Page 30)
+Frame 191: p05 (Page 31)
+Frame 192: p06 (Page 0)
+Frame 193: p06 (Page 1)
+Frame 194: p06 (Page 2)
+Frame 195: p06 (Page 3)
+Frame 196: p06 (Page 4)
+Frame 197: p06 (Page 5)
+Frame 198: p06 (Page 6)
+Frame 199: p06 (Page 7)
+Frame 200: p06 (Page 8)
+Frame 201: p06 (Page 9)
+Frame 202: p06 (Page 10)
+Frame 203: p06 (Page 11)
+Frame 204: p06 (Page 12)
+Frame 205: p06 (Page 13)
+Frame 206: p06 (Page 14)
+Frame 207: p06 (Page 15)
+Frame 208: p06 (Page 16)
+Frame 209: p06 (Page 17)
+Frame 210: p06 (Page 18)
+Frame 211: p06 (Page 19)
+Frame 212: p06 (Page 20)
+Frame 213: p06 (Page 21)
+Frame 214: p06 (Page 22)
+Frame 215: p06 (Page 23)
+Frame 216: p06 (Page 24)
+Frame 217: p06 (Page 25)
+Frame 218: p06 (Page 26)
+Frame 219: p06 (Page 27)
+Frame 220: p06 (Page 28)
+Frame 221: p06 (Page 29)
+Frame 222: p06 (Page 30)
+Frame 223: p06 (Page 31)
+Frame 224: p07 (Page 0)
+Frame 225: p07 (Page 1)
+Frame 226: p07 (Page 2)
+Frame 227: p07 (Page 3)
+Frame 228: p07 (Page 4)
+Frame 229: p07 (Page 5)
+Frame 230: p07 (Page 6)
+Frame 231: p07 (Page 7)
+Frame 232: p07 (Page 8)
+Frame 233: p07 (Page 9)
+Frame 234: p07 (Page 10)
+Frame 235: p07 (Page 11)
+Frame 236: p07 (Page 12)
+Frame 237: p07 (Page 13)
+Frame 238: p07 (Page 14)
+Frame 239: p07 (Page 15)
+Frame 240: p07 (Page 16)
+Frame 241: p07 (Page 17)
+Frame 242: p07 (Page 18)
+Frame 243: p07 (Page 19)
+Frame 244: p07 (Page 20)
+Frame 245: p07 (Page 21)
+Frame 246: p07 (Page 22)
+Frame 247: p07 (Page 23)
+Frame 248: p07 (Page 24)
+Frame 249: p07 (Page 25)
+Frame 250: p07 (Page 26)
+Frame 251: p07 (Page 27)
+Frame 252: p07 (Page 28)
+Frame 253: p07 (Page 29)
+Frame 254: p07 (Page 30)
+Frame 255: p07 (Page 31)
+Frame 256: p08 (Page 0)
+Frame 257: p08 (Page 1)
+Frame 258: p08 (Page 2)
+Frame 259: p08 (Page 3)
+Frame 260: p08 (Page 4)
+Frame 261: p08 (Page 5)
+Frame 262: p08 (Page 6)
+Frame 263: p08 (Page 7)
+Frame 264: p08 (Page 8)
+Frame 265: p08 (Page 9)
+Frame 266: p08 (Page 10)
+Frame 267: p08 (Page 11)
+Frame 268: p08 (Page 12)
+Frame 269: p08 (Page 13)
+Frame 270: p08 (Page 14)
+Frame 271: p08 (Page 15)
+Frame 272: p08 (Page 16)
+Frame 273: p08 (Page 17)
+Frame 274: p08 (Page 18)
+Frame 275: p08 (Page 19)
+Frame 276: p08 (Page 20)
+Frame 277: p08 (Page 21)
+Frame 278: p08 (Page 22)
+Frame 279: p08 (Page 23)
+Frame 280: p08 (Page 24)
+Frame 281: p08 (Page 25)
+Frame 282: p08 (Page 26)
+Frame 283: p08 (Page 27)
+Frame 284: p08 (Page 28)
+Frame 285: p08 (Page 29)
+Frame 286: p08 (Page 30)
+Frame 287: p08 (Page 31)
+Frame 288: p09 (Page 0)
+Frame 289: p09 (Page 1)
+Frame 290: p09 (Page 2)
+Frame 291: p09 (Page 3)
+Frame 292: p09 (Page 4)
+Frame 293: p09 (Page 5)
+Frame 294: p09 (Page 6)
+Frame 295: p09 (Page 7)
+Frame 296: p09 (Page 8)
+Frame 297: p09 (Page 9)
+Frame 298: p09 (Page 10)
+Frame 299: p09 (Page 11)
+Frame 300: p09 (Page 12)
+Frame 301: p09 (Page 13)
+Frame 302: p09 (Page 14)
+Frame 303: p09 (Page 15)
+Frame 304: p09 (Page 16)
+Frame 305: p09 (Page 17)
+Frame 306: p09 (Page 18)
+Frame 307: p09 (Page 19)
+Frame 308: p09 (Page 20)
+Frame 309: p09 (Page 21)
+Frame 310: p09 (Page 22)
+Frame 311: p09 (Page 23)
+Frame 312: p09 (Page 24)
+Frame 313: p09 (Page 25)
+Frame 314: p09 (Page 26)
+Frame 315: p09 (Page 27)
+Frame 316: p09 (Page 28)
+Frame 317: p09 (Page 29)
+Frame 318: p09 (Page 30)
+Frame 319: p09 (Page 31)
 Frame 320: [Free]
 Frame 321: [Free]
 Frame 322: [Free]

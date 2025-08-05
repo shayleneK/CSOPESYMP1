@@ -47,6 +47,7 @@ public:
 
     size_t getPagesPagedIn() const { return pages_paged_in; }
     size_t getPagesPagedOut() const { return pages_paged_out; }
+    size_t getFreeMemory() const;
 
 private:
     void evictPageIfNeeded();

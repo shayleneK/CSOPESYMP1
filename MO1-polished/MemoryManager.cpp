@@ -77,39 +77,11 @@ AllocationResult MemoryManager::allocate(size_t requested, const std::string &pr
         throw std::invalid_argument("Requested size too small to allocate a frame.");
     }
 
-    // Track allocated frame indices
-    std::vector<int> allocated_frames;
-    int start_address = -1;
+    // Demand paging: initialize page table with -1 (unloaded pages)
+    process_page_table[process_name] = std::vector<int>(num_pages_needed, -1);
 
-    for (size_t i = 0; i < num_pages_needed; ++i)
-    {
-        int frame = findFreeFrame();
-        if (frame == -1)
-        {
-            // Rollback partial allocation
-            for (int f : allocated_frames)
-            {
-                frame_used[f] = false;
-                frame_table[f] = FrameInfo{};
-            }
-            throw std::invalid_argument("Not enough contiguous frames for allocation.");
-        }
-
-        // Mark frame as used
-        frame_used[frame] = true;
-        frame_table[frame] = {process_name, static_cast<int>(i), false};
-        allocated_frames.push_back(frame);
-        process_pages[process_name].insert(frame);
-        fifo_queue.push_back({process_name, static_cast<int>(i)});
-
-        if (i == 0)
-        {
-            start_address = frame * page_size;
-        }
-    }
-
-    process_page_table[process_name] = allocated_frames;
-
+    // No frames allocated here. Frames will be loaded on demand in loadPage().
+    int start_address = 0; // Logical starting address is 0 (virtual)
     return {start_address, aligned_size};
 }
 
@@ -232,6 +204,12 @@ int MemoryManager::findFreeFrame() const
             return i;
     }
     return -1;
+}
+
+size_t MemoryManager::getFreeMemory() const
+{
+    size_t free_frames = std::count(frame_used.begin(), frame_used.end(), false);
+    return free_frames * page_size;
 }
 
 std::string MemoryManager::printMemoryLayout() const

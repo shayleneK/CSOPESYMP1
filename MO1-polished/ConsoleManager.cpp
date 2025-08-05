@@ -621,22 +621,23 @@ void ConsoleManager::processInput()
         }
 
         size_t totalMem = memoryManager->getTotalMemory();
-        size_t freeMem = memoryManager->getExternalFragmentation();
+        size_t freeMem = memoryManager->getFreeMemory();
         size_t usedMem = totalMem - freeMem;
 
-        // size_t idleCpuTicks = cpuManager->getIdleTicks();     // Replace with your actual function
-        // size_t activeCpuTicks = cpuManager->getActiveTicks(); // Replace with your actual function
-        // size_t totalCpuTicks = idleCpuTicks + activeCpuTicks;
+        uint64_t idleCpuTicks = CPUCycleManager::getInstance().getIdleCycles();
+        uint64_t activeCpuTicks = CPUCycleManager::getInstance().getBusyCycles();
+        uint64_t totalCpuTicks = CPUCycleManager::getInstance().getTotalCycles();
 
         size_t pagesPagedIn = memoryManager->getPagesPagedIn();   // Replace with your actual function
         size_t pagesPagedOut = memoryManager->getPagesPagedOut(); // Replace with your actual function
 
+        std::cout << std::dec;
         std::cout << totalMem << " K total memory\n";
         std::cout << usedMem << " K used memory\n";
         std::cout << freeMem << " K free memory\n";
-        // std::cout << idleCpuTicks << " idle cpu ticks\n";
-        // std::cout << activeCpuTicks << " active cpu ticks\n";
-        // std::cout << totalCpuTicks << " total cpu ticks\n";
+        std::cout << idleCpuTicks << " idle cpu ticks\n";
+        std::cout << activeCpuTicks << " active cpu ticks\n";
+        std::cout << totalCpuTicks << " total cpu ticks\n";
         std::cout << pagesPagedIn << " pages paged in\n";
         std::cout << pagesPagedOut << " pages paged out\n";
     }

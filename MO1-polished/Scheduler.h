@@ -54,6 +54,13 @@ public:
     static Scheduler *getInstance();
     static void setInstance(Scheduler *scheduler);
 
+    void incrementIdleTicks(size_t count = 1) { idleCpuTicks += count; }
+    void incrementActiveTicks(size_t count = 1) { activeCpuTicks += count; }
+
+    size_t getIdleTicks() const { return idleCpuTicks; }
+    size_t getActiveTicks() const { return activeCpuTicks; }
+    size_t getTotalTicks() const { return idleCpuTicks + activeCpuTicks; }
+
 protected:
     int num_cores;
     std::vector<bool> core_available;
@@ -92,4 +99,7 @@ protected:
     std::atomic<uint64_t> cpu_cycles; // Shared CPU cycle counter
     int batch_process_freq;
     static Scheduler *instance_;
+
+    size_t idleCpuTicks = 0;
+    size_t activeCpuTicks = 0;
 };
