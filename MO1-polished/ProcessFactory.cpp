@@ -17,6 +17,14 @@ std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
 {
     auto process = std::make_shared<Process>(name, mem_required, global_pid_counter++, frameSize, memoryManager);
 
+    if (name.find("crash") != std::string::npos)
+    {
+        // This will force a read at an invalid address
+        process->addCommand(std::make_shared<InvalidAccessCommand>(0xFFFF));
+        process->addCommand(std::make_shared<PrintCommand>("\"This should never run because the process will crash.\""));
+        return process;
+    }
+
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> ins_dist(min_ins, max_ins);
@@ -300,9 +308,9 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                 {
                     try
                     {
-                        uint32_t address = std::stoul(addr_str, nullptr, 16);
+                        uint32_t address = std::stoul(addr_str, nullptr, 0); // <-- FIX: use addr_str
                         bool is_var = (val_str.find_first_not_of("0123456789") != std::string::npos);
-                        uint16_t value = is_var ? 0 : static_cast<uint16_t>(std::stoi(val_str));
+                        uint16_t value = is_var ? 0 : static_cast<uint16_t>(std::stoul(val_str, nullptr, 0));
                         process->addCommand(std::make_shared<WriteCommand>(address, value, is_var, val_str));
                     }
                     catch (const std::exception &e)
@@ -314,6 +322,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
                 else
                     std::cerr << "[ERROR] Invalid WRITE syntax.\n";
             }
+
             else if (cmd == "SLEEP")
             {
                 uint8_t ticks;

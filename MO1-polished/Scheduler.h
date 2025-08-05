@@ -34,7 +34,7 @@ public:
     std::map<int, std::map<std::string, float>> get_cpu_stats();
 
     bool is_done();
-    std::shared_ptr<Process> find_process_by_name(const std::string &name);
+    std::shared_ptr<Process> getProcessByName(const std::string &name);
 
     virtual void on_cpu_cycle(uint64_t cycle_number) = 0;
     virtual void set_batch_frequency(int freq) { batch_process_freq = freq; }

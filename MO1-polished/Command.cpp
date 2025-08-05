@@ -160,3 +160,9 @@ void WriteCommand::execute(Process *proc, int coreId, const std::string &process
     proc->writeMemory(address, toWrite);
 }
 
+InvalidAccessCommand::InvalidAccessCommand(uint32_t addr) : address(addr) {}
+
+void InvalidAccessCommand::execute(Process *process, int coreId, const std::string &procName)
+{
+    process->readMemory(address); // or writeMemory(address, 0)
+}

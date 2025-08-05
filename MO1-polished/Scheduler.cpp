@@ -213,6 +213,16 @@ std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats()
     return stats;
 }
 
+std::shared_ptr<Process> Scheduler::getProcessByName(const std::string &name)
+{
+    for (auto &p : all_processes)
+    { // assuming you store processes in a vector
+        if (p->getName() == name)
+            return p;
+    }
+    return nullptr;
+}
+
 void Scheduler::stop_scheduler()
 {
     generating_processes = false;

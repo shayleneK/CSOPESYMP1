@@ -127,5 +127,14 @@ public:
     void execute(Process *proc, int coreId, const std::string &processName) override;
 };
 
+class InvalidAccessCommand : public Command
+{
+public:
+    InvalidAccessCommand(uint32_t addr);
+    void execute(Process *process, int coreId, const std::string &procName) override;
+
+private:
+    uint32_t address;
+};
 
 #endif // COMMAND_H

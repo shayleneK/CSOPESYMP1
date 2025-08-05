@@ -544,8 +544,27 @@ else if (command.rfind("screen -c ", 0) == 0)
         }
 
         std::string name = command.substr(10);
-        switchConsole(name);
+
+        // switchConsole(name);
+        auto proc = scheduler->getProcessByName(name);
+        if (!proc)
+        {
+            std::cout << "Process " << name << " not found.\n";
+        }
+        else if (proc->hasError())
+        { // Crashed due to memory access violation
+            std::cout << "Process " << name
+                      << " shut down due to memory access violation error that occurred at "
+                      << proc->getErrorTime() << ". 0x"
+                      << std::hex << std::uppercase << proc->getErrorAddress()
+                      << " invalid.\n";
+        }
+        else if (proc->isFinished())
+        {
+            std::cout << "Process " << name << " finished execution.\n";
+        }
     }
+
     else if (command == "screen -ls")
     {
         if (!scheduler)

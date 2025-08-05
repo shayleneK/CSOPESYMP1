@@ -176,7 +176,6 @@ bool Process::hasVar(const std::string &name) const
     return symbol_table.find(name) != symbol_table.end();
 }
 
-
 // --- Get variable value from symbol table ---
 uint32_t Process::getVar(const std::string &name)
 {
@@ -228,6 +227,8 @@ int Process::getOffset(uint32_t addr) const
 // --- HELPER: Is this virtual address valid? ---
 bool Process::isAddressValid(uint32_t addr) const
 {
+    std::cout << "[DEBUG] Checking address 0x" << std::hex << addr
+              << " against memorySize " << std::dec << memorySize << "\n";
     // Address must be less than total memory allocated to this process
     return addr < memorySize;
 }
