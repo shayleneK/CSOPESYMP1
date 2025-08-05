@@ -1,6 +1,7 @@
-#ifndef RR_SCHEDULER_H
-#define RR_SCHEDULER_H
+#pragma once
 
+#include "CPUCycleManager.h"
+#include "Process.h"
 #include "Scheduler.h"
 #include "MemoryManager.h"
 #include <vector>
@@ -12,6 +13,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <cstdint>
+#include <unordered_map>
 
 class RRScheduler : public Scheduler
 {
@@ -44,6 +46,7 @@ private:
     void generate_new_process();
     void run_core(int core_id);
     void save_memory_snapshot(uint64_t cycle_number);
+    CPUCycleManager &cpuCycleManager;
 
     int time_quantum;
     int min_instructions;
@@ -59,6 +62,6 @@ private:
     int num_cores;
 
     MemoryManager &memory_manager_;
+    std::unordered_map<int, int> core_quantum_remaining;
+    std::unordered_map<int, std::shared_ptr<Process>> core_current_process;
 };
-
-#endif // RR_SCHEDULER_H

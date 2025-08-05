@@ -27,13 +27,24 @@ RRScheduler::RRScheduler(int num_cores,
       max_instructions(max_ins),
       delay_per_exec(delay),
       memory_manager_(memory_manager),
-      num_cores(num_cores)
+      num_cores(num_cores),
+      cpuCycleManager(CPUCycleManager::getInstance())
+
 {
     process_memory_map_.clear();
 
     std::cout << "[RR] Debug: Total Memory = " << memory_manager_.getTotalMemory()
               << " B, Page Size = " << memory_manager_.getPageSize()
               << " bytes\n";
+
+    process_memory_map_.clear();
+    for (int i = 0; i < num_cores; ++i)
+    {
+        core_quantum_remaining[i] = time_quantum;
+        core_current_process[i] = nullptr;
+    }
+    cpuCycleManager.set_callback([this](uint64_t cycle)
+                                 { this->on_cpu_cycle(cycle); });
 }
 
 int RRScheduler::get_num_cores() const
@@ -144,7 +155,7 @@ void RRScheduler::start_core_threads()
     std::cout << "[DEBUG] start_core_threads called!\n";
 
     running = true;
-
+    cpuCycleManager.start();
     for (int i = 0; i < static_cast<int>(core_available.size()); ++i)
     {
         cpu_cores.emplace_back(&RRScheduler::run_core, this, i);
@@ -160,11 +171,13 @@ void RRScheduler::run_core(int core_id)
     while (running)
     {
         std::shared_ptr<Process> process;
+        std::unique_lock<std::mutex> lock(queue_mutex);
 
+        if (!ready_queue.empty())
         {
-            std::unique_lock<std::mutex> lock(queue_mutex);
-            queue_condition.wait(lock, [this]
-                                 { return !running || !ready_queue.empty(); });
+            auto process = ready_queue.front();
+            ready_queue.pop();
+            lock.unlock(); // Unlock during execution
 
             if (!running)
                 break;
@@ -257,7 +270,7 @@ std::vector<std::shared_ptr<Process>> RRScheduler::get_running_processes()
     return result;
 }
 
-void RRScheduler::on_cpu_cycle(uint64_t cycle_number)
+void RRScheduler::on_cpu_cycle(uint64_t cycle)
 {
     // if (!generating_processes.load())
     //     return;

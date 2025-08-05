@@ -2,7 +2,9 @@
 #pragma once
 
 #include "Process.h"
-#include "CPUCore.h"
+#include "CPUCycleManager.h"
+#include "MemoryManager.h"
+#include "ConfigManager.h"
 #include <vector>
 #include <queue>
 #include <map>
@@ -46,6 +48,9 @@ public:
     virtual void stop_scheduler();
     virtual void start_scheduler();
     std::vector<std::shared_ptr<CPUCore>> cpu_core_objects;
+    // std::vector<std::shared_ptr<CPUCore>> cpu_core_objects;
+    static Scheduler *getInstance();
+    static void setInstance(Scheduler *scheduler);
 
 protected:
     int num_cores;
@@ -56,6 +61,7 @@ protected:
     std::map<std::shared_ptr<Process>, int> process_to_core;
     std::mutex running_mutex;
     int next_pid = 0;
+    MemoryManager memory_manager_;
 
     std::map<int, int> core_process_count;
     std::map<int, int> core_util_time;
@@ -84,4 +90,5 @@ protected:
 
     std::atomic<uint64_t> cpu_cycles; // Shared CPU cycle counter
     int batch_process_freq;
+    static Scheduler *instance_;
 };

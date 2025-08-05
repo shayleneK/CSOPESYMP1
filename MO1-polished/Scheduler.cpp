@@ -1,4 +1,4 @@
-// Scheduler.cpp
+
 #include "Scheduler.h"
 #include <chrono>
 #include <algorithm>
@@ -30,7 +30,8 @@ void Scheduler::add_process(std::shared_ptr<Process> process)
 
 void Scheduler::start_core_threads()
 {
-    for (int i = 0; i < static_cast<int>(core_available.size()); ++i)
+    int num_cores = static_cast<int>(core_available.size());
+    for (int i = 0; i < num_cores; ++i)
     {
         core_available[i] = true;
 
@@ -134,6 +135,7 @@ void Scheduler::run_core(int core_id)
 */
 void Scheduler::start()
 {
+    running = true;
     start_core_threads();
     start_process_generator();
 }
@@ -209,10 +211,10 @@ std::map<int, std::map<std::string, float>> Scheduler::get_cpu_stats()
         float count = static_cast<float>(core->get_process_count());
         float total = busy + 1; // prevent div-by-zero
 
-        stats[i]["util"] = (busy / total) * 100.0f;
-        stats[i]["busy_time_ms"] = busy;
-        stats[i]["process_count"] = count;
-        stats[i]["available"] = core->is_idle() ? 1.0f : 0.0f;
+        stats[core_id]["util"] = (busy / total) * 100.0f;
+        stats[core_id]["busy_time_ms"] = busy;
+        stats[core_id]["process_count"] = count;
+        stats[core_id]["available"] = core_available[core_id] ? 1.0f : 0.0f;
     }
 
     return stats;
@@ -268,4 +270,13 @@ void Scheduler::start_scheduler()
 int Scheduler::get_num_cores() const
 {
     return num_cores;
+}
+Scheduler *Scheduler::getInstance()
+{
+    return instance_;
+}
+
+void Scheduler::setInstance(Scheduler *scheduler)
+{
+    instance_ = scheduler;
 }

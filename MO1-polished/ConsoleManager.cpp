@@ -1,5 +1,6 @@
 #include "ConsoleManager.h"
 #include "ConfigManager.h"
+#include "CPUCycleManager.h"
 #include "Command.h"
 #include "AConsole.h"
 #include "MainConsole.h"
@@ -255,9 +256,14 @@ void ConsoleManager::processInput()
             try
             {
                 if (scheduler)
+                {
                     ConsoleManager::getInstance()->stopCpuLoop(); // STOP THIS FIRST
-                std::cerr << "CPU stopped " << "\n";
-
+                    CPUCycleManager::getInstance().stop();
+                }
+                else
+                {
+                    std::cerr << "CPU stopped " << "\n";
+                }
                 if (scheduler)
                     scheduler->shutdown(); // Then shut down scheduler logic
 
