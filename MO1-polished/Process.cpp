@@ -125,9 +125,9 @@ uint32_t Process::readMemory(uint32_t virtualAddr)
     uint16_t value = memoryManager->read(physicalAddr); // <-- actually read
 
     std::ostringstream oss;
-    std::cout << "Read 0x" << std::hex << value
-              << " from VA 0x" << virtualAddr
-              << " (PA 0x" << physicalAddr << ")" << '\n';
+    //std::cout << "Read 0x" << std::hex << value
+      //        << " from VA 0x" << virtualAddr
+        //      << " (PA 0x" << physicalAddr << ")" << '\n';
     return value;
 }
 
@@ -160,9 +160,9 @@ void Process::writeMemory(uint32_t virtualAddr, uint32_t value)
     setPageDirty(page);
 
     std::ostringstream oss;
-    std::cout << "Wrote 0x" << std::hex << value
-              << " to VA 0x" << virtualAddr
-              << " (PA 0x" << physicalAddr << ")" << "\n";
+   // std::cout << "Wrote 0x" << std::hex << value
+     //         << " to VA 0x" << virtualAddr
+       //       << " (PA 0x" << physicalAddr << ")" << "\n";
 }
 
 bool Process::hasVar(const std::string &name) const
@@ -221,8 +221,8 @@ int Process::getOffset(uint32_t addr) const
 // --- HELPER: Is this virtual address valid? ---
 bool Process::isAddressValid(uint32_t addr) const
 {
-    std::cout << "[DEBUG] Checking address 0x" << std::hex << addr
-              << " against memorySize " << std::dec << memorySize << "\n";
+    //std::cout << "[DEBUG] Checking address 0x" << std::hex << addr
+      //        << " against memorySize " << std::dec << memorySize << "\n";
     // Address must be less than total memory allocated to this process
     return addr < memorySize;
 }
@@ -252,7 +252,7 @@ void Process::triggerPageFault(int virtualPage)
 
     if (memoryManager)
     {
-        std::cout << "[" << name << "] Page fault: accessing invalid page " << virtualPage << "\n";
+        //std::cout << "[" << name << "] Page fault: accessing invalid page " << virtualPage << "\n";
 
         memoryManager->loadPage(name, virtualPage);
 

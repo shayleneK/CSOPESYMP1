@@ -46,7 +46,7 @@ std::shared_ptr<Process> ProcessFactory::generate_dummy_process(
 
     // Randomly determine how many instructions this process will have
     int instruction_count = ins_dist(gen);
-    std::cout << "Generating process " << name << " with " << instruction_count << " instructions" << std::endl;
+   // std::cout << "Generating process " << name << " with " << instruction_count << " instructions" << std::endl;
 
     // Generate the specified number of random instructions
     for (int i = 0; i < instruction_count; ++i)
@@ -184,7 +184,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
     size_t mem_required,
     const std::string &instructions_str)
 {
-    std::cout << "Generating process " << name << " with custom instructions" << std::endl;
+    //std::cout << "Generating process " << name << " with custom instructions" << std::endl;
 
     // Create a new process
     auto process = std::make_shared<Process>(name, mem_required, global_pid_counter++, frameSize, memoryManager);
@@ -210,7 +210,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
         if (token.empty())
             continue;
 
-        std::cout << "[TOKENIZER] Trimmed token: \"" << token << "\"" << std::endl;
+      //  std::cout << "[TOKENIZER] Trimmed token: \"" << token << "\"" << std::endl;
 
         std::istringstream line(token);
         std::string cmd;
@@ -343,7 +343,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
 
                 // Debug: show parsed segments
                 for (auto &seg : segments)
-                    std::cout << "[DEBUG] Parsed PRINT segment: " << (seg.isVar ? "Var" : "Str") << " = '" << seg.value << "'\n";
+                    //std::cout << "[DEBUG] Parsed PRINT segment: " << (seg.isVar ? "Var" : "Str") << " = '" << seg.value << "'\n";
 
                 if (!segments.empty())
                     process->addCommand(std::make_shared<PrintCommand>(segments));
@@ -371,7 +371,7 @@ std::shared_ptr<Process> ProcessFactory::generate_custom_process(
             }
             else if (cmd == "WRITE")
             {
-                std::cout << "WRITE RECOGNIZED \n";
+               // std::cout << "WRITE RECOGNIZED \n";
                 std::string addr_str, val_str;
                 if (line >> addr_str >> val_str)
                 {

@@ -8,8 +8,8 @@
 MemoryManager::MemoryManager(size_t total_memory, size_t page_size_bytes)
     : page_size(page_size_bytes)
 {
-    std::cout << "pages" << page_size << "\n"
-              << std::endl;
+    //std::cout << "pages" << page_size << "\n"
+      //        << std::endl;
 
     total_frames = (total_memory) / page_size;
     frame_used.resize(total_frames, false);
@@ -58,7 +58,7 @@ MemoryManager::MemoryManager(size_t total_memory, size_t page_size_bytes)
 
 AllocationResult MemoryManager::allocate(size_t requested, const std::string &process_name)
 {
-    std::cout << "Allocating " << requested << " bytes for process " << process_name << std::endl;
+   // std::cout << "Allocating " << requested << " bytes for process " << process_name << std::endl;
     if (requested < page_size)
         requested = page_size;
 

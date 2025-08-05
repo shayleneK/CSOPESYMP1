@@ -351,8 +351,8 @@ void ConsoleManager::processInput()
 
         createConsole("screen", name);
 
-        std::cout << "[INFO] min instructions: " << scheduler->get_min_instructions() << "\n"
-                  << "[INFO] max instructions: " << scheduler->get_max_instructions() << "\n";
+       // std::cout << "[INFO] min instructions: " << scheduler->get_min_instructions() << "\n"
+         //         << "[INFO] max instructions: " << scheduler->get_max_instructions() << "\n";
 
         // Use memory manager from ConsoleManager
         auto &memory_manager = ConsoleManager::getInstance()->getMemoryManager();
@@ -361,20 +361,20 @@ void ConsoleManager::processInput()
         // --- Align and clamp memory like RR ---
         if (mem_size < page_size)
         {
-            std::cout << "[screen] Requested " << mem_size << " B is below one page (" << page_size << " B). Clamping.\n";
+           // std::cout << "[screen] Requested " << mem_size << " B is below one page (" << page_size << " B). Clamping.\n";
             mem_size = page_size;
         }
         if (mem_size % page_size != 0)
         {
             size_t aligned = ((mem_size + page_size - 1) / page_size) * page_size;
-            std::cout << "[screen] Adjusting allocation size from " << mem_size << " B to page-aligned " << aligned << " B.\n";
+          //  std::cout << "[screen] Adjusting allocation size from " << mem_size << " B to page-aligned " << aligned << " B.\n";
             mem_size = aligned;
         }
 
         size_t max_alloc = memory_manager.getTotalMemory();
         if (mem_size > max_alloc)
         {
-            std::cout << "[screen] Requested " << mem_size << " B exceeds total memory (" << max_alloc << " B). Clamping.\n";
+           // std::cout << "[screen] Requested " << mem_size << " B exceeds total memory (" << max_alloc << " B). Clamping.\n";
             mem_size = max_alloc;
         }
 
@@ -418,13 +418,13 @@ void ConsoleManager::processInput()
             if (screen)
                 screen->attachProcess(proc);
 
-            std::cout << "[screen] Process \"" << name << "\" allocated at ["
-                      << alloc.start_address << "-" << alloc.start_address + alloc.size - 1
-                      << "] with " << alloc.size << " bytes.\n";
+            //std::cout << "[screen] Process \"" << name << "\" allocated at ["
+              //        << alloc.start_address << "-" << alloc.start_address + alloc.size - 1
+                //      << "] with " << alloc.size << " bytes.\n";
         }
         else
         {
-            std::cout << "[screen] Process \"" << name << "\" could not be loaded into memory.\n";
+            //std::cout << "[screen] Process \"" << name << "\" could not be loaded into memory.\n";
         }
     }
     else if (command.rfind("screen -c ", 0) == 0)
@@ -463,8 +463,8 @@ void ConsoleManager::processInput()
 
         createConsole("screen", name);
 
-        std::cout << "[INFO] min instructions: " << scheduler->get_min_instructions() << "\n"
-                  << "[INFO] max instructions: " << scheduler->get_max_instructions() << "\n";
+       // std::cout << "[INFO] min instructions: " << scheduler->get_min_instructions() << "\n"
+         //         << "[INFO] max instructions: " << scheduler->get_max_instructions() << "\n";
 
         auto &memory_manager = ConsoleManager::getInstance()->getMemoryManager();
         size_t page_size = memory_manager.getPageSize();
@@ -475,20 +475,20 @@ void ConsoleManager::processInput()
         // --- Align and clamp memory like RR ---
         if (mem_size < page_size)
         {
-            std::cout << "[screen] Requested " << mem_size << " B is below one page (" << page_size << " B). Clamping.\n";
+           // std::cout << "[screen] Requested " << mem_size << " B is below one page (" << page_size << " B). Clamping.\n";
             mem_size = page_size;
         }
         if (mem_size % page_size != 0)
         {
             size_t aligned = ((mem_size + page_size - 1) / page_size) * page_size;
-            std::cout << "[screen] Adjusting allocation size from " << mem_size << " B to page-aligned " << aligned << " B.\n";
+        //std::cout << "[screen] Adjusting allocation size from " << mem_size << " B to page-aligned " << aligned << " B.\n";
             mem_size = aligned;
         }
 
         size_t max_alloc = memory_manager.getTotalMemory();
         if (mem_size > max_alloc)
         {
-            std::cout << "[screen] Requested " << mem_size << " B exceeds total memory (" << max_alloc << " B). Clamping.\n";
+            //std::cout << "[screen] Requested " << mem_size << " B exceeds total memory (" << max_alloc << " B). Clamping.\n";
             mem_size = max_alloc;
         }
 
@@ -530,13 +530,13 @@ void ConsoleManager::processInput()
             if (screen)
                 screen->attachProcess(proc);
 
-            std::cout << "[screen] Process \"" << name << "\" allocated at ["
-                      << alloc.start_address << "-" << alloc.start_address + alloc.size - 1
-                      << "] with " << alloc.size << " bytes.\n";
+           // std::cout << "[screen] Process \"" << name << "\" allocated at ["
+             //         << alloc.start_address << "-" << alloc.start_address + alloc.size - 1
+               //       << "] with " << alloc.size << " bytes.\n";
         }
         else
         {
-            std::cout << "[screen] Process \"" << name << "\" could not be loaded into memory.\n";
+            //std::cout << "[screen] Process \"" << name << "\" could not be loaded into memory.\n";
         }
     }
 
@@ -550,7 +550,7 @@ void ConsoleManager::processInput()
 
         std::string name = command.substr(10);
 
-        // switchConsole(name);
+        switchConsole(name);
         auto proc = scheduler->getProcessByName(name);
         if (!proc)
         {
@@ -659,7 +659,7 @@ void ConsoleManager::processInput()
         }
         scheduler->start();
         start_flag = true;
-        std::cout << "[INFO] Scheduler started.\n";
+        //std::cout << "[INFO] Scheduler started.\n";
     }
     else if (command == "scheduler-stop")
     {
@@ -670,7 +670,7 @@ void ConsoleManager::processInput()
         }
         scheduler->stop_scheduler();
         // start_flag = false;
-        std::cout << "[INFO] Scheduler stopped.\n";
+        //std::cout << "[INFO] Scheduler stopped.\n";
     }
     else if (command == "process-smi")
     {
@@ -751,8 +751,8 @@ void ConsoleManager::processInput()
 
         createConsole("screen", name);
 
-        std::cout << "[INFO] min instructions: " << scheduler->get_min_instructions() << "\n"
-                  << "[INFO] max instructions: " << scheduler->get_max_instructions() << "\n";
+        //std::cout << "[INFO] min instructions: " << scheduler->get_min_instructions() << "\n"
+          //        << "[INFO] max instructions: " << scheduler->get_max_instructions() << "\n";
 
         auto &memory_manager = ConsoleManager::getInstance()->getMemoryManager();
         size_t page_size = memory_manager.getPageSize();
@@ -763,20 +763,20 @@ void ConsoleManager::processInput()
         // --- Align and clamp memory like RR ---
         if (mem_size < page_size)
         {
-            std::cout << "[screen] Requested " << mem_size << " B is below one page (" << page_size << " B). Clamping.\n";
+            //std::cout << "[screen] Requested " << mem_size << " B is below one page (" << page_size << " B). Clamping.\n";
             mem_size = page_size;
         }
         if (mem_size % page_size != 0)
         {
             size_t aligned = ((mem_size + page_size - 1) / page_size) * page_size;
-            std::cout << "[screen] Adjusting allocation size from " << mem_size << " B to page-aligned " << aligned << " B.\n";
+            //std::cout << "[screen] Adjusting allocation size from " << mem_size << " B to page-aligned " << aligned << " B.\n";
             mem_size = aligned;
         }
 
         size_t max_alloc = memory_manager.getTotalMemory();
         if (mem_size > max_alloc)
         {
-            std::cout << "[screen] Requested " << mem_size << " B exceeds total memory (" << max_alloc << " B). Clamping.\n";
+            //std::cout << "[screen] Requested " << mem_size << " B exceeds total memory (" << max_alloc << " B). Clamping.\n";
             mem_size = max_alloc;
         }
 
@@ -816,13 +816,13 @@ void ConsoleManager::processInput()
             if (screen)
                 screen->attachProcess(proc);
 
-            std::cout << "[screen] Process \"" << name << "\" allocated at ["
-                      << start_address << "-" << start_address + mem_size - 1
-                      << "] with " << mem_size << " bytes.\n";
+            //std::cout << "[screen] Process \"" << name << "\" allocated at ["
+              //        << start_address << "-" << start_address + mem_size - 1
+                //      << "] with " << mem_size << " bytes.\n";
         }
         else
         {
-            std::cout << "[screen] Process \"" << name << "\" could not be loaded into memory.\n";
+            //std::cout << "[screen] Process \"" << name << "\" could not be loaded into memory.\n";
         }
     }
 

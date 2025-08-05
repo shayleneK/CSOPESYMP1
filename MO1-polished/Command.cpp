@@ -32,12 +32,12 @@ void PrintCommand::execute(Process *proc, int coreId, const std::string &process
         if (seg.isVar)
         {
             int val = proc->getVar(seg.value);
-            std::cout << "[DEBUG] PRINT segment var: '" << seg.value << "' = " << val << "\n";
+           
             output += std::to_string(val);
         }
         else
         {
-            std::cout << "[DEBUG] PRINT segment str: '" << seg.value << "'\n";
+            
             output += seg.value;
         }
     }
@@ -56,7 +56,7 @@ void PrintCommand::execute(Process *proc, int coreId, const std::string &process
     logEntry << "Core:" << coreId << " - PRINT(\"" << output << "\")";
 
     // Final combined message
-    std::cout << logEntry.str() << std::endl;
+    //std::cout << logEntry.str() << std::endl;
     proc->logExecution(coreId, "PRINT(\"" + output + "\")");
 }
 
@@ -144,14 +144,14 @@ ReadCommand::ReadCommand(const std::string &var, uint32_t addr)
 
 void ReadCommand::execute(Process *proc, int coreId, const std::string &processName)
 {
-    std::cout << "READ RECOGNIZED" << "\n";
+  //  std::cout << "READ RECOGNIZED" << "\n";
     uint16_t value = proc->readMemory(address);
     proc->declareVar(varName, value);
 
     std::ostringstream log;
-    std::cout << "READ: " << varName << " <- MEM[0x"
-              << std::hex << address << "] = 0x"
-              << std::hex << value << "\n";
+    //std::cout << "READ: " << varName << " <- MEM[0x"
+      //        << std::hex << address << "] = 0x"
+        //      << std::hex << value << "\n";
 }
 
 WriteCommand::WriteCommand(uint32_t addr, uint16_t val, bool isVar, const std::string &var)
@@ -159,7 +159,7 @@ WriteCommand::WriteCommand(uint32_t addr, uint16_t val, bool isVar, const std::s
 
 void WriteCommand::execute(Process *proc, int coreId, const std::string &processName)
 {
-    std::cout << "WRITE GOING " << "\n";
+   // std::cout << "WRITE GOING " << "\n";
 
     uint16_t toWrite = value;
     if (isVariable)
@@ -174,9 +174,9 @@ void WriteCommand::execute(Process *proc, int coreId, const std::string &process
 
     // Log BEFORE write
     std::ostringstream preLog;
-    std::cout << "WRITE command: writing 0x" << std::hex << toWrite
-              << " to virtual address 0x" << std::hex << address
-              << "\n";
+    //std::cout << "WRITE command: writing 0x" << std::hex << toWrite
+      //        << " to virtual address 0x" << std::hex << address
+        //      << "\n";
 
     proc->writeMemory(address, toWrite);
 
@@ -185,9 +185,9 @@ void WriteCommand::execute(Process *proc, int coreId, const std::string &process
     uint16_t verifyVal = proc->readMemory(address);
 
     // Log AFTER write (confirmation)
-    std::cout << "WRITE completed: address 0x" << std::hex << address
-              << " now holds 0x" << std::hex << verifyVal
-              << std::dec << "\n";
+   // std::cout << "WRITE completed: address 0x" << std::hex << address
+     //         << " now holds 0x" << std::hex << verifyVal
+       //       << std::dec << "\n";
 }
 
 InvalidAccessCommand::InvalidAccessCommand(uint32_t addr) : address(addr) {}

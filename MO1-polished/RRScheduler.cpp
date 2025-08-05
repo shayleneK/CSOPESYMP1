@@ -31,9 +31,9 @@ RRScheduler::RRScheduler(int num_cores,
 {
     process_memory_map_.clear();
 
-    std::cout << "[RR] Debug: Total Memory = " << memory_manager_.getTotalMemory()
-              << " B, Page Size = " << memory_manager_.getPageSize()
-              << " bytes\n";
+   // std::cout << "[RR] Debug: Total Memory = " << memory_manager_.getTotalMemory()
+     //         << " B, Page Size = " << memory_manager_.getPageSize()
+       //       << " bytes\n";
 }
 
 int RRScheduler::get_num_cores() const
@@ -77,7 +77,7 @@ void RRScheduler::generate_new_process()
     oss << "p" << std::setw(2) << std::setfill('0') << next_pid++;
     std::string name = oss.str();
 
-    std::cout << "[RR] Starting Process Generation\n";
+    //std::cout << "[RR] Starting Process Generation\n";
 
     size_t requested_mem = ConsoleManager::getInstance()->getRandomMemSize();
     size_t page_size = memory_manager_.getPageSize();
@@ -89,7 +89,7 @@ void RRScheduler::generate_new_process()
     // Align to page size
     requested_mem = ((requested_mem + page_size - 1) / page_size) * page_size;
 
-    std::cout << "[RR] Requested memory for process " << name << ": " << requested_mem << " B\n";
+    //std::cout << "[RR] Requested memory for process " << name << ": " << requested_mem << " B\n";
 
     auto process = ConsoleManager::getInstance()
                        ->getProcessFactory()
@@ -101,9 +101,9 @@ void RRScheduler::generate_new_process()
     AllocationResult alloc;
     try
     {
-        std::cout << "Allocating2222 " << requested_mem << " bytes for process " << name << std::endl;
+        ///std::cout << "Allocating2222 " << requested_mem << " bytes for process " << name << std::endl;
         alloc = memory_manager_.allocate(requested_mem, process->getName());
-        std::cout << "[RR] Allocated " << alloc.size << " B at address " << alloc.start_address << "\n";
+        //std::cout << "[RR] Allocated " << alloc.size << " B at address " << alloc.start_address << "\n";
 
         int num_pages = alloc.size / memory_manager_.getPageSize();
         for (int i = 0; i < num_pages; ++i)
@@ -113,8 +113,8 @@ void RRScheduler::generate_new_process()
     }
     catch (const std::invalid_argument &e)
     {
-        std::cout << "[RR] Failed to allocate memory for " << name
-                  << ": " << e.what() << "\n";
+       // std::cout << "[RR] Failed to allocate memory for " << name
+         //         << ": " << e.what() << "\n";
         return;
     }
 
@@ -130,18 +130,18 @@ void RRScheduler::generate_new_process()
         if (screen)
             screen->attachProcess(process);
 
-        std::cout << "[RR] Process " << name << " allocated at ["
-                  << alloc.start_address << "-" << alloc.start_address + alloc.size - 1 << "]\n";
+       // std::cout << "[RR] Process " << name << " allocated at ["
+         //         << alloc.start_address << "-" << alloc.start_address + alloc.size - 1 << "]\n";
     }
     else
     {
-        std::cout << "[RR] Process " << name << " could not be loaded into memory. Re-queued.\n";
+        //std::cout << "[RR] Process " << name << " could not be loaded into memory. Re-queued.\n";
     }
 }
 
 void RRScheduler::start_core_threads()
 {
-    std::cout << "[DEBUG] start_core_threads called!\n";
+   // std::cout << "[DEBUG] start_core_threads called!\n";
 
     running = true;
 
@@ -229,8 +229,8 @@ void RRScheduler::run_core(int core_id)
                         std::remove(process_memory_map_.begin(), process_memory_map_.end(), process->getName()),
                         process_memory_map_.end());
 
-                    std::cout << "[RR][Core " << core_id << "] Process " << process->getName()
-                              << " finished and memory released.\n";
+                   // std::cout << "[RR][Core " << core_id << "] Process " << process->getName()
+                     //         << " finished and memory released.\n";
                 }
                 else
                 {
@@ -306,20 +306,20 @@ void RRScheduler::save_memory_snapshot(uint64_t batch_number)
 
     // Step 7: Close the file and log the success
     file.close();
-    std::cout << "[RR] Saved memory snapshot to " << filename.str() << std::endl;
+    //std::cout << "[RR] Saved memory snapshot to " << filename.str() << std::endl;
 }
 
 void RRScheduler::notify_process_started(int core_id, std::shared_ptr<Process> process)
 {
     // You can add logging or bookkeeping here
-    std::cout << "[RR] Process " << process->getName() << " started on core " << core_id << "\n";
+    //std::cout << "[RR] Process " << process->getName() << " started on core " << core_id << "\n";
 }
 
 void RRScheduler::notify_process_finished(int core_id, std::shared_ptr<Process> process, int duration_ms)
 {
     // Add any cleanup or logging you need
-    std::cout << "[RR] Process " << process->getName() << " finished on core " << core_id
-              << " (duration: " << duration_ms << " ms)\n";
+    //std::cout << "[RR] Process " << process->getName() << " finished on core " << core_id
+      //        << " (duration: " << duration_ms << " ms)\n";
 }
 
 int RRScheduler::get_quantum() const
